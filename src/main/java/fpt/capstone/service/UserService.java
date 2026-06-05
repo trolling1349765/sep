@@ -4,9 +4,11 @@ import fpt.capstone.entity.User;
 
 public interface UserService {
 
-    User findByUsername(String username);
+    User Login(String username, String password);
 
-    User findByEmail(String email);
+    User LoginWithEmail(String email, String password);
+
+    Boolean register(User user);
 
 
 }
