@@ -1,9 +1,13 @@
 package fpt.capstone.service.impl;
 
+import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.entity.User;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserService;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -35,5 +39,27 @@ public class UserServiceImpl implements UserService {
     public Boolean register(User user) {
         userRepository.save(user);
         return true;
+    }
+
+    @Override
+    public User createRequest(UserCreationRequest request) {
+        User user = new User();
+
+        user.setDob(request.getDob());
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+        user.setPassword(request.getPassword());
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User getUser(Long id) {
+        return userRepository.findById(id).orElseThrow(()-> new RuntimeException("user not found"));
     }
 }

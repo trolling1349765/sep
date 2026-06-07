@@ -1,6 +1,10 @@
 package fpt.capstone.service;
 
+import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.entity.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public interface UserService {
 
@@ -10,5 +14,9 @@ public interface UserService {
 
     Boolean register(User user);
 
+    User createRequest(UserCreationRequest request);
 
+    List<User> getUsers();
+
+    User getUser(Long id);
 }
