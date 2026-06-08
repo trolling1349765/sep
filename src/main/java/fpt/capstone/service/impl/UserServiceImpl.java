@@ -45,6 +45,9 @@ public class UserServiceImpl implements UserService {
     public User createRequest(UserCreationRequest request) {
         User user = new User();
 
+        if (userRepository.existsByEmail(request.getEmail())) throw  new IllegalArgumentException("email already exists");
+        if (userRepository.existsByUsername(request.getUsername())) throw  new IllegalArgumentException("username already exists");
+        user.setUsername(request.getUsername());
         user.setDob(request.getDob());
         user.setEmail(request.getEmail());
         user.setName(request.getName());

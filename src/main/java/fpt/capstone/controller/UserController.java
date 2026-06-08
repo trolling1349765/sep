@@ -4,6 +4,7 @@ import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.entity.User;
 import fpt.capstone.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    APIResponse<User> createUser(@RequestBody UserCreationRequest request) {
+    APIResponse<User> createUser(@RequestBody @Valid UserCreationRequest request) {
         APIResponse<User> response = new APIResponse<>();
         response.setCode(200);
         response.setMessage("user created");
