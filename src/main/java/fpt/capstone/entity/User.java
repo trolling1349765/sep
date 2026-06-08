@@ -13,7 +13,7 @@ import java.util.Date;
 public class User extends BaseEntity {
 
     @Id
-    private Long id;
+    private String id;
     @OneToOne(cascade = CascadeType.ALL)
     private Role role;
     private String name;
