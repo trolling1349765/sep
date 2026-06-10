@@ -3,7 +3,7 @@ package fpt.capstone.service.impl;
 import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.entity.User;
-import fpt.capstone.exceprion.AppException;
+import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.enums.ErrorCode;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserService;
@@ -63,6 +63,7 @@ public class UserServiceImpl implements UserService {
             response.setData(request.getUsername());
             exceptions.add(response);
         }
+
         user.setId(request.getUserId());
         user.setUsername(request.getUsername());
         user.setDob(request.getDob());
@@ -71,9 +72,14 @@ public class UserServiceImpl implements UserService {
         user.setPassword(request.getPassword());
 
         if (!exceptions.isEmpty()) {
-            throw new AppException(exceptions);
+            throw new ArgumentNotValidException(exceptions);
         }
-        return userRepository.save(user);
+        try{
+            userRepository.save(user);
+        } catch (IllegalArgumentException ex) {
+            throw new ArgumentNotValidException(exceptions);
+        }
+        return user;
     }
 
     @Override

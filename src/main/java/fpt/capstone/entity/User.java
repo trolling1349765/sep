@@ -17,6 +17,7 @@ public class User extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL)
     private Role role;
     private String name;
+    @Column(unique = true)
     private String email;
     private String username;
     private String password;
