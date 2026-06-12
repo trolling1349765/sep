@@ -2,21 +2,23 @@ package fpt.capstone.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Future;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
-    private String userId;
-    private String name;
+    String userId;
+    String name;
     @Email
-    private String email;
-    private String username;
+    String email;
+    String username;
     @Size(min = 8, max = 20, message = "password must be in range 8 and 20 digits ")
-    private String password;
-    private Date dob;
+    String password;
+    Date dob;
 }

@@ -74,12 +74,7 @@ public class UserServiceImpl implements UserService {
         if (!exceptions.isEmpty()) {
             throw new ArgumentNotValidException(exceptions);
         }
-        try{
-            userRepository.save(user);
-        } catch (IllegalArgumentException ex) {
-            throw new ArgumentNotValidException(exceptions);
-        }
-        return user;
+        return userRepository.save(user);
     }
 
     @Override

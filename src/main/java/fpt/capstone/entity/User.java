@@ -1,33 +1,26 @@
 package fpt.capstone.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
 
 @Entity
 @Data
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
+@AllArgsConstructor
 public class User extends BaseEntity {
 
     @Id
-    private String id;
+    String id;
     @OneToOne(cascade = CascadeType.ALL)
-    private Role role;
-    private String name;
-    @Column(unique = true)
-    private String email;
-    private String username;
-    private String password;
-    private Date dob;
-
-    public User (String name, String email, String username, String password, Date dob) {
-        this.name = name;
-        this.email = email;
-        this.username = username;
-        this.password = password;
-        this.dob = dob;
-    }
+    Role role;
+    String name;
+    String email;
+    String username;
+    String password;
+    Date dob;
 }

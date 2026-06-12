@@ -3,9 +3,7 @@ package fpt.capstone.exceprion.handler;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.exceprion.AppException;
 import fpt.capstone.exceprion.ArgumentNotValidException;
-import fpt.capstone.exceprion.enums.ErrorCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
