@@ -1,6 +1,7 @@
 package fpt.capstone.service;
 
 import fpt.capstone.dto.request.UserCreationRequest;
+import fpt.capstone.dto.request.UserUpdateRequest;
 import fpt.capstone.entity.User;
 
 import java.util.ArrayList;
@@ -19,4 +20,6 @@ public interface UserService {
     List<User> getUsers();
 
     User getUser(Long id);
+
+    User updateUser(UserUpdateRequest request);
 }

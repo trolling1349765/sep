@@ -1,10 +1,12 @@
 package fpt.capstone.service.impl;
 
 import fpt.capstone.dto.request.UserCreationRequest;
+import fpt.capstone.dto.request.UserUpdateRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.entity.User;
 import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.mapper.UserMapper;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserService;
 import org.springframework.stereotype.Service;
@@ -16,9 +18,11 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository,  UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
 
@@ -46,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createRequest(UserCreationRequest request) {
-        User user = new User();
+
         List<APIResponse> exceptions = new ArrayList<>();
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -64,16 +68,18 @@ public class UserServiceImpl implements UserService {
             exceptions.add(response);
         }
 
-        user.setId(request.getUserId());
-        user.setUsername(request.getUsername());
-        user.setDob(request.getDob());
-        user.setEmail(request.getEmail());
-        user.setName(request.getName());
-        user.setPassword(request.getPassword());
+        User user = userMapper.toUser(request);
 
         if (!exceptions.isEmpty()) {
             throw new ArgumentNotValidException(exceptions);
         }
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User updateUser(UserUpdateRequest request) {
+        User user = userRepository.getUserById(request.getUserId());
+        userMapper.updateUser(user, request);
         return userRepository.save(user);
     }
 
