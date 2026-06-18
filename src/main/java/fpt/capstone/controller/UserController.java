@@ -2,6 +2,7 @@ package fpt.capstone.controller;
 
 import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.dto.response.APIResponse;
+import fpt.capstone.dto.response.UserResponse;
 import fpt.capstone.entity.User;
 import fpt.capstone.service.UserService;
 import jakarta.validation.Valid;
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    List<User> getUser() {
+    List<UserResponse> getUser() {
         return userService.getUsers();
     }
 

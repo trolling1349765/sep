@@ -3,6 +3,7 @@ package fpt.capstone.service.impl;
 import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.dto.request.UserUpdateRequest;
 import fpt.capstone.dto.response.APIResponse;
+import fpt.capstone.dto.response.UserResponse;
 import fpt.capstone.entity.User;
 import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.enums.ErrorCode;
@@ -23,29 +24,6 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository,  UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-    }
-
-
-    @Override
-    public User Login(String username, String password) {
-        User user = userRepository.getUsersByUsername(username);
-        if (user == null) return null;
-        if (user.getPassword().equals(password)) return user;
-        return null;
-    }
-
-    @Override
-    public User LoginWithEmail(String email, String password) {
-        User user = userRepository.findUserByEmail(email);
-        if (user == null) return null;
-        if (user.getPassword().equals(password)) return user;
-        return null;
-    }
-
-    @Override
-    public Boolean register(User user) {
-        userRepository.save(user);
-        return true;
     }
 
     @Override
@@ -84,12 +62,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public List<UserResponse> getUsers() {
+        List<UserResponse> userResponseList = new ArrayList<>();
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            userResponseList.add(userMapper.toUserResponse(user));
+        }
+        return userResponseList;
     }
 
     @Override
-    public User getUser(Long id) {
-        return userRepository.findById(id).orElseThrow(()-> new RuntimeException("user not found"));
+    public UserResponse getUser(String id) {
+        User user = userRepository.getUserById(id);
+        return userMapper.toUserResponse(user);
     }
 }

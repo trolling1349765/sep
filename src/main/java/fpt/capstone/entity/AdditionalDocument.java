@@ -4,29 +4,26 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-@Table(name = "roles")
-public class Role extends BaseEntity {
+@Table(name = "additional_document")
+public class AdditionalDocument extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
     int id;
 
-    @Column(unique = true, name = "name", nullable = false)
-    String name;
+    @Column(name = "type")
+    String type;
+
+    @Column(name = "file_path")
+    String filePath;
 
     @Column(name = "description")
     String description;
-
-    @OneToMany(mappedBy = "role")
-    List<Permission> permissions;
 }

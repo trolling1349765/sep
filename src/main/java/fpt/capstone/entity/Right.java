@@ -9,24 +9,27 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "roles")
-public class Role extends BaseEntity {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "rights")
+public class Right extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
+    @Column(name = "right_id")
     int id;
 
-    @Column(unique = true, name = "name", nullable = false)
+    @Column(name = "code")
+    String code;
+
+    @Column(name = "name")
     String name;
 
     @Column(name = "description")
     String description;
 
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "right")
     List<Permission> permissions;
 }
