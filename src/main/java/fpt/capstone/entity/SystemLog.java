@@ -33,10 +33,10 @@ public class SystemLog {
     @Column(name = "entity_id")
     String entityId;
 
-    @Column(name = "old_value")
+    @Column(name = "old_value",columnDefinition = "TEXT")
     Object oldValue;
 
-    @Column(name = "new_value")
+    @Column(name = "new_value",columnDefinition = "TEXT")
     Object newValue;
 
     @Column(name = "created_at")

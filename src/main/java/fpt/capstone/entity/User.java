@@ -47,12 +47,12 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "approvedBy")
     private List<Application> approvedApplications;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "issuer")
     List<DecisionDocument> decisionDocuments;
 
     @OneToMany(mappedBy = "user")
     List<Benificiary> benificiarys;
 
-    @OneToMany(mappedBy = "user")
-    List<BenefitHistory> benefitHistory;
+    @OneToMany(mappedBy = "deliver")
+    List<BenefitHistory> benefitHistories;
 }

@@ -32,4 +32,7 @@ public class Benificiary extends BaseEntity{
 
     @OneToMany(mappedBy = "benificiary")
     List<GoodsInventory> goodsInventorys;
+
+    @OneToMany(mappedBy = "benificiary")
+    List<BenefitHistory> benefitHistories;
 }

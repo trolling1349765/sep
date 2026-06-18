@@ -50,4 +50,7 @@ public class Application extends BaseEntity {
 
     @OneToOne(mappedBy = "application")
     DecisionDocument decisionDocument;
+
+    @OneToMany(mappedBy = "application")
+    List<AdditionalDocument> additionalDocuments;
 }

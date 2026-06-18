@@ -26,4 +26,8 @@ public class AdditionalDocument extends BaseEntity {
 
     @Column(name = "description")
     String description;
+
+    @ManyToOne
+    @JoinColumn(name = "application_id")
+    Application application;
 }
