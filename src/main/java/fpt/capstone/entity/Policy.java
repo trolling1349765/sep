@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -33,13 +34,13 @@ public class Policy extends BaseEntity{
     String documentType;
 
     @Column(name = "issued_date")
-    Date issuedDate;
+    LocalDate issuedDate;
 
     @Column(name = "effective_date")
-    Date effectiveDate;
+    LocalDate effectiveDate;
 
     @Column(name = "expired_date")
-    Date expiredDate;
+    LocalDate expiredDate;
 
     @Column(name = "issuer")
     String issuer;

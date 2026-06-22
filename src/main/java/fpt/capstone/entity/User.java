@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class User extends BaseEntity {
     String password;
 
     @Column(name = "dob")
-    Date dob;
+    LocalDate dob;
 
     @OneToMany(mappedBy = "supportedUser")
     private List<Application> supportedApplications;

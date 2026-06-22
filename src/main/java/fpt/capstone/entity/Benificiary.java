@@ -32,8 +32,8 @@ public class Benificiary extends BaseEntity{
     List<DistributionRecord> distributionRecords;
 
     @OneToMany(mappedBy = "benificiary")
-    List<GoodsInventory> goodsInventorys;
+    List<BenefitHistory> benefitHistories;
 
     @OneToMany(mappedBy = "benificiary")
-    List<BenefitHistory> benefitHistories;
+    List<GoodsDistribution> goodsDistributionList;
 }

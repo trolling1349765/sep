@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -33,7 +34,7 @@ public class DecisionDocument extends BaseEntity{
     User issuer;
 
     @Column(name = "issue_date")
-    Date issueDate;
+    LocalDate issueDate;
 
     @Column(name = "details")
     String details;

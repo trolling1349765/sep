@@ -7,6 +7,7 @@ import jakarta.persistence.OneToOne;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -19,10 +20,10 @@ public class UserResponse {
     String name;
     String email;
     String username;
-    Date dob;
-    Date createAt;
+    LocalDate dob;
+    LocalDate createAt;
     String createBy;
-    Date updateAt;
+    LocalDate updateAt;
     String updateBy;
     boolean isDelete;
 

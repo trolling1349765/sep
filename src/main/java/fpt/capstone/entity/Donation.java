@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -29,5 +30,5 @@ public class Donation extends BaseEntity {
     Double amount;
 
     @Column(name = "transfer_date")
-    Date transferDate;
+    LocalDate transferDate;
 }

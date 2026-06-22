@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -23,13 +25,12 @@ public class GoodsInventory extends BaseEntity{
     @JoinColumn(name = "sponsor_id")
     Sponsor sponsor;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "benificiary_id")
-    Benificiary benificiary;
-
     @Column(name = "item_name")
     String itemName;
 
     @Column(name = "quantity")
     int quantity;
+
+    @OneToMany(mappedBy = "goodsInventory")
+    List<GoodsDistribution> goodsDistributionList;
 }
