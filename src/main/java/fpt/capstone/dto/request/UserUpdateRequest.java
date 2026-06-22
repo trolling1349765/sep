@@ -18,6 +18,8 @@ public class UserUpdateRequest {
     String name;
     @Email
     String email;
-    @Size(min = 8, max = 20, message = "Password must be in range 8 and 20 digits")
+    @Size(min = 8, max = 20, message = "PASSWORD_INVALID")
+    String password;
     Date dob;
+
 }

@@ -3,6 +3,7 @@ package fpt.capstone.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "articles")
@@ -10,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Article extends BaseEntity{
 

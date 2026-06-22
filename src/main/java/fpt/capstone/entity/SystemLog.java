@@ -4,6 +4,7 @@ import com.ethlo.time.DateTime;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
 
@@ -13,7 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
+@SuperBuilder
 @Table(name = "system_log")
 public class SystemLog {
 

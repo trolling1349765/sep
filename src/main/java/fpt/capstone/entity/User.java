@@ -3,6 +3,7 @@ package fpt.capstone.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class User extends BaseEntity {
 
     @Id
@@ -55,4 +56,5 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "deliver")
     List<BenefitHistory> benefitHistories;
+
 }

@@ -3,6 +3,7 @@ package fpt.capstone.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
+@SuperBuilder
 @Table(name = "sponsors")
 public class Sponsor extends BaseEntity{
 

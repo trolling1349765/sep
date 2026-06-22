@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public enum ErrorCode {
     USER_EXISTED(1001, "User already exists"),
@@ -16,4 +16,9 @@ public enum ErrorCode {
 
     private int code;
     private String message;
+
+    ErrorCode(int code, String message) {
+        this.message = message;
+        this.code = code;
+    }
 }

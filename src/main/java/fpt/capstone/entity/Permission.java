@@ -3,6 +3,7 @@ package fpt.capstone.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -11,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "permissions")
-@Builder
+@SuperBuilder
 public class Permission extends BaseEntity{
 
     @Id

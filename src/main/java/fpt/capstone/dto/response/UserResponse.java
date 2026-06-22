@@ -11,9 +11,8 @@ import java.util.Date;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
 public class UserResponse {
     String id;
     String role;
@@ -26,4 +25,19 @@ public class UserResponse {
     Date updateAt;
     String updateBy;
     boolean isDelete;
+
+    public UserResponse(User user) {
+        this.id = user.getId();
+        this.role = user.getRole().getName();
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.username = getUsername();
+        this.dob = user.getDob();
+        this.createAt = user.getCreateAt();
+        this.createBy = user.getCreateBy();
+        this.updateAt = user.getUpdateAt();
+        this.updateBy = user.getUpdateBy();
+        this.isDelete = user.isDelete();
+    }
+
 }

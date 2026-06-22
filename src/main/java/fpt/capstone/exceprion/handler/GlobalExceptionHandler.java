@@ -29,11 +29,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<APIResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        ErrorCode errorCode = ErrorCode.valueOf(e.getBindingResult().getFieldError().getDefaultMessage());
+
         APIResponse response = new APIResponse();
+        Map<String, Object> data = new HashMap<>();
+        ErrorCode errorCode = ErrorCode.valueOf(e.getBindingResult().getFieldError().getDefaultMessage());
+
         response.setMessage(errorCode.getMessage());
         response.setCode(errorCode.getCode());
-        Map<String, Object> data = new HashMap<>();
         data.put(e.getBindingResult().getFieldError().getField(), e.getBindingResult().getFieldError().getRejectedValue());
         response.setData(data);
         return ResponseEntity.badRequest().body(response);

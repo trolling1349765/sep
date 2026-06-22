@@ -7,11 +7,11 @@ import fpt.capstone.dto.response.UserResponse;
 import fpt.capstone.entity.User;
 import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.enums.ErrorCode;
-import fpt.capstone.mapper.UserMapper;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,15 +19,13 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository,  UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userMapper = userMapper;
     }
 
     @Override
-    public User createRequest(UserCreationRequest request) {
+    public User createRequest(UserCreationRequest request, String userId) {
 
         List<APIResponse> exceptions = new ArrayList<>();
 
@@ -46,7 +44,17 @@ public class UserServiceImpl implements UserService {
             exceptions.add(response);
         }
 
-        User user = userMapper.toUser(request);
+        User user = new User();
+        user.builder()
+                .role(request.getRole())
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .name(request.getName())
+                .dob(request.getDob())
+                .createAt(LocalDate.now())
+                .createBy(userId)
+                .build();
 
         if (!exceptions.isEmpty()) {
             throw new ArgumentNotValidException(exceptions);
@@ -57,7 +65,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(UserUpdateRequest request) {
         User user = userRepository.getUserById(request.getUserId());
-        userMapper.updateUser(user, request);
+        user.setEmail(request.getEmail());
+        user.setDob(request.getDob());
+        user.setName(request.getName());
+        user.setPassword(request.getPassword());
         return userRepository.save(user);
     }
 
@@ -66,7 +77,8 @@ public class UserServiceImpl implements UserService {
         List<UserResponse> userResponseList = new ArrayList<>();
         List<User> users = userRepository.findAll();
         for (User user : users) {
-            userResponseList.add(userMapper.toUserResponse(user));
+            UserResponse userResponse = new UserResponse(user);
+            userResponseList.add(userResponse);
         }
         return userResponseList;
     }
@@ -74,6 +86,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUser(String id) {
         User user = userRepository.getUserById(id);
-        return userMapper.toUserResponse(user);
+        return new UserResponse(user);
     }
 }

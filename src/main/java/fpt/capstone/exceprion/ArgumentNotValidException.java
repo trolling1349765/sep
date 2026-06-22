@@ -2,12 +2,12 @@ package fpt.capstone.exceprion;
 
 import fpt.capstone.dto.response.APIResponse;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 
-@Data
 @NoArgsConstructor
 public class ArgumentNotValidException extends RuntimeException {
 
@@ -15,5 +15,9 @@ public class ArgumentNotValidException extends RuntimeException {
     public ArgumentNotValidException(List<APIResponse> responses) {
         super();
         this.responses = responses;
+    }
+
+    public List<APIResponse> getResponses() {
+        return responses;
     }
 }

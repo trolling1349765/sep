@@ -1,5 +1,7 @@
 package fpt.capstone.dto.request;
 
+import fpt.capstone.entity.Role;
+import fpt.capstone.exceprion.enums.ErrorCode;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -13,12 +15,13 @@ import java.util.Date;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
-    String userId;
+
+    Role role;
     String name;
     @Email
     String email;
     String username;
-    @Size(min = 8, max = 20, message = "password must be in range 8 and 20 digits ")
+    @Size(min = 8, max = 20, message = "PASSWORD_INVALID")
     String password;
     Date dob;
 }

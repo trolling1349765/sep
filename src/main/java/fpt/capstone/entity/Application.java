@@ -3,6 +3,7 @@ package fpt.capstone.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Builder
+@SuperBuilder
 @Table(name = "applications")
 public class Application extends BaseEntity {
 
@@ -45,8 +46,17 @@ public class Application extends BaseEntity {
     @Column(name = "form_type")
     String formType;
 
-    @OneToMany(mappedBy = "application")
-    List<ApplicationDetail> applicationDetails;
+    @Column(name = "address")
+    String address;
+
+    @Column(name = "support_reason")
+    String supportReason;
+
+    @Column(name = "requested_amount")
+    Double requestedAmount;
+
+    @Column(name = "identity_number")
+    String identityNumber;
 
     @OneToOne(mappedBy = "application")
     DecisionDocument decisionDocument;
