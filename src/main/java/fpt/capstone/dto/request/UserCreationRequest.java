@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -23,5 +24,5 @@ public class UserCreationRequest {
     String username;
     @Size(min = 8, max = 20, message = "PASSWORD_INVALID")
     String password;
-    Date dob;
+    LocalDate dob;
 }

@@ -3,6 +3,7 @@ package fpt.capstone.exceprion.handler;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.exceprion.AppException;
 import fpt.capstone.exceprion.ArgumentNotValidException;
+import fpt.capstone.exceprion.InvalidArgsException;
 import fpt.capstone.exceprion.enums.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -39,5 +40,11 @@ public class GlobalExceptionHandler {
         data.put(e.getBindingResult().getFieldError().getField(), e.getBindingResult().getFieldError().getRejectedValue());
         response.setData(data);
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(value = InvalidArgsException.class)
+    ResponseEntity<APIResponse> handlingInvalidArgsException(InvalidArgsException e) {
+        return ResponseEntity.badRequest().body(e.getResponse());
+
     }
 }

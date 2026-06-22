@@ -1,7 +1,11 @@
 package fpt.capstone.exceprion;
 
 import fpt.capstone.dto.response.APIResponse;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@Getter
 public class InvalidArgsException extends IllegalArgumentException {
 
     private APIResponse response;
@@ -10,4 +14,5 @@ public class InvalidArgsException extends IllegalArgumentException {
         super();
         this.response = response;
     }
+
 }
