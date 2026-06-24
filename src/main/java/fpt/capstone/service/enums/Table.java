@@ -1,0 +1,33 @@
+package fpt.capstone.service.enums;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public enum Table {
+
+    USER("USERS"),
+    SYSTEM_LOG("SYSTEM_LOGS"),
+    SPONSOR("SPONSORS"),
+    ROLE("ROLES"),
+    RIGHT("RIGHTS"),
+    PERMISSION("PERMISSIONS"),
+    GOODS_INVENTORY("GOODS_INVENTORIES"),
+    GOODS_DISTRIBUTION("GOODS_DISTRIBUTIONS"),
+    ELIGIBILITY_CRITERIA("ELIGIBILITY_CRITERIAS"),
+    DONATION("DONATIONS"),
+    DISTRIBUTION_RECORD("DISTRIBUTION_RECORDS"),
+    DECISION_DOCUMENT("DECISION_DOCUMENTS"),
+    BENIFICIARY("BENIFICIARIES"),
+    BENIFIT_RULE("BENIFIT_RULES"),
+    BENIFIT_HISTORY("BENIFIT_HISTORY"),
+    ARTICLE("ARTICLES"),
+    APPLICATION("APPLICATIONS"),
+    ADDITIONAL_DOCUMENT("ADDITIONAL_DOCUMENTS"),
+    ;
+
+    private String tableName;
+}

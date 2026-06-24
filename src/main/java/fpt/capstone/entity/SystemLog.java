@@ -1,12 +1,11 @@
 package fpt.capstone.entity;
 
-import com.ethlo.time.DateTime;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -41,5 +40,5 @@ public class SystemLog {
     Object newValue;
 
     @Column(name = "created_at")
-    Date createdAt;
+    LocalDate createdAt;
 }
