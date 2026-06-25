@@ -29,6 +29,7 @@ public class BaseEntity {
     @Column(name = "update_by")
     String updateBy;
 
+    @Builder.Default
     @Column(name = "is_delete")
     boolean isDelete = false;
 
