@@ -9,6 +9,8 @@ import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.enums.ErrorCode;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -44,12 +46,14 @@ public class UserServiceImpl implements UserService {
             exceptions.add(response);
         }
 
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+
         User user = new User();
         user.builder()
                 .role(request.getRole())
                 .email(request.getEmail())
                 .username(request.getUsername())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .dob(request.getDob())
                 .createAt(LocalDate.now())

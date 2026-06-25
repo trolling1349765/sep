@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public enum ErrorCode {
+    SUCCESS(1000, "Success"),
     USER_EXISTED(1001, "User already exists"),
     EMAIL_EXISTED(1002, "Email already exists"),
     USERNAME_EXISTED(1003, "Username already exists"),

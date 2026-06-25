@@ -1,6 +1,9 @@
 package fpt.capstone.controller;
 
+import fpt.capstone.dto.response.APIResponse;
+import fpt.capstone.dto.response.CitizenCardResponse;
 import fpt.capstone.service.impl.OcrServiceImpl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +22,12 @@ public class OcrController {
     }
 
     @PostMapping("/extract")
-    public String extractText(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<APIResponse> extractText(@RequestParam("file") MultipartFile file) {
         return ocrService.transformToText(file);
+    }
+
+    @PostMapping("/cccd")
+    public APIResponse<CitizenCardResponse> extractCard(@RequestParam("file") MultipartFile file) {
+        return ocrService.transformToCitizenCard(file);
     }
 }
