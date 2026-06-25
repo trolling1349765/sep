@@ -1,7 +1,6 @@
 package fpt.capstone.exceprion;
 
 import fpt.capstone.dto.response.APIResponse;
-import fpt.capstone.exceprion.enums.ErrorCode;
 import lombok.Data;
 
 import java.util.List;
@@ -14,5 +13,9 @@ public class AppException extends RuntimeException {
     public AppException(List<APIResponse> responses) {
         super();
         this.responses = responses;
+    }
+
+    public void toList(APIResponse apiResponse) {
+        responses.add(apiResponse);
     }
 }

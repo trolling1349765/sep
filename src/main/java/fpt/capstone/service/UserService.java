@@ -14,7 +14,7 @@ public interface UserService {
 
     UserResponse getUser(String id) throws Throwable;
 
-    User createRequest(UserCreationRequest request, String userId);
+    UserResponse createRequest(UserCreationRequest request);
 
     User updateUser(UserUpdateRequest request);
 }

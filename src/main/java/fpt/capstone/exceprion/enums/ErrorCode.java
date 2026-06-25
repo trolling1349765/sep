@@ -13,7 +13,9 @@ public enum ErrorCode {
     EMAIL_EXISTED(1002, "Email already exists"),
     USERNAME_EXISTED(1003, "Username already exists"),
     PASSWORD_INVALID(1004, "Password must be in range 8 and 20 digits"),
-    OCR_TEXT_INVALID(1005, "OCR text must be clearly");
+    OCR_TEXT_INVALID(1005, "OCR text must be clearly"),
+    USERNAME_NOT_EXISTED(1006, "User not exists"),
+    UNAUTHENTICATED(1007, "Unauthenticated"),
     ;
 
     private int code;

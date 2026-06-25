@@ -4,9 +4,11 @@ import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.dto.request.UserUpdateRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.UserResponse;
+import fpt.capstone.entity.Role;
 import fpt.capstone.entity.User;
 import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.repository.RoleRepository;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,14 +22,16 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
+    private RoleRepository roleRepository;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.roleRepository =  roleRepository;
     }
 
     @Override
-    public User createRequest(UserCreationRequest request, String userId) {
+    public UserResponse createRequest(UserCreationRequest request) {
 
         List<APIResponse> exceptions = new ArrayList<>();
 
@@ -48,22 +52,22 @@ public class UserServiceImpl implements UserService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
-        User user = new User();
-        user.builder()
-                .role(request.getRole())
+        User user = User.builder()
+                .role(roleRepository.findById(request.getRole()))
                 .email(request.getEmail())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .dob(request.getDob())
                 .createAt(LocalDate.now())
-                .createBy(userId)
+                .createBy("")
                 .build();
 
         if (!exceptions.isEmpty()) {
             throw new ArgumentNotValidException(exceptions);
         }
-        return userRepository.save(user);
+        userRepository.save(user);
+        return new UserResponse(user);
     }
 
     @Override
