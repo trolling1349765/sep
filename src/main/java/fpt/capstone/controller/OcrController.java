@@ -26,8 +26,4 @@ public class OcrController {
         return ocrService.transformToText(file);
     }
 
-    @PostMapping("/cccd")
-    public APIResponse<CitizenCardResponse> extractCard(@RequestParam("file") MultipartFile file) {
-        return ocrService.transformToCitizenCard(file);
-    }
 }
