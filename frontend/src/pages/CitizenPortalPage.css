@@ -1,0 +1,136 @@
+/* ====================================
+   Citizen Portal Page Styles
+   (Using existing page-container / card / table layout from index.css)
+   ==================================== */
+
+.portal-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Search Bar */
+.portal-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 14px 10px 42px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Category Filter */
+.portal-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.category-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--sidebar-active-bg);
+}
+
+.category-chip--active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.category-chip--active:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: #fff;
+}
+
+.category-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.category-chip--active .category-count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Loading / Error States */
+.portal-loading,
+.portal-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.portal-error span {
+    font-size: 36px;
+    margin-bottom: 12px;
+}
+
+.portal-error p {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: var(--danger);
+}
+
+/* Pagination info uses existing .pagination and .page-info from index.css */
