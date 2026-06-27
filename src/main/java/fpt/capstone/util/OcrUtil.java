@@ -44,7 +44,7 @@ public final class OcrUtil {
         tesseract.setDatapath(config.getTessDataPath());
         tesseract.setLanguage(config.getLanguage());
 
-        tesseract.setPageSegMode(11);
+        tesseract.setPageSegMode(3);
         tesseract.setOcrEngineMode(1);
     }
 
@@ -63,8 +63,12 @@ public final class OcrUtil {
 
     public String extractText(BufferedImage image) {
         try {
-            BufferedImage processed = preprocess(image);
-            return tesseract.doOCR(processed);
+            try {
+                ImageIO.write(image, "png", new File("processed.png"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return tesseract.doOCR(image);
         } catch (TesseractException e) {
             APIResponse resp = new APIResponse();
             resp.setCode(ErrorCode.OCR_TEXT_INVALID.getCode());
@@ -81,6 +85,15 @@ public final class OcrUtil {
 
         Imgproc.cvtColor(src, gray, Imgproc.COLOR_BGR2GRAY);// chuyen mau xam
 
+        Imgproc.resize(
+                gray,
+                gray,
+                new Size(gray.width() * 2, gray.height() * 2),
+                0,
+                0,
+                Imgproc.INTER_CUBIC
+        );
+
         Imgproc.GaussianBlur(// lam min theo kich thuoc xung quanh
                 gray,
                 gray,
@@ -92,22 +105,11 @@ public final class OcrUtil {
                 gray,
                 binary,
                 0,
-                211,
+                255,
                 Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU
         );
 
-        Imgproc.medianBlur(gray, gray, 3);// lam min bang trung vi, can bang tot hon gausin
-
-        Imgproc.resize(
-                binary,
-                resized,
-                new Size(
-                        binary.width() * 2,
-                        binary.height() * 2
-                )
-        );
-
-        BufferedImage result = matToBufferedImage(resized);
+        BufferedImage result = matToBufferedImage(binary);
 
         try {
             ImageIO.write(
@@ -125,7 +127,7 @@ public final class OcrUtil {
     private BufferedImage matToBufferedImage(Mat resized) {
         MatOfByte matOfByte = new MatOfByte();
 
-        Imgcodecs.imencode(".jpg", resized, matOfByte);
+        Imgcodecs.imencode(".png", resized, matOfByte);
 
         try{
             return ImageIO.read( new ByteArrayInputStream(matOfByte.toArray()));
@@ -138,7 +140,7 @@ public final class OcrUtil {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
         try{
-           ImageIO.write(image, "jpg", byteArrayOutputStream);
+           ImageIO.write(image, "png", byteArrayOutputStream);
 
         } catch (IOException e) {
             throw new RuntimeException("input invalid");
