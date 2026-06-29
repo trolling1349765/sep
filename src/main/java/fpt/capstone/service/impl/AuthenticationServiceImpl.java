@@ -44,7 +44,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String SIGNER_KEY;
 
     @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticate(AuthenticationRequest request) throws Throwable {
         var user = userRepository.findByUsername(request.getUsername()).orElseThrow(
                 () -> {
                     List<APIResponse>  responses = new ArrayList<>();

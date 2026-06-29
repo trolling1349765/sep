@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -40,5 +40,5 @@ public class SystemLog {
     Object newValue;
 
     @Column(name = "created_at")
-    LocalDate createdAt;
+    LocalDateTime createdAt;
 }

@@ -140,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
         user.setWardName(request.getWardName());
         user.setSpecificAddress(request.getSpecificAddress());
 
-        Role defaultRole = roleRepository.findById(2).orElse(null);
+        Role defaultRole = roleRepository.findById(2);//.orElse(null)
         user.setRole(defaultRole);
 
         userRepository.save(user);

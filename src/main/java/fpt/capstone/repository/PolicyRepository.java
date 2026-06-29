@@ -29,4 +29,6 @@ public interface PolicyRepository extends JpaRepository<Policy, Integer> {
 
     @Query("SELECT p.documentType, COUNT(p) FROM Policy p WHERE p.isDelete = false GROUP BY p.documentType")
     List<Object[]> countByDocumentType();
+
+    Policy getPolicyById(Integer id);
 }

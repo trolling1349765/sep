@@ -53,9 +53,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } catch (Exception e) {
                 log.error("Error authenticating JWT token: {}", e.getMessage());
+                throw new ServletException(e);
             }
         }
-
         filterChain.doFilter(request, response);
     }
 

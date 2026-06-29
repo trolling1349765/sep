@@ -1,7 +1,6 @@
 package fpt.capstone.controller;
 
 import fpt.capstone.dto.response.APIResponse;
-import fpt.capstone.dto.response.CitizenCardResponse;
 import fpt.capstone.service.impl.OcrServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

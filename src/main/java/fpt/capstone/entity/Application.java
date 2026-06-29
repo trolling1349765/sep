@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -31,14 +32,14 @@ public class Application extends BaseEntity {
     User approvedBy;
 
     @Column(name = "approved_date")
-    Date approvedDate;
+    LocalDate approvedDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id")
     Policy policy;
 
     @Column(name = "submit_date")
-    Date submitDate;
+    LocalDate submitDate;
 
     @Column(name = "status")
     String status;
@@ -54,9 +55,6 @@ public class Application extends BaseEntity {
 
     @Column(name = "requested_amount")
     Double requestedAmount;
-
-    @Column(name = "identity_number")
-    String identityNumber;
 
     @OneToOne(mappedBy = "application")
     DecisionDocument decisionDocument;

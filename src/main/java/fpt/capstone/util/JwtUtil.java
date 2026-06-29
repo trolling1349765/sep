@@ -8,11 +8,14 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 import java.util.function.Function;
@@ -101,6 +104,37 @@ public class JwtUtil {
             log.error("Error checking token expiration: {}", e.getMessage());
             return true;
         }
+    }
+
+    public String getUserIdFromRequest(HttpServletRequest request) {
+        // 1. Lấy chuỗi Access Token từ Cookie
+        String accessToken = getCookieValue(request, "access_token");
+        // Thay "ACCESS_TOKEN_COOKIE" bằng tên biến hằng số của bạn
+
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new RuntimeException("Access token không tồn tại trong Cookie");
+        }
+
+        // 2. Giải mã Token để lấy UserId
+        // Hàm này tùy thuộc vào cách bạn viết JwtUtil (ví dụ: jwtUtil.getUserIdFromToken(token))
+        String userId = extractUserId(accessToken);
+
+        return userId;
+    }
+
+    /**
+     * Hàm bổ trợ (Helper) để tìm giá trị của một Cookie theo tên
+     */
+    private String getCookieValue(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> cookieName.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     public long getAccessTokenExpiration() {

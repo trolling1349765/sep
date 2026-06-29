@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Service
@@ -56,7 +57,7 @@ public class ChatbotServiceImpl implements ChatbotService {
                 .entityId(null)
                 .oldValue(null)
                 .newValue("User query: " + message + " | Response: " + response)
-                .createdAt(new Date())
+                .createdAt(LocalDate.now())
                 .build();
         systemLogRepository.save(systemLog);
 

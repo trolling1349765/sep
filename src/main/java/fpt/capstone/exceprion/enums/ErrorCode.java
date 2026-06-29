@@ -16,6 +16,7 @@ public enum ErrorCode {
     OCR_TEXT_INVALID(1005, "OCR text must be clearly"),
     USERNAME_NOT_EXISTED(1006, "User not exists"),
     UNAUTHENTICATED(1007, "Unauthenticated"),
+    APPLICATION_NOT_FOUND(1008, "Application not found"),
     ;
 
     private int code;

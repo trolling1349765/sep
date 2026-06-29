@@ -1,18 +1,27 @@
 package fpt.capstone.util;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.nio.file.attribute.UserPrincipal;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Component
+@RequiredArgsConstructor
 public class SecurityUtil {
-    public static String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
-        return principal.getName();
+    JwtUtil  jwtUtil;
+
+    private static HttpServletRequest getCurrentRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            return attributes.getRequest();
+        }
+        return null; // Hoặc throw một Exception tùy bạn thiết kế
+    }
+
+    public String getCurrentUserId() {
+        String userId = jwtUtil.getUserIdFromRequest(getCurrentRequest());
+        return userId;
     }
 }

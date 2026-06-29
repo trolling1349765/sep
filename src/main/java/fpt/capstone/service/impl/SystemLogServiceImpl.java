@@ -20,16 +20,7 @@ public class SystemLogServiceImpl implements SystemLogService {
 
     @Override
     public SystemLog write(SystemLog systemLog) {
-        SystemLog record = new SystemLog();
-        systemLog.builder()
-                .action(systemLog.getAction())
-                .entityType(systemLog.getEntityType())
-                .entityId(systemLog.getEntityId())
-                .oldValue(systemLog.getOldValue())
-                .newValue(systemLog.getNewValue())
-                .createdAt(LocalDate.now())
-                .build();
-        return systemLogRepository.save(record);
+        return systemLogRepository.save(systemLog);
     }
 
     @Override

@@ -16,6 +16,7 @@ import fpt.capstone.service.NotificationService;
 import fpt.capstone.service.SupportRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -141,7 +143,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
                 .entityType("SupportRequest")
                 .entityId(requestId)
                 .newValue("Officer replied: " + request.getMessage())
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         systemLogRepository.save(systemLog);
 
@@ -194,7 +196,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
                 .entityId(requestId)
                 .oldValue(oldStatus.name())
                 .newValue(request.getStatus().name())
-                .createdAt(new Date())
+                .createdAt(LocalDateTime.now())
                 .build();
         systemLogRepository.save(systemLog);
 

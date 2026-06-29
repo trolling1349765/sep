@@ -1,7 +1,6 @@
 package fpt.capstone.service;
 
 import fpt.capstone.dto.response.APIResponse;
-import fpt.capstone.dto.response.CitizenCardResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 

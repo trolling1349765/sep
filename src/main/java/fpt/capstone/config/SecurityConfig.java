@@ -68,6 +68,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/capstone/provinces/{provinceCode}/wards").permitAll()
                         .requestMatchers(HttpMethod.GET, "/capstone/citizen-portal/policies/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/capstone/citizen-portal/chatbot/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/application/**").hasAnyRole("USER", "OFF1")
+                        .requestMatchers(HttpMethod.POST, "/application/**").hasRole("USER")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

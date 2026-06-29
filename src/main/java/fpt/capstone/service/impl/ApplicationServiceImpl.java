@@ -1,9 +1,175 @@
 package fpt.capstone.service.impl;
 
+import fpt.capstone.dto.request.ApplicationRequest;
+import fpt.capstone.dto.response.APIResponse;
+import fpt.capstone.dto.response.ApplicationResponse;
+import fpt.capstone.entity.Application;
+import fpt.capstone.entity.SystemLog;
+import fpt.capstone.exceprion.InvalidArgsException;
+import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.repository.ApplicationRepository;
+import fpt.capstone.repository.PolicyRepository;
+import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.ApplicationService;
+import fpt.capstone.service.SystemLogService;
+import fpt.capstone.service.enums.Action;
+import fpt.capstone.service.enums.Table;
+import fpt.capstone.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class ApplicationServiceImpl implements ApplicationService {
 
+    private final SecurityUtil securityUtil;
+    private final ApplicationService applicationService;
+    ApplicationRepository applicationRepository;
+    UserRepository userRepository;
+    PolicyRepository policyRepository;
+    SystemLogService  systemLogService;
+
+    @Override
+    public APIResponse<List<ApplicationResponse>> getAppications() {
+        APIResponse<List<ApplicationResponse>> response = new APIResponse<>();
+        List<Application> applicationResponses = applicationRepository.findAll();
+        List<ApplicationResponse> applicationResponseList = new ArrayList<>();
+
+        for (Application application : applicationResponses) {
+            applicationResponseList.add(new ApplicationResponse(application));
+        }
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+
+        response.setData(applicationResponseList);
+        response.setCode(ErrorCode.SUCCESS.getCode());
+        response.setMessage(ErrorCode.SUCCESS.getMessage());
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<ApplicationResponse> getApplication(int applicationId) {
+
+        Application application = applicationRepository.findById(applicationId).orElse(null);
+
+        if (application == null) {
+            APIResponse<Object> response = APIResponse.builder()
+                    .code(ErrorCode.APPLICATION_NOT_FOUND.getCode())
+                    .message(ErrorCode.APPLICATION_NOT_FOUND.getMessage())
+                    .data(applicationId)
+                    .build();
+            throw new InvalidArgsException(response);
+        }
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityId(application.getId()+"")
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+
+        ApplicationResponse applicationResponse = new ApplicationResponse(application);
+
+        APIResponse<ApplicationResponse> response = APIResponse.success(applicationResponse);
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<ApplicationResponse> createApplication(ApplicationRequest request) {
+
+        String currentUserId = securityUtil.getCurrentUserId();
+
+        Application application = Application.builder()
+                .supportedUser(userRepository.getUserById(request.getSupportedUser()))
+                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
+                .approvedDate(request.getApprovedDate())
+                .policy(policyRepository.getPolicyById(request.getPolicyId()))
+                .submitDate(request.getSubmitDate())
+                .status(request.getStatus())
+                .formType(request.getFormType())
+                .address(request.getAddress())
+                .supportReason(request.getSupportReason())
+                .requestedAmount(request.getRequestedAmount())
+                .createAt(LocalDate.now())
+                .createBy(currentUserId)
+                .isDelete(false)
+                .build();
+
+        application = applicationRepository.save(application);
+
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.CREATE_APPLICATION.getAction())
+                .entityId(application.getId()+"")
+                .entityType(Table.APPLICATION.getTableName())
+                .newValue(application)
+                .userId(currentUserId)
+                .build();
+
+        systemLogService.write(log);
+
+        return APIResponse.<ApplicationResponse>builder()
+                .data(new  ApplicationResponse(application))
+                .build();
+    }
+
+    @Override
+    public APIResponse<ApplicationResponse> updateApplication(ApplicationRequest request) {
+
+        String currentUserId = securityUtil.getCurrentUserId();
+
+        Application oldApplication = applicationRepository.findById(request.getId()).orElse(null);
+        if (oldApplication == null) throw new InvalidArgsException(APIResponse.error(
+                ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                ErrorCode.APPLICATION_NOT_FOUND.getMessage()
+        ));
+        Application newApplication = Application.builder()
+                .supportedUser(userRepository.getUserById(request.getSupportedUser()))
+                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
+                .approvedDate(request.getApprovedDate())
+                .policy(policyRepository.getPolicyById(request.getPolicyId()))
+                .submitDate(request.getSubmitDate())
+                .status(request.getStatus())
+                .formType(request.getFormType())
+                .address(request.getAddress())
+                .supportReason(request.getSupportReason())
+                .requestedAmount(request.getRequestedAmount())
+                .updateAt(LocalDate.now())
+                .updateBy(currentUserId)
+                .isDelete(request.isDelete())
+                .build();
+
+        newApplication = applicationRepository.save(newApplication);
+
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.UPDATE_APPLICATION.getAction())
+                .entityId(newApplication.getId()+"")
+                .entityType(Table.APPLICATION.getTableName())
+                .newValue(newApplication)
+                .oldValue(oldApplication)
+                .userId(currentUserId)
+                .build();
+
+        systemLogService.write(log);
+
+        return APIResponse.<ApplicationResponse>builder()
+                .data(new  ApplicationResponse(newApplication))
+                .build();
+    }
 }
