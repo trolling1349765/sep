@@ -8,13 +8,14 @@ import fpt.capstone.service.ApplicationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.logging.Level;
 
 @RestController
-@RequestMapping("/application")
+@RequestMapping("/applications")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApplicationController {
@@ -22,8 +23,12 @@ public class ApplicationController {
     ApplicationService applicationService;
 
     @GetMapping()
-    public APIResponse<List<ApplicationResponse>> getApplication() {
-        return applicationService.getAppications();
+    public APIResponse<Page<ApplicationResponse>> getApplication(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppications(size, page);
+        return responses;
     }
 
     @GetMapping("/{id}")

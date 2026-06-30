@@ -29,4 +29,7 @@ public class BenefitHistory extends BaseEntity{
 
     @Column(name = "transfer_method")
     String transferMethod;
+
+    @Column(name = "receiver")
+    String receiver;
 }

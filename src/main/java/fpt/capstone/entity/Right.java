@@ -1,5 +1,6 @@
 package fpt.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,6 +32,7 @@ public class Right extends BaseEntity {
     @Column(name = "description")
     String description;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "right")
     List<Permission> permissions;
 }

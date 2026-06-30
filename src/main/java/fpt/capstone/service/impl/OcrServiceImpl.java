@@ -3,9 +3,11 @@ package fpt.capstone.service.impl;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.KrakenOcrResponse;
 import fpt.capstone.entity.SystemLog;
-import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.service.OcrService;
+import fpt.capstone.enums.Action;
 import fpt.capstone.util.OcrUtil;
+import fpt.capstone.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,8 @@ import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
 
 @Service
 public class OcrServiceImpl implements OcrService {
@@ -24,25 +27,32 @@ public class OcrServiceImpl implements OcrService {
     @Value("${kraken.docker.url:http://localhost:8000/ocr}")
     private String krakenUrl;
     private final OcrUtil ocrUtil;
-    private SystemLogServiceImpl systemLogService;
+    private final SystemLogServiceImpl systemLogService;
+    private final SecurityUtil  securityUtil;
 
-    OcrServiceImpl(OcrUtil ocrUtil, SystemLogServiceImpl systemLogService) {
+    OcrServiceImpl(OcrUtil ocrUtil, SystemLogServiceImpl systemLogService, SecurityUtil  securityUtil) {
         this.ocrUtil = ocrUtil;
         this.systemLogService = systemLogService;
+        this.securityUtil = securityUtil;
     }
 
     @Override
     public ResponseEntity<APIResponse> transformToText(MultipartFile multipartFile) {
-        SystemLog systemLog = new SystemLog();
+
         KrakenOcrResponse result = callKrakenDocker(multipartFile);
+        String currentUser = securityUtil.getCurrentUserId();
 
         APIResponse apiResponse = APIResponse.builder()
                 .data(result)
                 .build();
 
-        systemLog.builder()
-
+        SystemLog systemLog = SystemLog.builder()
+                .action(Action.OCR_SCAN.getAction())
+                .createdAt(LocalDateTime.now())
+                .userId(currentUser)
                 .build();
+        systemLogService.write(systemLog);
+
         apiResponse.setCode(ErrorCode.SUCCESS.getCode());
         apiResponse.setMessage(ErrorCode.SUCCESS.getMessage());
         apiResponse.setData(ocrUtil.extractText(multipartFile));

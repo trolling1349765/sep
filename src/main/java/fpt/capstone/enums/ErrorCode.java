@@ -1,6 +1,5 @@
-package fpt.capstone.exceprion.enums;
+package fpt.capstone.enums;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

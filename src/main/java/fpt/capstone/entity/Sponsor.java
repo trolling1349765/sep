@@ -1,5 +1,6 @@
 package fpt.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -27,9 +28,11 @@ public class Sponsor extends BaseEntity{
     @Column(name = "contact_info")
     String contactInfo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "sponsor")
     List<Donation> donations;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "sponsor")
     List<GoodsInventory> goodsInventories;
 }

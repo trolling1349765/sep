@@ -10,9 +10,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @RequiredArgsConstructor
 public class SecurityUtil {
 
-    JwtUtil  jwtUtil;
+    private final JwtUtil jwtUtil;
 
-    private static HttpServletRequest getCurrentRequest() {
+    private HttpServletRequest getCurrentRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
             return attributes.getRequest();

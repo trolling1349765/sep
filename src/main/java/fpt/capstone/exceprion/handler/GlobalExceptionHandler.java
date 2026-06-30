@@ -4,7 +4,7 @@ import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.exceprion.AppException;
 import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.exceprion.InvalidArgsException;
-import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.enums.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

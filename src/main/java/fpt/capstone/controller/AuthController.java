@@ -64,6 +64,7 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
         try {
+            System.out.println("===DA VAO CONTROLLER===");
             LoginResponse result = authService.login(request, httpRequest, httpResponse);
             return ResponseEntity.ok(APIResponse.success("Login successful", result));
         } catch (ResponseStatusException e) {

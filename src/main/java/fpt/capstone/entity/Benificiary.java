@@ -1,5 +1,6 @@
 package fpt.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -28,12 +29,22 @@ public class Benificiary extends BaseEntity{
     @Column(name = "assistance_amount")
     Double assistanceAmount;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "benificiary")
     List<DistributionRecord> distributionRecords;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "benificiary")
     List<BenefitHistory> benefitHistories;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "benificiary")
     List<GoodsDistribution> goodsDistributionList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "relative_id")
+    Relative relative;
+
+    @Column(name = "gender")
+    String gender;
 }

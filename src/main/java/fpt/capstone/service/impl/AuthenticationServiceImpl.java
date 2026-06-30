@@ -11,7 +11,7 @@ import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.AuthenticationResponse;
 import fpt.capstone.dto.response.IntrospectResponse;
 import fpt.capstone.exceprion.AppException;
-import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.AuthenticationService;
 import lombok.AccessLevel;
@@ -23,14 +23,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -63,7 +61,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) {
-
             APIResponse  response = APIResponse.builder()
                     .code(ErrorCode.UNAUTHENTICATED.getCode())
                     .message(ErrorCode.UNAUTHENTICATED.getMessage())

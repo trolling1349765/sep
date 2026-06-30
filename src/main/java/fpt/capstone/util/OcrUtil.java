@@ -6,7 +6,7 @@ import net.sourceforge.tess4j.Tesseract;
 import fpt.capstone.config.OcrConfig;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.exceprion.InvalidArgsException;
-import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.enums.ErrorCode;
 import net.sourceforge.tess4j.TesseractException;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;

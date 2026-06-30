@@ -1,5 +1,7 @@
 package fpt.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.nimbusds.openid.connect.sdk.claims.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -88,24 +90,29 @@ public class User extends BaseEntity {
     @Column(name = "national_id_verified")
     Boolean nationalIdVerified;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "supportedUser")
     private List<Application> supportedApplications;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "approvedBy")
     private List<Application> approvedApplications;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "issuer")
     List<DecisionDocument> decisionDocuments;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     List<Benificiary> benificiarys;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "deliver")
     List<BenefitHistory> benefitHistories;
 
     @Builder.Default
     @Column(name = "failed_login_attempts")
-    int failedLoginAttempts = 0;
+    Integer failedLoginAttempts = 0;
 
     @Column(name = "locked_until")
     Instant lockedUntil;
@@ -113,4 +120,6 @@ public class User extends BaseEntity {
     @Column(name = "last_login_at")
     Instant lastLoginAt;
 
+    @Column(name = "gender")
+    String gender;
 }

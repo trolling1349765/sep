@@ -1,4 +1,4 @@
-package fpt.capstone.service.enums;
+package fpt.capstone.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

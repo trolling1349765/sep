@@ -1,5 +1,6 @@
 package fpt.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -51,12 +52,15 @@ public class Policy extends BaseEntity{
     @Column(name = "file_url")
     String fileURL;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "policy")
     List<Article> articles;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "policy")
     List<EligibilityCriteria> eligibilityCriterias;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "policy")
     List<Application> applications;
 

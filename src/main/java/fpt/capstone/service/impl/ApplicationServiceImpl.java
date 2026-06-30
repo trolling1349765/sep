@@ -6,43 +6,43 @@ import fpt.capstone.dto.response.ApplicationResponse;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.exceprion.InvalidArgsException;
-import fpt.capstone.exceprion.enums.ErrorCode;
+import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.repository.ApplicationRepository;
 import fpt.capstone.repository.PolicyRepository;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.SystemLogService;
-import fpt.capstone.service.enums.Action;
-import fpt.capstone.service.enums.Table;
+import fpt.capstone.enums.Action;
+import fpt.capstone.enums.Table;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ApplicationServiceImpl implements ApplicationService {
 
     private final SecurityUtil securityUtil;
-    private final ApplicationService applicationService;
     ApplicationRepository applicationRepository;
     UserRepository userRepository;
     PolicyRepository policyRepository;
     SystemLogService  systemLogService;
 
     @Override
-    public APIResponse<List<ApplicationResponse>> getAppications() {
-        APIResponse<List<ApplicationResponse>> response = new APIResponse<>();
-        List<Application> applicationResponses = applicationRepository.findAll();
-        List<ApplicationResponse> applicationResponseList = new ArrayList<>();
+    public APIResponse<Page<ApplicationResponse>> getAppications(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findAll(pageable);
+        Page<ApplicationResponse> applicationResponseList= applications.map(ApplicationResponse::new);
 
-        for (Application application : applicationResponses) {
-            applicationResponseList.add(new ApplicationResponse(application));
-        }
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.<Page<ApplicationResponse>>builder()
+                .data(applicationResponseList)
+                .build();
 
         String currentUserId = securityUtil.getCurrentUserId();
         SystemLog log = SystemLog.builder()
@@ -51,6 +51,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .entityType(Table.APPLICATION.getTableName())
                 .userId(currentUserId)
                 .build();
+        systemLogService.write(log);
 
         response.setData(applicationResponseList);
         response.setCode(ErrorCode.SUCCESS.getCode());
@@ -81,6 +82,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .entityType(Table.APPLICATION.getTableName())
                 .userId(currentUserId)
                 .build();
+        systemLogService.write(log);
 
         ApplicationResponse applicationResponse = new ApplicationResponse(application);
 
@@ -120,7 +122,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .newValue(application)
                 .userId(currentUserId)
                 .build();
-
         systemLogService.write(log);
 
         return APIResponse.<ApplicationResponse>builder()

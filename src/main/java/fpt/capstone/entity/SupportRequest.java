@@ -1,5 +1,6 @@
 package fpt.capstone.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.capstone.enums.SupportCategory;
 import fpt.capstone.enums.SupportRequestStatus;
 import jakarta.persistence.*;
@@ -54,9 +55,11 @@ public class SupportRequest extends BaseEntity {
     @Column(name = "resolved_at")
     Instant resolvedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "supportRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     List<SupportRequestAttachment> attachments;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "supportRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     List<SupportReply> replies;
 }
