@@ -1,4 +1,4 @@
-package fpt.capstone.service.enums;
+package fpt.capstone.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +22,7 @@ public enum Action {
     CREATE_RIGHT("CREATE_RIGHT"),
     GET_APPLICATIONS("GET_APPLICATIONS"),
     UPDATE_APPLICATION("UPDATE_APPLICATION"),
+    OCR_SCAN("OCR_SCAN"),
     ;
 
     private String action;
