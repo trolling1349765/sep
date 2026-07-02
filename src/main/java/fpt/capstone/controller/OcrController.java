@@ -25,4 +25,9 @@ public class OcrController {
         return ocrService.transformToText(file);
     }
 
+//    @PostMapping("/can-cuoc-cong-dan")
+//    public ResponseEntity<APIResponse> canCuocCongDan(@RequestParam("file") MultipartFile file) {
+//        return ocrService.scanCitizenIdentityCard();
+//    }
+
 }

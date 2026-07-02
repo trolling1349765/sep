@@ -1,13 +1,13 @@
 package fpt.capstone.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fpt.capstone.enums.ApplicationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -25,15 +25,11 @@ public class Application extends BaseEntity {
     int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    User supportedUser;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     User approvedBy;
 
-    @Column(name = "approved_date")
-    LocalDate approvedDate;
+    @Column(name = "approve_date")
+    LocalDate approveDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "policy_id")
@@ -42,20 +38,12 @@ public class Application extends BaseEntity {
     @Column(name = "submit_date")
     LocalDate submitDate;
 
-    @Column(name = "status")
-    String status;
+    @Column(name = "status", columnDefinition = "TEXT")
+    ApplicationStatus status;
 
-    @Column(name = "form_type")
-    String formType;
-
-    @Column(name = "address")
-    String address;
-
-    @Column(name = "support_reason")
-    String supportReason;
-
-    @Column(name = "requested_amount")
-    Double requestedAmount;
+    @JoinColumn(name = "form_type_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    FormType formType;
 
     @OneToOne(mappedBy = "application")
     DecisionDocument decisionDocument;
@@ -63,4 +51,10 @@ public class Application extends BaseEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "application")
     List<AdditionalDocument> additionalDocuments;
+
+    @OneToOne(mappedBy = "application")
+    Benificiary benificiary;
+
+    @OneToOne(mappedBy = "application")
+    Relative relative;
 }

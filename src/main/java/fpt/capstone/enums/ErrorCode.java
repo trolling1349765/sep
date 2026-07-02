@@ -16,6 +16,8 @@ public enum ErrorCode {
     USERNAME_NOT_EXISTED(1006, "User not exists"),
     UNAUTHENTICATED(1007, "Unauthenticated"),
     APPLICATION_NOT_FOUND(1008, "Application not found"),
+    FILE_IO_ERROR(1009, "Cannot access file service"),
+    ARGUMENT_INVALID(10010, "Argument out of range"),
     ;
 
     private int code;

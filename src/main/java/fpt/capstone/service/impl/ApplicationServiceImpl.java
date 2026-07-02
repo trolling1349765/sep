@@ -5,6 +5,7 @@ import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.ApplicationResponse;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.SystemLog;
+import fpt.capstone.enums.ApplicationStatus;
 import fpt.capstone.exceprion.InvalidArgsException;
 import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.repository.ApplicationRepository;
@@ -12,6 +13,7 @@ import fpt.capstone.repository.PolicyRepository;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.SystemLogService;
+import fpt.capstone.service.FormTypeService;
 import fpt.capstone.enums.Action;
 import fpt.capstone.enums.Table;
 import fpt.capstone.util.SecurityUtil;
@@ -29,10 +31,11 @@ import java.time.LocalDateTime;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private final SecurityUtil securityUtil;
-    ApplicationRepository applicationRepository;
-    UserRepository userRepository;
-    PolicyRepository policyRepository;
-    SystemLogService  systemLogService;
+    private final ApplicationRepository applicationRepository;
+    private final UserRepository userRepository;
+    private final PolicyRepository policyRepository;
+    private final SystemLogService  systemLogService;
+    private final FormTypeService formTypeService;
 
     @Override
     public APIResponse<Page<ApplicationResponse>> getAppications(int size, int page) {
@@ -97,16 +100,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         String currentUserId = securityUtil.getCurrentUserId();
 
         Application application = Application.builder()
-                .supportedUser(userRepository.getUserById(request.getSupportedUser()))
                 .approvedBy(userRepository.getUserById(request.getApprovedBy()))
-                .approvedDate(request.getApprovedDate())
+                .approveDate(request.getApprovedDate())
                 .policy(policyRepository.getPolicyById(request.getPolicyId()))
                 .submitDate(request.getSubmitDate())
-                .status(request.getStatus())
-                .formType(request.getFormType())
-                .address(request.getAddress())
-                .supportReason(request.getSupportReason())
-                .requestedAmount(request.getRequestedAmount())
+                .status(ApplicationStatus.valueOf(request.getStatus()))
+                .formType(formTypeService.getFormType(Integer.parseInt(request.getFormType())))
                 .createAt(LocalDate.now())
                 .createBy(currentUserId)
                 .isDelete(false)
@@ -140,16 +139,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 ErrorCode.APPLICATION_NOT_FOUND.getMessage()
         ));
         Application newApplication = Application.builder()
-                .supportedUser(userRepository.getUserById(request.getSupportedUser()))
                 .approvedBy(userRepository.getUserById(request.getApprovedBy()))
-                .approvedDate(request.getApprovedDate())
+                .approveDate(request.getApprovedDate())
                 .policy(policyRepository.getPolicyById(request.getPolicyId()))
                 .submitDate(request.getSubmitDate())
-                .status(request.getStatus())
-                .formType(request.getFormType())
-                .address(request.getAddress())
-                .supportReason(request.getSupportReason())
-                .requestedAmount(request.getRequestedAmount())
+                .status(ApplicationStatus.valueOf(request.getStatus()))
+                .formType(formTypeService.getFormType(Integer.parseInt(request.getFormType())))
                 .updateAt(LocalDate.now())
                 .updateBy(currentUserId)
                 .isDelete(request.isDelete())

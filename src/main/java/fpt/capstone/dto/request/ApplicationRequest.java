@@ -26,14 +26,5 @@ public class ApplicationRequest {
     LocalDate submitDate;
     String status;
     String formType;
-    String address;
-    String supportReason;
-    Double requestedAmount;
-    String identityNumber;
-    Integer decisionDocumentId;
-    LocalDate createdAt;
-    String createdBy;
-    LocalDate updatedAt;
-    LocalDateTime updatedBy;
     boolean isDelete;
 }

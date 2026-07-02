@@ -54,7 +54,7 @@ public class Policy extends BaseEntity{
 
     @JsonIgnore
     @OneToMany(mappedBy = "policy")
-    List<Article> articles;
+    List<Chapter> chapters;
 
     @JsonIgnore
     @OneToMany(mappedBy = "policy")

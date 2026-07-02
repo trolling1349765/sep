@@ -40,7 +40,7 @@ public class ApplicationResponse {
         this.approvedDate = application.getApprovedDate();
         this.policyId = application.getPolicy().getId();
         this.submitDate = application.getSubmitDate();
-        this.status = application.getStatus();
+        this.status = application.getStatus().get();
         this.formType = application.getFormType();
         this.address = application.getAddress();
         this.supportReason = application.getSupportReason();

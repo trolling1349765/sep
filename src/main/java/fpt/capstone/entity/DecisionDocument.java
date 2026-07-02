@@ -16,14 +16,11 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(name = "decision_document")
-public class DecisionDocument extends BaseEntity{
+public class DecisionDocument extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
-
-    @Column(name = "decision_number")
-    String decisionNumber;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id")

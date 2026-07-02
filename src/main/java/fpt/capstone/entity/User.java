@@ -38,10 +38,10 @@ public class User extends BaseEntity {
     @Column(name = "name")
     String name;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email")
     String email;
 
-    @Column(name = "national_id", unique = true, length = 12)
+    @Column(name = "national_id", length = 12)
     String nationalId;
 
     @Column(name = "username")
@@ -91,20 +91,12 @@ public class User extends BaseEntity {
     Boolean nationalIdVerified;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "supportedUser")
-    private List<Application> supportedApplications;
-
-    @JsonIgnore
     @OneToMany(mappedBy = "approvedBy")
-    private List<Application> approvedApplications;
+    List<Application> approvedApplications;
 
     @JsonIgnore
     @OneToMany(mappedBy = "issuer")
     List<DecisionDocument> decisionDocuments;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "user")
-    List<Benificiary> benificiarys;
 
     @JsonIgnore
     @OneToMany(mappedBy = "deliver")
@@ -121,5 +113,5 @@ public class User extends BaseEntity {
     Instant lastLoginAt;
 
     @Column(name = "gender")
-    String gender;
+    boolean gender;
 }

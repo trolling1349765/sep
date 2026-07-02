@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -21,15 +22,17 @@ public class Relative {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "relative")
-    List<Benificiary> benificiary;
+    @Column(name = "ho_ten")
+    String hoTen;
 
-    @Column(name = "name")
-    String name;
+    LocalDate ngaySinh;
+    String CCCD;
+    LocalDate ngayCap;
+    String noiCap;
+    String quanHeVoiNguoiHoatDongCachMang;
 
-    @Column(name = "address")
-    String address;
+    @Column(name = "noi_thuong_tru")
+    String noiThuongTru;
 
     @Column(name = "phone")
     String phone;
@@ -38,5 +41,10 @@ public class Relative {
     String email;
 
     @Column(name = "gender")
-    String gender;
+    boolean gender;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @JoinColumn(name = "application_id")
+    Application application;
 }

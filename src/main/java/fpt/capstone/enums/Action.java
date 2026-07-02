@@ -23,6 +23,7 @@ public enum Action {
     GET_APPLICATIONS("GET_APPLICATIONS"),
     UPDATE_APPLICATION("UPDATE_APPLICATION"),
     OCR_SCAN("OCR_SCAN"),
+    DECISION_CREATE("DECISION_CREATE"),
     ;
 
     private String action;
