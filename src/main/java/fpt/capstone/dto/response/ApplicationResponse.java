@@ -18,16 +18,12 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApplicationResponse {
 
-    String supportedUser;
     String approvedBy;
     LocalDate approvedDate;
     int policyId;
     LocalDate submitDate;
     String status;
     String formType;
-    String address;
-    String supportReason;
-    Double requestedAmount;
     LocalDate createdAt;
     String createdBy;
     LocalDate updatedAt;
@@ -35,16 +31,11 @@ public class ApplicationResponse {
     boolean isDeleted;
 
     public ApplicationResponse(Application application) {
-        this.supportedUser = application.getSupportedUser().getId();
         this.approvedBy = application.getApprovedBy().getId();
-        this.approvedDate = application.getApprovedDate();
         this.policyId = application.getPolicy().getId();
         this.submitDate = application.getSubmitDate();
         this.status = application.getStatus().get();
-        this.formType = application.getFormType();
-        this.address = application.getAddress();
-        this.supportReason = application.getSupportReason();
-        this.requestedAmount = application.getRequestedAmount();
+        this.formType = application.getFormType().getName();
         this.createdAt = application.getCreateAt();
         this.createdBy = application.getCreateBy();
         this.updatedAt = application.getUpdateAt();

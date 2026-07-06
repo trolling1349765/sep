@@ -6,7 +6,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Entity
 @Getter
@@ -22,16 +21,25 @@ public class Relative {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    @Column(name = "ho_ten")
-    String hoTen;
+    @Column(name = "full_name")
+    String fullName;
 
-    LocalDate ngaySinh;
+    @Column(name = "dob")
+    LocalDate dob;
+
+    @Column(name = "cccd")
     String CCCD;
-    LocalDate ngayCap;
-    String noiCap;
-    String quanHeVoiNguoiHoatDongCachMang;
 
-    @Column(name = "noi_thuong_tru")
+    @Column(name = "issued_date")
+    LocalDate issuedDate;
+
+    @Column(name = "issued_place")
+    String issuedPlace;
+
+    @Column(name = "relationship_with_Benificiary")
+    String relationshipWithBenificiary;
+
+    @Column(name = "place_of_residence")
     String noiThuongTru;
 
     @Column(name = "phone")

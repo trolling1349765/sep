@@ -46,67 +46,67 @@ public class Benificiary extends BaseEntity{
     @Column(name = "assistance_amount")
     Double assistanceAmount;
 
-    @Column(name = "ho_ten")
-    String hoTen;
+    @Column(name = "full_name")
+    String fullName;
 
-    @Column(name = "bi_danh")
-    String biDanh;
+    @Column(name = "code_name")
+    String codeName;
 
-    @Column(name = "ngay_sinh")
-    LocalDate ngaySinh;
+    @Column(name = "dob")
+    LocalDate dob;
 
     @Column(name = "cccd")
     String CCCD;
 
-    @Column(name = "ngay_cap")
-    LocalDate ngayCap;
+    @Column(name = "issued_date")
+    LocalDate issuedDate;
 
-    @Column(name = "noi_cap")
-    String noiCap;
+    @Column(name = "issued_place")
+    String issuedPlace;
 
-    @Column(name = "que_quan")
-    String quaQuan;
+    @Column(name = "hometown")
+    String hometown;
 
-    @Column(name = "noi_thuong_tru")
-    String noiThuongTru;
+    @Column(name = "place_of_residence")
+    String placeOfResidence;
 
-    @Column(name = "ngay_vao_dang")
-    LocalDate ngayVaoDang;
+    @Column(name = "join_party_date")
+    LocalDate joinPartyDate;
 
-    @Column(name = "ngay_chinh_thuc")
-    LocalDate ngayChinhThuc;
+    @Column(name = "official_date")
+    LocalDate officialDate;
 
-    @Column(name = "cap_bac")
-    String capBac;
+    @Column(name = "rank")
+    String rank;
 
-    @Column(name = "don_vi")
-    String donVi;
+    @Column(name = "work_unit")
+    String workUnit;
 
-    @Column(name = "bat_dau_hoat_dong_cach_mang")
-    LocalDate batDauHoatDongCachMang;
+    @Column(name = "begin_revolutionary_activities")
+    LocalDate beginRevolutionaryActivities;
 
-    @Column(name = "ket_thuc_hoat_dong_cach_mang")
-    LocalDate ketThucHoatDongCachMang;
+    @Column(name = "end_revolutionary_activities")
+    LocalDate endRevolutionaryActivities;
 
     @OneToMany(mappedBy = "benificiary")
     List<WoundedSoldiers>  woundedSoldiers;
 
-    @Column(name = "ngay_hy_sinh")
-    LocalDate ngayHySinh;
+    @Column(name = "sacrifice_date")
+    LocalDate sacrificeDate;
 
-    @Column(name = "don_vi_khi_hy_sinh")
-    String donViKhiHySinh;
+    @Column(name = "sacrifice_at")
+    String sacrificeAt;
 
-    @Column(name = "cap_bac_khi_hy_sinh")
-    String capBacKhiHySinh;
+    @Column(name = "rank_when_sacrifice")
+    String rankWhenSacrifice;
 
-    @Column(name = "bang_to_quoc_ghi_cong_so")
-    Integer bangToQuocGhiCongSo;
+    @Column(name = "nation_merit_number")
+    Integer nationMeritNumber;
 
-    @Column(name = "so_quyet_dinh_khi_ghi_cong")
-    Integer soQuyetDinhKhiGhiCong;
+    @Column(name = "decision_number_of_merit")
+    Integer decisionNumberOfMerit;
 
-    @Column(name = "ngay_ghi_cong")
-    LocalDate ngayGhiCong;
+    @Column(name = "recognized_date")
+    LocalDate recognizedDate;
 
 }

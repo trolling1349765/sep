@@ -24,14 +24,33 @@ public class WoundedSoldiers extends BaseEntity {
     @JoinColumn(name = "benificiary")
     Benificiary benificiary;
 
-    Integer lanThu;
-    LocalDate ngayNhapNgu;
-    LocalDate ngayXuatngu;
-    String donViKhiBiThuong;
-    LocalDate ngayBiThuong;
-    String capBacKhiBiThuong;
-    String noiBiThuong;
-    String vetThuong;
-    String noiDieuTriSauKhiBiThuong;
-    LocalDate ngayRaVien;
+    @Column(name = "times")
+    Integer times;
+
+    @Column(name = "enlistment_date")
+    LocalDate enlistmentDate;
+
+    @Column(name = "discharge_date")
+    LocalDate dischargeDate;
+
+    @Column(name = "take_dmg_at")
+    String takeDmgAt;
+
+    @Column(name = "take_dmg_date")
+    LocalDate takeDmgDate;
+
+    @Column(name = "rank_when_take_dmg")
+    String rankWhenTakeDmg;
+
+    @Column(name = "injured_area")
+    String injuredArea;
+
+    @Column(name = "wound")
+    String wound;
+
+    @Column(name = "treatment_place")
+    String treatmentPlace;
+
+    @Column(name = "injury_healed_date")
+    LocalDate injuryHealedDate;
 }
