@@ -57,8 +57,8 @@ public class CitizenPortalServiceImpl implements CitizenPortalService {
                         HttpStatus.NOT_FOUND, "Policy not found with id: " + policyId));
 
         List<PolicyDetailResponse.ArticleResponse> articleResponses = new ArrayList<>();
-        if (policy.getArticles() != null) {
-            articleResponses = policy.getArticles().stream()
+        if (policy.getChapters() != null) {
+            articleResponses = policy.getChapters().get(1).getArticles().stream()
                     .map(article -> PolicyDetailResponse.ArticleResponse.builder()
                             .id(article.getId())
                             .articleNo(article.getArticleNo())

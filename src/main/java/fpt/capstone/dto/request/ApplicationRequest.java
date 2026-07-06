@@ -7,8 +7,6 @@ import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
-@Builder
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApplicationRequest {
     Integer id;
@@ -18,5 +16,9 @@ public class ApplicationRequest {
     LocalDate submitDate;
     String status;
     String formType;
-    boolean isDelete;
+    LocalDate createdAt;
+    String createdBy;
+    LocalDate updatedAt;
+    String updatedBy;
+    boolean isDeleted;
 }

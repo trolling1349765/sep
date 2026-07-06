@@ -1,13 +1,7 @@
 package fpt.capstone.config;
 
-import fpt.capstone.entity.Article;
-import fpt.capstone.entity.BenefitRule;
-import fpt.capstone.entity.EligibilityCriteria;
-import fpt.capstone.entity.Policy;
-import fpt.capstone.repository.ArticleRepository;
-import fpt.capstone.repository.BenifitRuleRepository;
-import fpt.capstone.repository.EligibilityCriteriaRepository;
-import fpt.capstone.repository.PolicyRepository;
+import fpt.capstone.entity.*;
+import fpt.capstone.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,15 +15,20 @@ public class DataInitializer implements CommandLineRunner {
         private final ArticleRepository articleRepository;
         private final EligibilityCriteriaRepository eligibilityCriteriaRepository;
         private final BenifitRuleRepository benefitRuleRepository;
+        private final ChapterRepository chapterRepository;
 
-        public DataInitializer(PolicyRepository policyRepository,
-                        ArticleRepository articleRepository,
-                        EligibilityCriteriaRepository eligibilityCriteriaRepository,
-                        BenifitRuleRepository benefitRuleRepository) {
+        public DataInitializer(
+                PolicyRepository policyRepository,
+                ArticleRepository articleRepository,
+                EligibilityCriteriaRepository eligibilityCriteriaRepository,
+                BenifitRuleRepository benefitRuleRepository,
+                ChapterRepository chapterRepository
+        ) {
                 this.policyRepository = policyRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
                 this.benefitRuleRepository = benefitRuleRepository;
+                this.chapterRepository = chapterRepository;
         }
 
         @Override
@@ -53,15 +52,20 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Nghị định này quy định về chế độ trợ cấp xã hội hàng tháng đối với người cao tuổi từ đủ 80 tuổi trở lên không có lương hưu hoặc trợ cấp bảo hiểm xã hội. Mức trợ cấp được tính dựa trên chuẩn nghèo và hệ số theo độ tuổi.")
                                 .build();
                 p1 = policyRepository.save(p1);
-
+                Chapter c1 = Chapter.builder()
+                        .policy(p1)
+                        .title("chapter I")
+                        .build();
+                c1 = chapterRepository.save(c1);
                 articleRepository.save(Article.builder()
-                                .policy(p1).articleNo(1)
+                                .chapter(c1)
+                                .articleNo(1)
                                 .title("Phạm vi điều chỉnh")
                                 .content(
                                                 "Nghị định này quy định về đối tượng, mức hưởng và thủ tục thực hiện trợ cấp xã hội hàng tháng cho người cao tuổi.")
                                 .build());
                 articleRepository.save(Article.builder()
-                                .policy(p1).articleNo(2)
+                                .chapter(c1).articleNo(2)
                                 .title("Đối tượng áp dụng")
                                 .content(
                                                 "Công dân Việt Nam từ đủ 80 tuổi trở lên, không có lương hưu, không có trợ cấp bảo hiểm xã hội hàng tháng và thuộc hộ gia đình có hoàn cảnh khó khăn.")
@@ -100,15 +104,18 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Quy định về chính sách hỗ trợ nuôi dưỡng, học tập và chăm sóc sức khỏe đối với trẻ em mồ côi cả cha lẫn mẹ, trẻ em bị bỏ rơi dưới 16 tuổi.")
                                 .build();
                 p2 = policyRepository.save(p2);
-
+                Chapter c2 = Chapter.builder()
+                        .policy(p2)
+                        .title("chapter I")
+                        .build();
                 articleRepository.save(Article.builder()
-                                .policy(p2).articleNo(1)
+                                .chapter(c2).articleNo(1)
                                 .title("Đối tượng thụ hưởng")
                                 .content(
                                                 "Trẻ em dưới 16 tuổi mồ côi cả cha và mẹ, trẻ em bị bỏ rơi, trẻ em không nơi nương tựa đang được nuôi dưỡng tại các cơ sở bảo trợ xã hội.")
                                 .build());
                 articleRepository.save(Article.builder()
-                                .policy(p2).articleNo(2)
+                                .chapter(c2).articleNo(2)
                                 .title("Mức hỗ trợ")
                                 .content(
                                                 "Mức hỗ trợ nuôi dưỡng hàng tháng bằng 2,5 lần chuẩn trợ giúp xã hội. Hỗ trợ học phí và chi phí học tập theo quy định của pháp luật về giáo dục.")
@@ -142,15 +149,19 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Thông tư này hướng dẫn thực hiện chính sách hỗ trợ đào tạo nghề và tạo việc làm cho người khuyết tật, bao gồm hỗ trợ học phí, chi phí sinh hoạt và hỗ trợ sau đào tạo.")
                                 .build();
                 p3 = policyRepository.save(p3);
-
+                Chapter c3 = Chapter.builder()
+                                .policy(p3)
+                                .title("Chapter I")
+                                .build();
+                c3 = chapterRepository.save(c3);
                 articleRepository.save(Article.builder()
-                                .policy(p3).articleNo(1)
+                                .chapter(c3).articleNo(1)
                                 .title("Nguyên tắc hỗ trợ")
                                 .content(
                                                 "Người khuyết tật được hỗ trợ đào tạo nghề phù hợp với khả năng và nhu cầu. Mức hỗ trợ tối đa không quá 12 tháng cho mỗi khóa học.")
                                 .build());
                 articleRepository.save(Article.builder()
-                                .policy(p3).articleNo(2)
+                                .chapter(c3).articleNo(2)
                                 .title("Mức hỗ trợ")
                                 .content(
                                                 "Hỗ trợ 100% học phí đào tạo nghề. Hỗ trợ tiền ăn hàng ngày bằng 0.5 mức lương cơ sở. Hỗ trợ phương tiện đi lại tối đa 300.000 VNĐ/tháng.")
@@ -183,9 +194,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Quyết định này quy định về mức hỗ trợ khẩn cấp đối với hộ gia đình bị thiệt hại do thiên tai, bao gồm hỗ trợ lương thực, nước uống, nhu yếu phẩm và hỗ trợ sửa chữa nhà ở.")
                                 .build();
                 p4 = policyRepository.save(p4);
-
+                Chapter c4 = Chapter.builder()
+                        .policy(p4)
+                        .title("Chapter I")
+                        .build();
+                c4 = chapterRepository.save(c4);
                 articleRepository.save(Article.builder()
-                                .policy(p4).articleNo(1)
+                                .chapter(c4).articleNo(1)
                                 .title("Đối tượng hỗ trợ")
                                 .content("Hộ gia đình bị thiệt hại về người, tài sản do thiên tai gây ra, có xác nhận của UBND cấp xã.")
                                 .build());
@@ -217,9 +232,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Nghị định quy định về việc ngân sách nhà nước hỗ trợ 100% mức đóng bảo hiểm y tế cho người thuộc hộ nghèo, và hỗ trợ 70% cho người thuộc hộ cận nghèo theo chuẩn nghèo đa chiều.")
                                 .build();
                 p5 = policyRepository.save(p5);
-
+                Chapter c5 = Chapter.builder()
+                        .policy(p5)
+                        .title("Chapter I")
+                        .build();
+                c5 = chapterRepository.save(c5);
                 articleRepository.save(Article.builder()
-                                .policy(p5).articleNo(1)
+                                .chapter(c5).articleNo(1)
                                 .title("Đối tượng")
                                 .content(
                                                 "Người thuộc hộ nghèo, hộ cận nghèo theo chuẩn nghèo đa chiều quốc gia. Người dân tộc thiểu số đang sinh sống tại vùng có điều kiện kinh tế - xã hội đặc biệt khó khăn.")
@@ -258,9 +277,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Quyết định về chính sách hỗ trợ xây dựng, sửa chữa nhà ở đối với người có công với cách mạng và thân nhân liệt sĩ đang gặp khó khăn về nhà ở.")
                                 .build();
                 p6 = policyRepository.save(p6);
-
+                Chapter c6 = Chapter.builder()
+                        .policy(p6)
+                        .title("Chapter I")
+                        .build();
+                c6 = chapterRepository.save(c6);
                 articleRepository.save(Article.builder()
-                                .policy(p6).articleNo(1)
+                                .chapter(c6).articleNo(1)
                                 .title("Đối tượng")
                                 .content(
                                                 "Người hoạt động cách mạng trước năm 1945, người hoạt động cách mạng từ năm 1945 đến trước Tổng khởi nghĩa tháng 8/1945, thân nhân liệt sĩ đang hưởng trợ cấp hàng tháng.")
@@ -293,9 +316,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Nghị định quy định về việc miễn học phí cho học sinh tiểu học công lập trên toàn quốc, giảm học phí cho học sinh trung học cơ sở thuộc hộ nghèo, hộ cận nghèo.")
                                 .build();
                 p7 = policyRepository.save(p7);
-
+                Chapter c7 = Chapter.builder()
+                        .policy(p7)
+                        .title("Chapter I")
+                        .build();
+                c7 = chapterRepository.save(c7);
                 articleRepository.save(Article.builder()
-                                .policy(p7).articleNo(1)
+                                .chapter(c7).articleNo(1)
                                 .title("Miễn học phí")
                                 .content(
                                                 "Học sinh tiểu học trường công lập được miễn 100% học phí. Học sinh trung học cơ sở thuộc hộ nghèo được giảm 70% học phí.")
@@ -328,9 +355,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Thông tư hướng dẫn thực hiện hỗ trợ chi phí mai táng cho người thuộc hộ nghèo, người già cô đơn không nơi nương tựa khi qua đời.")
                                 .build();
                 p8 = policyRepository.save(p8);
-
+                Chapter c8 = Chapter.builder()
+                        .policy(p8)
+                        .title("Chapter I")
+                        .build();
+                c8 = chapterRepository.save(c8);
                 articleRepository.save(Article.builder()
-                                .policy(p8).articleNo(1)
+                                .chapter(c8).articleNo(1)
                                 .title("Mức hỗ trợ")
                                 .content(
                                                 "Mức hỗ trợ mai táng phí bằng 20 lần mức chuẩn trợ giúp xã hội áp dụng tại thời điểm đề nghị hỗ trợ.")
@@ -363,9 +394,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Quyết định về chính sách hỗ trợ thai sản cho lao động nữ làm việc trong khu vực phi chính thức, không tham gia bảo hiểm xã hội bắt buộc, bao gồm trợ cấp một lần khi sinh con.")
                                 .build();
                 p9 = policyRepository.save(p9);
-
+                Chapter c9 = Chapter.builder()
+                        .policy(p9)
+                        .title("Chapter I")
+                        .build();
+                c9 = chapterRepository.save(c9);
                 articleRepository.save(Article.builder()
-                                .policy(p9).articleNo(1)
+                                .chapter(c9).articleNo(1)
                                 .title("Điều kiện hưởng")
                                 .content(
                                                 "Lao động nữ thuộc hộ nghèo hoặc cận nghèo, không tham gia BHXH bắt buộc, sinh con trong thời gian áp dụng chính sách.")
@@ -398,9 +433,13 @@ public class DataInitializer implements CommandLineRunner {
                                                 "Quyết định về chính sách hỗ trợ lắp đặt hệ thống nước sạch, xây dựng công trình vệ sinh cho hộ gia đình nghèo, cận nghèo tại các xã nông thôn vùng khó khăn.")
                                 .build();
                 p10 = policyRepository.save(p10);
-
+                Chapter c10 = Chapter.builder()
+                        .policy(p10)
+                        .title("Chapter I")
+                        .build();
+                c10 = chapterRepository.save(c10);
                 articleRepository.save(Article.builder()
-                                .policy(p10).articleNo(1)
+                                .chapter(c10).articleNo(1)
                                 .title("Hỗ trợ")
                                 .content(
                                                 "Mỗi hộ gia đình được hỗ trợ tối đa 5 triệu VNĐ để lắp đặt hệ thống nước sạch và công trình vệ sinh đạt chuẩn.")

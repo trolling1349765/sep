@@ -14,21 +14,21 @@ import org.springframework.web.bind.annotation.*;
 public class BenificiaryController {
     private final BenificiaryService benificiaryService;
 
-    @PostMapping
-    public APIResponse<BenificiaryResponse> createBenificiary(@RequestBody Benificiary benificiary) {
-        return benificiaryService.createBenificiary(benificiary);
-    }
-
-    @GetMapping
-    public APIResponse<Page<BenificiaryResponse>> getBenificiary(
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "0") int page
-    ) {
-        return benificiaryService.getBenificiary(size, page);
-    }
-
-    @GetMapping("/{id}")
-    public APIResponse<BenificiaryResponse> getBenificiary(@PathVariable int id) {
-        return benificiaryService.getBenificiary(id);
-    }
+//    @PostMapping
+//    public APIResponse<BenificiaryResponse> createBenificiary(@RequestBody Benificiary benificiary) {
+//        return benificiaryService.createBenificiary(benificiary);
+//    }
+//
+//    @GetMapping
+//    public APIResponse<Page<BenificiaryResponse>> getBenificiary(
+//            @RequestParam(defaultValue = "20") int size,
+//            @RequestParam(defaultValue = "0") int page
+//    ) {
+//        return benificiaryService.getBenificiary(size, page);
+//    }
+//
+//    @GetMapping("/{id}")
+//    public APIResponse<BenificiaryResponse> getBenificiary(@PathVariable int id) {
+//        return benificiaryService.getBenificiary(id);
+//    }
 }

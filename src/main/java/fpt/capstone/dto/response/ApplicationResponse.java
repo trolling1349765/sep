@@ -18,6 +18,7 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApplicationResponse {
 
+    int id;
     String approvedBy;
     LocalDate approvedDate;
     int policyId;
@@ -31,6 +32,7 @@ public class ApplicationResponse {
     boolean isDeleted;
 
     public ApplicationResponse(Application application) {
+        this.id = application.getId();
         this.approvedBy = application.getApprovedBy().getId();
         this.policyId = application.getPolicy().getId();
         this.submitDate = application.getSubmitDate();

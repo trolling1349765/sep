@@ -17,7 +17,6 @@ import java.time.LocalDate;
 public class DecisionDocumentResponse {
 
     int id;
-    int decisionNumber;
     int applicationId;
     String issuer;
     LocalDate issueDate;
@@ -26,7 +25,6 @@ public class DecisionDocumentResponse {
 
     public DecisionDocumentResponse(DecisionDocument decisionDocument) {
         this.id = decisionDocument.getId();
-        this.decisionNumber = decisionDocument.getDecisionNumber();
         this.applicationId = decisionDocument.getApplication().getId();
         this.issuer = decisionDocument.getIssuer().getId();
         this.issueDate = decisionDocument.getIssueDate();

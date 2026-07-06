@@ -21,7 +21,7 @@ public class WoundedSoldiers extends BaseEntity {
     int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "benificiary")
+    @JoinColumn(name = "benificiary_id")
     Benificiary benificiary;
 
     @Column(name = "times")

@@ -95,6 +95,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public Application getApplicationById(int id) {
+        Application application = applicationRepository.findById(id).orElse(null);
+        return application;
+    }
+
+    @Override
     public APIResponse<ApplicationResponse> createApplication(ApplicationRequest request) {
 
         String currentUserId = securityUtil.getCurrentUserId();
@@ -147,7 +153,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .formType(formTypeService.getFormType(Integer.parseInt(request.getFormType())))
                 .updateAt(LocalDate.now())
                 .updateBy(currentUserId)
-                .isDelete(request.isDelete())
+                .isDelete(request.isDeleted())
                 .build();
 
         newApplication = applicationRepository.save(newApplication);

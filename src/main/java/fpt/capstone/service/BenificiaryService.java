@@ -1,5 +1,6 @@
 package fpt.capstone.service;
 
+import fpt.capstone.dto.request.BenificiaryRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.BenificiaryResponse;
 import fpt.capstone.entity.Benificiary;
@@ -10,5 +11,5 @@ public interface BenificiaryService {
 
     APIResponse<Page<BenificiaryResponse>> getBenificiary(int size, int page);
 
-    APIResponse<BenificiaryResponse> createBenificiary(Benificiary benificiary);
+    APIResponse<BenificiaryResponse> createBenificiary(BenificiaryRequest benificiaryRequest);
 }
