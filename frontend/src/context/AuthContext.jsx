@@ -52,8 +52,13 @@ export function AuthProvider({ children }) {
         }, { withCredentials: true });
 
         if (response.data?.code === 200 && response.data?.data) {
-            setUser(response.data.data);
-            return { success: true };
+            const userData = response.data.data;
+            setUser(userData);
+            return {
+                success: true,
+                user: userData,
+                role: userData.role || userData?.user?.role,
+            };
         }
         return { success: false, message: response.data?.message };
     };

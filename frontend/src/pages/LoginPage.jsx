@@ -29,9 +29,14 @@ export default function LoginPage() {
         try {
             const result = await login(nationalId, password);
             if (result.success) {
-                navigate('/');
+                const userRole = result.role || result.user?.role || result.user?.data?.role;
+                if (userRole === 'OFF1') {
+                    navigate('/application/receipt');
+                } else {
+                    navigate('/');
+                }
             } else {
-                setError(result.message || 'Login failed. Please try again.');
+                setError(result.message || 'Đăng nhập thất bại. Xin vui lòng thử lại sau.');
             }
         } catch (err) {
             const msg = err.response?.data?.message || err.message || 'An error occurred.';
