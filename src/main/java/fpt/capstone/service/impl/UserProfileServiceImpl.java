@@ -3,6 +3,7 @@ package fpt.capstone.service.impl;
 import fpt.capstone.dto.request.UpdateProfileRequest;
 import fpt.capstone.dto.response.UserProfileResponse;
 import fpt.capstone.entity.User;
+import fpt.capstone.enums.RoleName;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 @Slf4j
 public class UserProfileServiceImpl implements UserProfileService {
+
+    private static final String CITIZEN_ROLE = RoleName.CONG_DAN.name();
 
     private final UserRepository userRepository;
 
@@ -36,7 +39,37 @@ public class UserProfileServiceImpl implements UserProfileService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
 
-        // Name is read-only - cannot be changed here
+        // Only users with role "Công dân" can update their profile
+        String roleName = user.getRole() != null ? user.getRole().getName() : "";
+        if (!CITIZEN_ROLE.equals(roleName)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Only citizens (Công dân) can update their profile.");
+        }
+
+        // Update name
+        if (request.getName() != null) {
+            user.setName(request.getName().trim());
+        }
+
+        // Update national ID
+        if (request.getNationalId() != null) {
+            user.setNationalId(request.getNationalId().trim());
+        }
+
+        // Update date of birth
+        if (request.getDob() != null) {
+            user.setDob(request.getDob());
+        }
+
+        // Update email
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail().trim().toLowerCase());
+        }
+
+        // Update gender
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
 
         // Update phone
         if (request.getPhone() != null) {

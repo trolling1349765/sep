@@ -128,12 +128,14 @@ export default function ProfilePage() {
 
                 {/* Navigation buttons */}
                 <div style={styles.actions}>
-                    <button
-                        onClick={() => navigate('/profile/update')}
-                        style={styles.primaryButton}
-                    >
-                        Update Profile
-                    </button>
+                    {profile.role === 'CONG_DAN' && (
+                        <button
+                            onClick={() => navigate('/profile/update')}
+                            style={styles.primaryButton}
+                        >
+                            Update Profile
+                        </button>
+                    )}
                     <button
                         onClick={() => navigate('/profile/change-password')}
                         style={styles.secondaryButton}

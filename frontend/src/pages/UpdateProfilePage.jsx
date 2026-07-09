@@ -33,6 +33,8 @@ export default function UpdateProfilePage() {
     const [name, setName] = useState('');
     const [nationalId, setNationalId] = useState('');
     const [dob, setDob] = useState('');
+    const [email, setEmail] = useState('');
+    const [gender, setGender] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [error, setError] = useState('');
@@ -40,6 +42,7 @@ export default function UpdateProfilePage() {
     const [submitting, setSubmitting] = useState(false);
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [apiError, setApiError] = useState(false);
+    const [profileRole, setProfileRole] = useState('');
 
     // 2-tier: Province -> Ward
     const [provinces, setProvinces] = useState([]);
@@ -111,9 +114,12 @@ export default function UpdateProfilePage() {
         try {
             const data = await fetchProfile();
             if (data) {
+                setProfileRole(data.role || '');
                 setName(data.name || '');
                 setNationalId(data.nationalId || '');
                 setDob(data.dob || '');
+                setEmail(data.email || '');
+                setGender(data.gender !== undefined && data.gender !== null ? String(data.gender) : '');
                 setPhone(data.phone || '');
                 setAddress(data.address || data.fullAddress || '');
                 setSpecificAddress(data.specificAddress || '');
@@ -143,6 +149,10 @@ export default function UpdateProfilePage() {
                 }
                 originalRef.current = {
                     name: data.name || '',
+                    nationalId: data.nationalId || '',
+                    dob: data.dob || '',
+                    email: data.email || '',
+                    gender: data.gender !== undefined && data.gender !== null ? String(data.gender) : '',
                     phone: data.phone || '',
                     address: data.address || data.fullAddress || '',
                     provinceCode: data.provinceCode || '',
@@ -161,17 +171,29 @@ export default function UpdateProfilePage() {
     const phoneRegex = /^(0[0-9]{9}|\+84[0-9]{9})$/;
     const phoneValid = phone.length === 0 || phoneRegex.test(phone);
 
-    // Name validation (read-only display)
+    // Validate email format (basic)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailValid = email.length === 0 || emailRegex.test(email);
+
+    // Name validation
     const nameValid = name.trim().length > 0;
 
     // Dirty checking
+    const isCitizen = profileRole === 'CONG_DAN';
     const original = originalRef.current || {};
-    const isDirty = phone !== original.phone
+    const isDirty = isCitizen && (
+        name !== original.name
+        || nationalId !== original.nationalId
+        || dob !== original.dob
+        || email !== original.email
+        || gender !== original.gender
+        || phone !== original.phone
         || selectedProvince !== original.provinceCode
         || selectedWard !== original.wardCode
-        || specificAddress !== original.specificAddress;
+        || specificAddress !== original.specificAddress
+    );
 
-    const formValid = nameValid && phoneValid && isDirty;
+    const formValid = isCitizen && nameValid && phoneValid && emailValid && isDirty;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -183,6 +205,11 @@ export default function UpdateProfilePage() {
         setSubmitting(true);
         try {
             const result = await updateProfile({
+                name: name.trim() || null,
+                nationalId: nationalId.trim() || null,
+                dob: dob || null,
+                email: email.trim().toLowerCase() || null,
+                gender: gender === '' ? null : gender === 'true',
                 phone: phone.trim() || null,
                 provinceCode: selectedProvince || null,
                 provinceName: selectedProvinceName || null,
@@ -194,6 +221,10 @@ export default function UpdateProfilePage() {
                 setSuccess('Profile updated successfully.');
                 originalRef.current = {
                     name: name.trim(),
+                    nationalId: nationalId.trim(),
+                    dob: dob,
+                    email: email.trim().toLowerCase(),
+                    gender: gender,
                     phone: phone.trim() || '',
                     address: address.trim() || '',
                     provinceCode: selectedProvince || '',
@@ -221,6 +252,23 @@ export default function UpdateProfilePage() {
         );
     }
 
+    // If not a citizen, show restricted message
+    if (!isCitizen) {
+        return (
+            <div style={styles.container}>
+                <div style={styles.card}>
+                    <h1 style={styles.title}>Update Profile</h1>
+                    <div style={styles.warning}>
+                        You do not have permission to edit profile. Only users with role "Công dân" can update their profile information.
+                    </div>
+                    <div style={styles.links}>
+                        <Link to="/profile" style={styles.link}>Back to Profile</Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div style={styles.container}>
             <div style={styles.card}>
@@ -235,55 +283,85 @@ export default function UpdateProfilePage() {
                 {success && <div style={styles.success}>{success}</div>}
 
                 <form onSubmit={handleSubmit}>
-                    {/* Name (read-only) */}
+                    {/* Name */}
                     <div style={styles.field}>
                         <label htmlFor="name" style={styles.label}>Full Name</label>
                         <input
                             id="name"
                             type="text"
                             value={name}
-                            disabled
-                            style={{ ...styles.input, ...styles.inputDisabled }}
+                            onChange={(e) => setName(e.target.value)}
+                            style={{
+                                ...styles.input,
+                                borderColor: name.length > 0 && !nameValid ? '#d32f2f' : '#ddd',
+                            }}
+                            placeholder="Enter your full name"
+                            autoComplete="name"
                         />
-                        <span style={styles.helpText}>Name cannot be changed. Contact an officer to update.</span>
+                        {name.length > 0 && !nameValid && (
+                            <span style={styles.inlineError}>Name cannot be empty.</span>
+                        )}
                     </div>
 
-                    {/* National ID (read-only) */}
+                    {/* National ID */}
                     <div style={styles.field}>
                         <label htmlFor="nationalId" style={styles.label}>National ID</label>
                         <input
                             id="nationalId"
                             type="text"
                             value={nationalId}
-                            disabled
-                            style={{ ...styles.input, ...styles.inputDisabled }}
+                            onChange={(e) => setNationalId(e.target.value)}
+                            style={styles.input}
+                            placeholder="Enter your national ID"
+                            autoComplete="off"
                         />
                     </div>
 
-                    {/* Date of Birth (read-only) */}
+                    {/* Date of Birth */}
                     <div style={styles.field}>
                         <label htmlFor="dob" style={styles.label}>Date of Birth</label>
                         <input
                             id="dob"
-                            type="text"
-                            value={dob ? `${dob}` : ''}
-                            disabled
-                            style={{ ...styles.input, ...styles.inputDisabled }}
+                            type="date"
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            style={styles.input}
                         />
-                        <span style={styles.helpText}>Date of birth cannot be changed here.</span>
                     </div>
 
-                    {/* Email (disabled) */}
+                    {/* Email */}
                     <div style={styles.field}>
                         <label htmlFor="email" style={styles.label}>Email</label>
                         <input
                             id="email"
                             type="email"
-                            value={user?.email || ''}
-                            disabled
-                            style={{ ...styles.input, ...styles.inputDisabled }}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            style={{
+                                ...styles.input,
+                                borderColor: email.length > 0 && !emailValid ? '#d32f2f' : '#ddd',
+                            }}
+                            placeholder="Enter your email"
+                            autoComplete="email"
                         />
-                        <span style={styles.helpText}>Email cannot be changed here.</span>
+                        {email.length > 0 && !emailValid && (
+                            <span style={styles.inlineError}>Please enter a valid email address.</span>
+                        )}
+                    </div>
+
+                    {/* Gender */}
+                    <div style={styles.field}>
+                        <label htmlFor="gender" style={styles.label}>Gender</label>
+                        <select
+                            id="gender"
+                            value={gender}
+                            onChange={(e) => setGender(e.target.value)}
+                            style={styles.input}
+                        >
+                            <option value="">-- Select Gender --</option>
+                            <option value="false">Female</option>
+                            <option value="true">Male</option>
+                        </select>
                     </div>
 
                     {/* Phone */}
