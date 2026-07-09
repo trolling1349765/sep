@@ -1,5 +1,6 @@
 package fpt.capstone.service.impl;
 
+import com.wf.captcha.SpecCaptcha;
 import fpt.capstone.dto.request.ChangePasswordRequest;
 import fpt.capstone.dto.request.LoginRequest;
 import fpt.capstone.dto.request.PasswordResetConfirmRequest;
@@ -18,12 +19,16 @@ import fpt.capstone.service.PasswordChangeRateLimiterService;
 import fpt.capstone.service.RateLimiterService;
 import fpt.capstone.service.RegistrationRateLimiterService;
 import fpt.capstone.util.JwtUtil;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +37,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -52,6 +56,10 @@ public class AuthServiceImpl implements AuthService {
     private final AccountLockService accountLockService;
     private final PasswordChangeRateLimiterService passwordChangeRateLimiterService;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender mailSender;
+
+    @Value("${auth.captcha.expiration-minutes:5}")
+    private int captchaExpirationMinutes;
 
     private static final String ACCESS_TOKEN_COOKIE = "access_token";
     private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
@@ -59,6 +67,27 @@ public class AuthServiceImpl implements AuthService {
     private static final int MIN_PASSWORD_LENGTH = 8;
     private static final int MAX_PASSWORD_LENGTH = 128;
     private static final int MIN_AGE = 15;
+
+    @Override
+    public void generateCaptcha(HttpServletResponse response, Map<String, String> captchaStore) throws Exception {
+        // Generate captcha: 4 characters, width=130, height=48
+        SpecCaptcha captcha = new SpecCaptcha(130, 48, 4);
+        String captchaId = UUID.randomUUID().toString();
+        String captchaCode = captcha.text().toLowerCase();
+
+        // Store in map (controller's captchaStore)
+        captchaStore.put(captchaId, captchaCode);
+
+        // Set response headers
+        response.setHeader("Captcha-Id", captchaId);
+        response.setContentType("image/png");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        // Write image to response output stream
+        captcha.out(response.getOutputStream());
+    }
 
     @Override
     @Transactional
@@ -87,10 +116,10 @@ public class AuthServiceImpl implements AuthService {
             HttpServletResponse httpResponse) {
         String fullName = request.getFullName().trim();
         String email = request.getEmail().toLowerCase().trim();
-        String nationalId = request.getNationalId().trim();
         String phone = request.getPhone().trim();
         String password = request.getPassword();
         String passwordConfirmation = request.getPasswordConfirmation();
+        LocalDate dob = request.getDateOfBirth();
 
         // Validate password match
         if (!password.equals(passwordConfirmation)) {
@@ -101,51 +130,40 @@ public class AuthServiceImpl implements AuthService {
         validatePassword(password);
 
         // Validate age (minimum 15 years)
-        LocalDate dob;
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            dob = LocalDate.parse(request.getDateOfBirth(), formatter);
-        } catch (DateTimeParseException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Invalid date of birth format. Use DD/MM/YYYY.");
+        if (dob == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date of birth is required.");
         }
-
         int age = Period.between(dob, LocalDate.now()).getYears();
         if (age < MIN_AGE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "You must be at least " + MIN_AGE + " years old to register.");
         }
 
-        // Check duplicate nationalId or email (BR-02)
-        if (userRepository.existsByEmail(email) || userRepository.existsByNationalId(nationalId)) {
-            log.info("Registration attempt with existing email or nationalId: {}", email);
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "National ID or email already exists."); // MSG-01
+        // Check duplicate email or phone
+        if (userRepository.existsByEmail(email)) {
+            log.info("Registration attempt with existing email: {}", email);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists.");
+        }
+        if (userRepository.existsByPhone(phone)) {
+            log.info("Registration attempt with existing phone: {}", phone);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Phone number already exists.");
         }
 
         User user = new User();
         user.setName(fullName);
         user.setEmail(email);
-        user.setNationalId(nationalId);
         user.setPhone(phone);
         user.setDob(dob);
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(email);
         user.setNationalIdVerified(false);
 
-        // Address fields (optional)
-        user.setProvinceCode(request.getProvinceCode());
-        user.setProvinceName(request.getProvinceName());
-        user.setWardCode(request.getWardCode());
-        user.setWardName(request.getWardName());
-        user.setSpecificAddress(request.getSpecificAddress());
-
-        Role defaultRole = roleRepository.findById(2);//.orElse(null)
+        Role defaultRole = roleRepository.findById(2);
         user.setRole(defaultRole);
 
         userRepository.save(user);
 
-        log.info("User registered successfully: {} (National ID: {})", email, nationalId);
+        log.info("User registered successfully: {} (Phone: {})", email, phone);
 
         String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail());
         String refreshTokenValue = UUID.randomUUID().toString();
@@ -181,13 +199,17 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "Too many login attempts. Retry after " + rateLimit.retryAfterSeconds() + " seconds.");
         }
-        String nationalId = request.getNationalId().trim();
 
-        User user = userRepository.findUserByNationalId(nationalId);
+        String login = request.getLogin().trim();
+
+        // Find user by email or phone
+        User user = userRepository.findUserByEmail(login);
         if (user == null) {
-            // Generic error message (MSG-05) - don't reveal which field is wrong
+            user = userRepository.findUserByPhone(login);
+        }
+        if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Incorrect username or password. Please check again.");
+                    "Incorrect email/phone or password. Please check again.");
         }
 
         if (accountLockService.isAccountLocked(user)) {
@@ -199,9 +221,8 @@ public class AuthServiceImpl implements AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             accountLockService.recordFailedAttempt(user);
-            // Generic error message (MSG-05)
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "Incorrect username or password. Please check again.");
+                    "Incorrect email/phone or password. Please check again.");
         }
 
         accountLockService.resetFailedAttempts(user);
@@ -229,8 +250,6 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponse.fromUser(user, accessTokenExpiry);
     }
 
-    // ... rest of the methods remain the same (refresh, logout, changePassword,
-    // etc.)
     @Override
     @Transactional
     public LoginResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
@@ -361,7 +380,46 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode("RESET_" + resetToken + "_" + user.getId()));
         userRepository.save(user);
 
-        log.warn("Password reset token for {}: {}", email, resetToken);
+        // Send email with reset token
+        try {
+            sendPasswordResetEmail(email, resetToken);
+            log.info("Password reset email sent to: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to {}: {}", email, e.getMessage());
+            // Still return success to not reveal if email exists
+        }
+    }
+
+    private void sendPasswordResetEmail(String toEmail, String resetToken) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("lucvthe173096@fpt.edu.vn");
+            helper.setTo(toEmail);
+            helper.setSubject("Password Reset Request - Social Policy Portal");
+
+            String emailContent = """
+                    <html>
+                    <body style="font-family: Arial, sans-serif; padding: 20px;">
+                        <h2>Password Reset Request</h2>
+                        <p>You have requested to reset your password. Use the token below to complete the process:</p>
+                        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center;">
+                            <strong style="font-size: 18px; color: #1976d2;">%s</strong>
+                        </div>
+                        <p>Enter this token on the password reset page along with your new password.</p>
+                        <p>If you did not request this, please ignore this email.</p>
+                        <hr>
+                        <p style="color: #666; font-size: 12px;">This is an automated message from the Social Policy Portal.</p>
+                    </body>
+                    </html>
+                    """
+                    .formatted(resetToken);
+
+            helper.setText(emailContent, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -462,7 +520,7 @@ public class AuthServiceImpl implements AuthService {
     private void setCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // Set to true in production with HTTPS
+        cookie.setSecure(false);
         cookie.setPath("/");
         cookie.setMaxAge(maxAgeSeconds);
         cookie.setAttribute("SameSite", "Strict");

@@ -14,9 +14,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,6 +29,18 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+
+    // In-memory captcha store: captchaId -> captchaCode
+    private final Map<String, String> captchaStore = new ConcurrentHashMap<>();
+
+    @GetMapping("/captcha")
+    public void getCaptcha(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            authService.generateCaptcha(response, captchaStore);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate captcha");
+        }
+    }
 
     @PostMapping("/register")
     public ResponseEntity<APIResponse<LoginResponse>> register(
@@ -64,7 +80,17 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
         try {
-            System.out.println("===DA VAO CONTROLLER===");
+            // Validate captcha
+            String storedCode = captchaStore.remove(request.getCaptchaId());
+            if (storedCode == null) {
+                return ResponseEntity.badRequest()
+                        .body(APIResponse.error(400, "Captcha expired or invalid. Please refresh and try again."));
+            }
+            if (!storedCode.equalsIgnoreCase(request.getCaptchaCode())) {
+                return ResponseEntity.badRequest()
+                        .body(APIResponse.error(400, "Incorrect captcha code. Please try again."));
+            }
+
             LoginResponse result = authService.login(request, httpRequest, httpResponse);
             return ResponseEntity.ok(APIResponse.success("Login successful", result));
         } catch (ResponseStatusException e) {
@@ -123,7 +149,7 @@ public class AuthController {
             @Valid @RequestBody PasswordResetRequest request) {
         authService.requestPasswordReset(request);
         return ResponseEntity.ok(APIResponse.success(
-                "If the email exists, a reset token has been generated.", null));
+                "If the email exists, a reset link has been sent to your email.", null));
     }
 
     @PostMapping("/password-reset/confirm")

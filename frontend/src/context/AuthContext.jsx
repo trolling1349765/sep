@@ -45,10 +45,12 @@ export function AuthProvider({ children }) {
         };
     };
 
-    const login = async (nationalId, password) => {
+    const login = async (login, password, captchaId, captchaCode) => {
         const response = await apiClient.post('/auth/login', {
-            nationalId: nationalId.trim(),
+            login: login.trim(),
             password,
+            captchaId,
+            captchaCode,
         }, { withCredentials: true });
 
         if (response.data?.code === 200 && response.data?.data) {

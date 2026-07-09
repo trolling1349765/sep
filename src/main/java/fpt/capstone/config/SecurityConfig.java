@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/capstone/auth/captcha").permitAll()
                         .requestMatchers(HttpMethod.POST, "/capstone/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/capstone/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/capstone/auth/refresh").permitAll()

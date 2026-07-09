@@ -1,16 +1,24 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/client';
 
 export default function LoginPage() {
     const { login, requestPasswordReset, confirmPasswordReset } = useAuth();
     const navigate = useNavigate();
 
-    const [nationalId, setNationalId] = useState('');
+    const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Captcha state
+    const [captchaId, setCaptchaId] = useState('');
+    const [captchaCode, setCaptchaCode] = useState('');
+    const [captchaSrc, setCaptchaSrc] = useState('');
+    const captchaTimestampRef = useRef(0);
+
+    // Forgot password state
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [resetEmail, setResetEmail] = useState('');
     const [resetSent, setResetSent] = useState(false);
@@ -18,24 +26,75 @@ export default function LoginPage() {
     const [newPassword, setNewPassword] = useState('');
     const [resetSuccess, setResetSuccess] = useState(false);
 
+    // Captcha base URL
+    const CAPTCHA_BASE = '/api/auth/captcha';
+
+    const loadCaptcha = () => {
+        const ts = Date.now();
+        captchaTimestampRef.current = ts;
+        setCaptchaSrc(`${CAPTCHA_BASE}?_t=${ts}`);
+        setCaptchaCode('');
+    };
+
+    useEffect(() => {
+        loadCaptcha();
+    }, []);
+
+    const handleCaptchaImageLoad = (e) => {
+        const captchaIdHeader = e.target?.getAttribute('data-captcha-id');
+        // We'll get captchaId from response headers via a separate fetch
+        setCaptchaId(captchaIdHeader || '');
+    };
+
+    // Better approach: fetch captcha via API and get Captcha-Id header
+    const fetchCaptcha = async () => {
+        try {
+            const response = await fetch(CAPTCHA_BASE + '?_t=' + Date.now());
+            const captchaIdHeader = response.headers.get('Captcha-Id');
+            if (captchaIdHeader) {
+                setCaptchaId(captchaIdHeader);
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            setCaptchaSrc(url);
+        } catch (err) {
+            console.error('Failed to load captcha:', err);
+        }
+    };
+
+    // Override initial load with proper fetch
+    useEffect(() => {
+        fetchCaptcha();
+    }, []);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
-        if (!nationalId || !password) {
-            setError('National ID and password are required.');
+        if (!loginId || !password) {
+            setError('Email/Phone and password are required.');
+            return;
+        }
+        if (!captchaCode) {
+            setError('Please enter the captcha code.');
+            return;
+        }
+        if (!captchaId) {
+            setError('Captcha not loaded. Please refresh.');
             return;
         }
         setLoading(true);
         try {
-            const result = await login(nationalId, password);
+            const result = await login(loginId, password, captchaId, captchaCode);
             if (result.success) {
                 navigate('/');
             } else {
                 setError(result.message || 'Login failed. Please try again.');
+                fetchCaptcha(); // Refresh captcha on failure
             }
         } catch (err) {
             const msg = err.response?.data?.message || err.message || 'An error occurred.';
             setError(msg);
+            fetchCaptcha(); // Refresh captcha on error
         } finally {
             setLoading(false);
         }
@@ -98,19 +157,15 @@ export default function LoginPage() {
                 {!showForgotPassword ? (
                     <form onSubmit={handleLogin}>
                         <div style={styles.field}>
-                            <label htmlFor="nationalId">National ID</label>
+                            <label htmlFor="login">Email or Phone Number</label>
                             <input
-                                id="nationalId"
+                                id="login"
                                 type="text"
-                                value={nationalId}
-                                onChange={(e) => {
-                                    const val = e.target.value.replace(/\D/g, '');
-                                    if (val.length <= 12) setNationalId(val);
-                                }}
+                                value={loginId}
+                                onChange={(e) => setLoginId(e.target.value)}
                                 style={styles.input}
-                                autoComplete="off"
-                                placeholder="Enter 12-digit National ID"
-                                maxLength={12}
+                                autoComplete="username"
+                                placeholder="you@example.com or 0912345678"
                             />
                         </div>
                         <div style={styles.field}>
@@ -124,6 +179,40 @@ export default function LoginPage() {
                                 autoComplete="current-password"
                                 placeholder="Enter your password"
                             />
+                        </div>
+                        {/* Captcha */}
+                        <div style={styles.field}>
+                            <label>Captcha Verification</label>
+                            <div style={styles.captchaRow}>
+                                {captchaSrc && (
+                                    <img
+                                        src={captchaSrc}
+                                        alt="Captcha"
+                                        style={styles.captchaImage}
+                                        onClick={fetchCaptcha}
+                                    />
+                                )}
+                                <button
+                                    type="button"
+                                    style={styles.refreshCaptchaBtn}
+                                    onClick={fetchCaptcha}
+                                    title="Refresh captcha"
+                                >
+                                    ↻
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                value={captchaCode}
+                                onChange={(e) => setCaptchaCode(e.target.value)}
+                                style={styles.input}
+                                placeholder="Enter captcha code"
+                                autoComplete="off"
+                                maxLength={4}
+                            />
+                            <span style={styles.captchaHint}>
+                                Click the image to refresh captcha
+                            </span>
                         </div>
                         <button type="submit" style={styles.button} disabled={loading}>
                             {loading ? 'Signing in...' : 'Sign In'}
@@ -184,7 +273,7 @@ export default function LoginPage() {
                 ) : (
                     <form onSubmit={handleConfirmReset}>
                         <p style={styles.helpText}>
-                            Check the server logs for the reset token. Enter it below with your new password.
+                            A reset token has been sent to your email. Enter it below with your new password.
                         </p>
                         <div style={styles.field}>
                             <label htmlFor="resetToken">Reset Token</label>
@@ -194,7 +283,7 @@ export default function LoginPage() {
                                 value={resetToken}
                                 onChange={(e) => setResetToken(e.target.value)}
                                 style={styles.input}
-                                placeholder="Enter reset token"
+                                placeholder="Enter reset token from email"
                             />
                         </div>
                         <div style={styles.field}>
@@ -257,6 +346,34 @@ const styles = {
         border: '1px solid #ddd',
         borderRadius: '4px',
         boxSizing: 'border-box',
+    },
+    captchaRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '8px',
+    },
+    captchaImage: {
+        height: '48px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        border: '1px solid #ddd',
+        flex: 1,
+        objectFit: 'contain',
+    },
+    refreshCaptchaBtn: {
+        padding: '8px 12px',
+        fontSize: '18px',
+        backgroundColor: '#f0f0f0',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        cursor: 'pointer',
+    },
+    captchaHint: {
+        fontSize: '11px',
+        color: '#999',
+        marginTop: '4px',
+        display: 'block',
     },
     button: {
         width: '100%',

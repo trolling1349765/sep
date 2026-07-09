@@ -2,10 +2,11 @@ package fpt.capstone.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -19,12 +20,9 @@ public class RegisterRequest {
     @NotBlank(message = "Full name is required.")
     String fullName;
 
-    @NotBlank(message = "National ID is required.")
-    @Pattern(regexp = "^[0-9]{12}$", message = "National ID must be exactly 12 digits.")
-    String nationalId;
-
-    @NotBlank(message = "Date of birth is required.")
-    String dateOfBirth;
+    @NotNull(message = "Date of birth is required.")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    LocalDate dateOfBirth;
 
     @NotBlank(message = "Email is required.")
     @Email(message = "Email must be a valid format.")
@@ -39,10 +37,4 @@ public class RegisterRequest {
 
     @NotBlank(message = "Password confirmation is required.")
     String passwordConfirmation;
-
-    String provinceCode;
-    String provinceName;
-    String wardCode;
-    String wardName;
-    String specificAddress;
 }

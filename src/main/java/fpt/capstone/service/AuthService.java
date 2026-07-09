@@ -9,6 +9,8 @@ import fpt.capstone.dto.response.LoginResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Map;
+
 public interface AuthService {
 
     LoginResponse register(RegisterRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
@@ -26,4 +28,6 @@ public interface AuthService {
     void changePassword(String userId, ChangePasswordRequest request);
 
     void logoutAllDevices(String userId, HttpServletResponse response);
+
+    void generateCaptcha(HttpServletResponse response, Map<String, String> captchaStore) throws Exception;
 }
