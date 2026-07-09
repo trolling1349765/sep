@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class WounderSoldierRequest {
+    Integer id;
     Integer benificiaryId;
     Integer times;
     LocalDate enlistmentDate;
@@ -23,6 +24,7 @@ public class WounderSoldierRequest {
     String wound;
     String treatmentPlace;
     LocalDate injuryHealedDate;
+    boolean isDeleted;
 
     public boolean isEmpty() {
         if (WounderSoldierRequest.this.isEmpty()) return true;

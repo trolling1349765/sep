@@ -21,7 +21,6 @@ public class ApplicationResponse {
     int id;
     String approvedBy;
     LocalDate approvedDate;
-    int policyId;
     LocalDate submitDate;
     String status;
     String formType;
@@ -34,7 +33,6 @@ public class ApplicationResponse {
     public ApplicationResponse(Application application) {
         this.id = application.getId();
         this.approvedBy = application.getApprovedBy().getId();
-        this.policyId = application.getPolicy().getId();
         this.submitDate = application.getSubmitDate();
         this.status = application.getStatus().get();
         this.formType = application.getFormType().getName();

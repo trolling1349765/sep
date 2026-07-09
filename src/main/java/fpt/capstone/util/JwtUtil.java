@@ -38,15 +38,15 @@ public class JwtUtil {
         this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
-    public String generateAccessToken(String userId, String email) {
-        return buildToken(userId, email, accessTokenExpiration);
+    public String generateAccessToken(String userId, String email, String role) {
+        return buildToken(userId, email, accessTokenExpiration, role);
     }
 
-    public String generateRefreshToken(String userId, String email) {
-        return buildToken(userId, email, refreshTokenExpiration);
+    public String generateRefreshToken(String userId, String email, String role) {
+        return buildToken(userId, email, refreshTokenExpiration, role);
     }
 
-    private String buildToken(String userId, String email, long expiration) {
+    private String buildToken(String userId, String email, long expiration, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
@@ -54,6 +54,7 @@ public class JwtUtil {
                 .id(UUID.randomUUID().toString())
                 .subject(userId)
                 .claim("email", email)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey)

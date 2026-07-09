@@ -26,4 +26,8 @@ public class FormType {
     @OneToMany(mappedBy = "formType")
     List<Application> application;
 
+    @ManyToOne
+    @JoinColumn(name = "policy_id")
+    Policy policy;
+
 }

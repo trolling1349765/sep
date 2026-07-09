@@ -147,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
 
         log.info("User registered successfully: {} (National ID: {})", email, nationalId);
 
-        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole().getName());
         String refreshTokenValue = UUID.randomUUID().toString();
         String familyId = UUID.randomUUID().toString();
 
@@ -206,7 +206,7 @@ public class AuthServiceImpl implements AuthService {
 
         accountLockService.resetFailedAttempts(user);
 
-        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole().getName());
         String refreshTokenValue = UUID.randomUUID().toString();
         String familyId = UUID.randomUUID().toString();
 
@@ -300,7 +300,7 @@ public class AuthServiceImpl implements AuthService {
                     "Account is locked. Try again in " + remainingMinutes + " minute(s).");
         }
 
-        String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail());
+        String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole().getName());
         String newRefreshTokenValue = UUID.randomUUID().toString();
 
         RefreshToken newRefreshTokenEntity = RefreshToken.builder()

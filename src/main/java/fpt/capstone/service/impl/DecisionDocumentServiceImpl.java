@@ -97,7 +97,7 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
             XWPFParagraph dearPara = document.createParagraph();
             dearPara.setSpacingBefore(200);
             XWPFRun run3 = dearPara.createRun();
-            run3.setText("(Áp dụng đối với đối tượng quy định tại khoản " + application.getPolicy().getTitle() + " Điều 5 Nghị định số ).");
+            run3.setText("(Áp dụng đối với đối tượng quy định tại khoản " + application.getFormType().getName() + " Điều 5 Nghị định số ).");
             run3.setFontSize(13);
             run3.setFontFamily("Times New Roman");
 

@@ -33,6 +33,6 @@ public class Officier1Controller {
         if (!wounderSoldierRequest.isEmpty()) wounderSoldierService.createWounderSoldier(wounderSoldierRequest);
         if (!relativeRequest.isEmpty()) relativeService.createRelative(relativeRequest);
 
-        return APIResponse.success("created: application, benificiary(, wounderSoldier, relative)");
+        return APIResponse.success("Tiếp nhận hồ sơ thành công!");
     }
 }

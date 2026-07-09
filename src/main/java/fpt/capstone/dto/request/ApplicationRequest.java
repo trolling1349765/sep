@@ -12,13 +12,8 @@ public class ApplicationRequest {
     Integer id;
     String approvedBy;
     LocalDate approvedDate;
-    int policyId;
     LocalDate submitDate;
     String status;
-    String formType;
-    LocalDate createdAt;
-    String createdBy;
-    LocalDate updatedAt;
-    String updatedBy;
+    Integer formTypeId;
     boolean isDeleted;
 }

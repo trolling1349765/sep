@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RelativeRequest {
+    Integer id;
     String fullName;
     LocalDate dob;
     String CCCD;
@@ -22,6 +23,7 @@ public class RelativeRequest {
     String phone;
     String email;
     boolean gender;
+    boolean isDeleted;
 
     public boolean isEmpty() {
         if (RelativeRequest.this.isEmpty()) return true;

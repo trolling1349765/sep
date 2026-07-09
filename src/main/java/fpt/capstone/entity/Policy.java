@@ -62,7 +62,7 @@ public class Policy extends BaseEntity{
 
     @JsonIgnore
     @OneToMany(mappedBy = "policy")
-    List<Application> applications;
+    List<FormType> formTypes;
 
     @OneToOne(mappedBy = "policy")
     BenefitRule benefitRule;

@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BenificiaryRequest {
+    Integer id;
     Integer applicationId;
     boolean gender;
     Double assistanceAmount;
@@ -34,4 +35,5 @@ public class BenificiaryRequest {
     Integer nationMeritNumber;
     Integer decisionNumberOfMerit;
     LocalDate recognizedDate;
+    boolean isDeleted;
 }

@@ -1,7 +1,13 @@
 package fpt.capstone.service;
 
+import fpt.capstone.dto.response.APIResponse;
+import fpt.capstone.dto.response.FormTypeResponse;
 import fpt.capstone.entity.FormType;
 
+import java.util.List;
+
 public interface FormTypeService {
-    public FormType getFormType(int id);
+    FormType getFormType(int id);
+
+    APIResponse<List<FormTypeResponse>> getAllFormTypes();
 }
