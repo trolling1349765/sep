@@ -1,6 +1,5 @@
 package fpt.capstone.dto.request;
 
-import jakarta.persistence.Column;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,7 +23,8 @@ public class RelativeRequest {
     boolean gender;
 
     public boolean isEmpty() {
-        if (RelativeRequest.this.isEmpty()) return true;
+        if (RelativeRequest.this.isEmpty())
+            return true;
         return false;
     }
 }

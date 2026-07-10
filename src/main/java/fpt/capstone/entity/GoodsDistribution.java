@@ -22,6 +22,10 @@ public class GoodsDistribution extends BaseEntity {
     int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "allocation_plan_id")
+    AllocationPlan allocationPlan;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goods_inventory_id")
     GoodsInventory goodsInventory;
 
@@ -29,8 +33,15 @@ public class GoodsDistribution extends BaseEntity {
     @JoinColumn(name = "benificiary_id")
     Benificiary benificiary;
 
+    @Column(name = "quantity")
+    int quantity;
+
     @Column(name = "transfer_date")
-    LocalDate  transferDate;
+    LocalDate transferDate;
 
+    @Column(name = "confirmation_status")
+    String confirmationStatus; // PENDING, CONFIRMED, ABSENT
 
+    @Column(name = "notes")
+    String notes;
 }

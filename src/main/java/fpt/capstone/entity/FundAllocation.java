@@ -14,34 +14,34 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "donations")
-public class Donation extends BaseEntity {
+@Table(name = "fund_allocations")
+public class FundAllocation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sponsor_id")
-    Sponsor sponsor;
-
-    @Column(name = "amount")
-    Double amount;
-
-    @Column(name = "transfer_date")
-    LocalDate transferDate;
+    @JoinColumn(name = "donation_id")
+    Donation donation;
 
     @Column(name = "purpose")
     String purpose;
 
-    @Column(name = "payment_method")
-    String paymentMethod; // CASH, TRANSFER, OTHER
+    @Column(name = "amount")
+    Double amount;
 
-    @Column(name = "receipt_status")
-    String receiptStatus; // PENDING, ISSUED
+    @Column(name = "beneficiary_type")
+    String beneficiaryType;
 
-    @Column(name = "evidence_url")
-    String evidenceUrl;
+    @Column(name = "beneficiary_id")
+    String beneficiaryId;
+
+    @Column(name = "beneficiary_name")
+    String beneficiaryName;
+
+    @Column(name = "allocation_date")
+    LocalDate allocationDate;
 
     @Column(name = "notes")
     String notes;

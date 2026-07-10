@@ -42,6 +42,6 @@ public class ApplicationResponse {
         this.createdBy = application.getCreateBy();
         this.updatedAt = application.getUpdateAt();
         this.updatedBy = application.getUpdateBy();
-        this.isDeleted = application.isDelete();
+        this.isDeleted = application.getIsDelete();
     }
 }

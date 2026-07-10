@@ -7,6 +7,8 @@ import fpt.capstone.dto.request.PasswordResetRequest;
 import fpt.capstone.dto.request.RegisterRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.LoginResponse;
+import fpt.capstone.entity.User;
+import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.AuthService;
 import fpt.capstone.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,11 +16,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,17 +31,14 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     // In-memory captcha store: captchaId -> captchaCode
     private final Map<String, String> captchaStore = new ConcurrentHashMap<>();
 
     @GetMapping("/captcha")
     public void getCaptcha(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            authService.generateCaptcha(response, captchaStore);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate captcha");
-        }
+        authService.generateCaptcha(response, captchaStore);
     }
 
     @PostMapping("/register")
@@ -179,13 +178,12 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required.");
         }
         String userId = jwtUtil.extractUserId(accessToken);
-        String email = jwtUtil.extractEmail(accessToken);
-
-        LoginResponse response = LoginResponse.builder()
-                .userId(userId)
-                .email(email)
-                .build();
-        return ResponseEntity.ok(APIResponse.success(response));
+        User user = userRepository.getUserById(userId);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found.");
+        }
+        Instant accessTokenExpiry = Instant.now().plusMillis(jwtUtil.getAccessTokenExpiration());
+        return ResponseEntity.ok(APIResponse.success(LoginResponse.fromUser(user, accessTokenExpiry)));
     }
 
     private String extractAccessToken(HttpServletRequest request) {

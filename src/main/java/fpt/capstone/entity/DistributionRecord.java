@@ -6,7 +6,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -31,4 +30,10 @@ public class DistributionRecord extends BaseEntity {
 
     @Column(name = "transfer_date")
     LocalDate transferDate;
+
+    @Column(name = "items_description")
+    String itemsDescription;
+
+    @Column(name = "notes")
+    String notes;
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
 @Table(name = "benificiaries")
-public class Benificiary extends BaseEntity{
+public class Benificiary extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,8 +76,8 @@ public class Benificiary extends BaseEntity{
     @Column(name = "official_date")
     LocalDate officialDate;
 
-    @Column(name = "rank")
-    String rank;
+    @Column(name = "benificiary_rank")
+    String benificiaryRank;
 
     @Column(name = "work_unit")
     String workUnit;
@@ -89,7 +89,7 @@ public class Benificiary extends BaseEntity{
     LocalDate endRevolutionaryActivities;
 
     @OneToMany(mappedBy = "benificiary")
-    List<WoundedSoldiers>  woundedSoldiers;
+    List<WoundedSoldiers> woundedSoldiers;
 
     @Column(name = "sacrifice_date")
     LocalDate sacrificeDate;

@@ -18,12 +18,11 @@ public class DataInitializer implements CommandLineRunner {
         private final ChapterRepository chapterRepository;
 
         public DataInitializer(
-                PolicyRepository policyRepository,
-                ArticleRepository articleRepository,
-                EligibilityCriteriaRepository eligibilityCriteriaRepository,
-                BenifitRuleRepository benefitRuleRepository,
-                ChapterRepository chapterRepository
-        ) {
+                        PolicyRepository policyRepository,
+                        ArticleRepository articleRepository,
+                        EligibilityCriteriaRepository eligibilityCriteriaRepository,
+                        BenifitRuleRepository benefitRuleRepository,
+                        ChapterRepository chapterRepository) {
                 this.policyRepository = policyRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
@@ -34,6 +33,7 @@ public class DataInitializer implements CommandLineRunner {
         @Override
         @Transactional
         public void run(String... args) {
+
                 if (policyRepository.count() > 0) {
                         // Data already exists, skip seeding
                         return;
@@ -53,9 +53,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p1 = policyRepository.save(p1);
                 Chapter c1 = Chapter.builder()
-                        .policy(p1)
-                        .title("chapter I")
-                        .build();
+                                .policy(p1)
+                                .title("chapter I")
+                                .build();
                 c1 = chapterRepository.save(c1);
                 articleRepository.save(Article.builder()
                                 .chapter(c1)
@@ -105,9 +105,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p2 = policyRepository.save(p2);
                 Chapter c2 = Chapter.builder()
-                        .policy(p2)
-                        .title("chapter I")
-                        .build();
+                                .policy(p2)
+                                .title("chapter I")
+                                .build();
                 articleRepository.save(Article.builder()
                                 .chapter(c2).articleNo(1)
                                 .title("Đối tượng thụ hưởng")
@@ -195,9 +195,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p4 = policyRepository.save(p4);
                 Chapter c4 = Chapter.builder()
-                        .policy(p4)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p4)
+                                .title("Chapter I")
+                                .build();
                 c4 = chapterRepository.save(c4);
                 articleRepository.save(Article.builder()
                                 .chapter(c4).articleNo(1)
@@ -233,9 +233,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p5 = policyRepository.save(p5);
                 Chapter c5 = Chapter.builder()
-                        .policy(p5)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p5)
+                                .title("Chapter I")
+                                .build();
                 c5 = chapterRepository.save(c5);
                 articleRepository.save(Article.builder()
                                 .chapter(c5).articleNo(1)
@@ -278,9 +278,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p6 = policyRepository.save(p6);
                 Chapter c6 = Chapter.builder()
-                        .policy(p6)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p6)
+                                .title("Chapter I")
+                                .build();
                 c6 = chapterRepository.save(c6);
                 articleRepository.save(Article.builder()
                                 .chapter(c6).articleNo(1)
@@ -317,9 +317,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p7 = policyRepository.save(p7);
                 Chapter c7 = Chapter.builder()
-                        .policy(p7)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p7)
+                                .title("Chapter I")
+                                .build();
                 c7 = chapterRepository.save(c7);
                 articleRepository.save(Article.builder()
                                 .chapter(c7).articleNo(1)
@@ -356,9 +356,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p8 = policyRepository.save(p8);
                 Chapter c8 = Chapter.builder()
-                        .policy(p8)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p8)
+                                .title("Chapter I")
+                                .build();
                 c8 = chapterRepository.save(c8);
                 articleRepository.save(Article.builder()
                                 .chapter(c8).articleNo(1)
@@ -395,9 +395,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p9 = policyRepository.save(p9);
                 Chapter c9 = Chapter.builder()
-                        .policy(p9)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p9)
+                                .title("Chapter I")
+                                .build();
                 c9 = chapterRepository.save(c9);
                 articleRepository.save(Article.builder()
                                 .chapter(c9).articleNo(1)
@@ -434,9 +434,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p10 = policyRepository.save(p10);
                 Chapter c10 = Chapter.builder()
-                        .policy(p10)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p10)
+                                .title("Chapter I")
+                                .build();
                 c10 = chapterRepository.save(c10);
                 articleRepository.save(Article.builder()
                                 .chapter(c10).articleNo(1)
@@ -462,4 +462,5 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println(">>> Seeded " + policyRepository.count()
                                 + " sample policies with articles, eligibility criteria, and benefit rules.");
         }
+
 }

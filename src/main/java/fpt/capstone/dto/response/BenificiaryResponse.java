@@ -9,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
-
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
@@ -55,7 +54,7 @@ public class BenificiaryResponse {
         this.placeOfResidence = benificiary.getPlaceOfResidence();
         this.joinPartyDate = benificiary.getJoinPartyDate();
         this.officialDate = benificiary.getOfficialDate();
-        this.rank = benificiary.getRank();
+        this.rank = benificiary.getBenificiaryRank();
         this.workUnit = benificiary.getWorkUnit();
         this.beginRevolutionaryActivities = benificiary.getBeginRevolutionaryActivities();
         this.endRevolutionaryActivities = benificiary.getEndRevolutionaryActivities();

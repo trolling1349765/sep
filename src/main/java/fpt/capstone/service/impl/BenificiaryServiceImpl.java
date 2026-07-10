@@ -32,7 +32,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
 
     @Override
     public APIResponse<BenificiaryResponse> getBenificiary(int id) {
-        Benificiary  benificiary = benificiaryRepository.findById(id).orElse(null);
+        Benificiary benificiary = benificiaryRepository.findById(id).orElse(null);
         if (benificiary == null) {
 
         }
@@ -68,7 +68,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
                 .placeOfResidence(benificiaryRequest.getPlaceOfResidence())
                 .joinPartyDate(benificiaryRequest.getJoinPartyDate())
                 .officialDate(benificiaryRequest.getOfficialDate())
-                .rank(benificiaryRequest.getRank())
+                .benificiaryRank(benificiaryRequest.getRank())
                 .workUnit(benificiaryRequest.getWorkUnit())
                 .beginRevolutionaryActivities(benificiaryRequest.getBeginRevolutionaryActivities())
                 .endRevolutionaryActivities(benificiaryRequest.getEndRevolutionaryActivities())

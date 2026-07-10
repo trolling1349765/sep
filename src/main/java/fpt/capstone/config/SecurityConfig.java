@@ -71,6 +71,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/capstone/citizen-portal/chatbot/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/applications/**").hasAnyRole("USER", "OFF1")
                         .requestMatchers(HttpMethod.POST, "/applications/**").hasRole("USER")
+                        // Donor & Resource Management - CB_QUAN_LY only
+                        .requestMatchers("/capstone/donation-management/**").hasRole("CB_QUAN_LY")
+                        .requestMatchers("/capstone/sponsors/**").hasRole("CB_QUAN_LY")
+                        .requestMatchers("/capstone/donations/**").hasRole("CB_QUAN_LY")
+                        .requestMatchers("/capstone/inventory/**").hasRole("CB_QUAN_LY")
+                        .requestMatchers("/capstone/distribution/**").hasRole("CB_QUAN_LY")
+                        .requestMatchers("/capstone/allocation-plans/**").hasRole("CB_QUAN_LY")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

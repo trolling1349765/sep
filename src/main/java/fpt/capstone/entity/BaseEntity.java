@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @MappedSuperclass
 @Getter
@@ -31,6 +30,6 @@ public class BaseEntity {
 
     @Builder.Default
     @Column(name = "is_delete")
-    boolean isDelete = false;
+    Boolean isDelete = false;
 
 }

@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
@@ -69,24 +70,29 @@ public class AuthServiceImpl implements AuthService {
     private static final int MIN_AGE = 15;
 
     @Override
-    public void generateCaptcha(HttpServletResponse response, Map<String, String> captchaStore) throws Exception {
-        // Generate captcha: 4 characters, width=130, height=48
-        SpecCaptcha captcha = new SpecCaptcha(130, 48, 4);
-        String captchaId = UUID.randomUUID().toString();
-        String captchaCode = captcha.text().toLowerCase();
+    public void generateCaptcha(HttpServletResponse response, Map<String, String> captchaStore) {
+        try {
+            // Generate captcha: 4 characters, width=130, height=48
+            SpecCaptcha captcha = new SpecCaptcha(130, 48, 4);
+            String captchaId = UUID.randomUUID().toString();
+            String captchaCode = captcha.text().toLowerCase();
 
-        // Store in map (controller's captchaStore)
-        captchaStore.put(captchaId, captchaCode);
+            // Store in map (controller's captchaStore)
+            captchaStore.put(captchaId, captchaCode);
 
-        // Set response headers
-        response.setHeader("Captcha-Id", captchaId);
-        response.setContentType("image/png");
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
+            // Set response headers
+            response.setHeader("Captcha-Id", captchaId);
+            response.setContentType("image/png");
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
 
-        // Write image to response output stream
-        captcha.out(response.getOutputStream());
+            // Write image to response output stream
+            captcha.out(response.getOutputStream());
+        } catch (IOException e) {
+            log.warn("Failed to write captcha image to response stream: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
@@ -158,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(email);
         user.setNationalIdVerified(false);
 
-        Role defaultRole = roleRepository.findById(2);
+        Role defaultRole = roleRepository.findById(1);
         user.setRole(defaultRole);
 
         userRepository.save(user);
@@ -213,8 +219,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (accountLockService.isAccountLocked(user)) {
-            long remaining = accountLockService.getLockRemainingSeconds(user);
-            long remainingMinutes = (long) Math.ceil(remaining / 60.0);
             throw new ResponseStatusException(HttpStatus.LOCKED,
                     "Your account is temporarily locked. Please try again later.");
         }

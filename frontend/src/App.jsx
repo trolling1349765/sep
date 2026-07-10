@@ -12,6 +12,11 @@ import SupportRequestPage from './pages/SupportRequestPage';
 import SupportRequestManagementPage from './pages/SupportRequestManagementPage';
 import CitizenPortalPage from './pages/CitizenPortalPage';
 import PolicyDetailPage from './pages/PolicyDetailPage';
+import DonationManagementPage from './pages/DonationManagementPage';
+import SponsorListPage from './pages/SponsorListPage';
+import DonationListPage from './pages/DonationListPage';
+import InventoryPage from './pages/InventoryPage';
+import DistributionPage from './pages/DistributionPage';
 
 function App() {
   return (
@@ -30,6 +35,12 @@ function App() {
             <Route path="/support/manage" element={<SupportRequestManagementPage />} />
             <Route path="/citizen-portal" element={<CitizenPortalPage />} />
             <Route path="/citizen-portal/policy/:id" element={<PolicyDetailPage />} />
+            {/* Donation Management - CB_QUAN_LY */}
+            <Route path="/donation-management" element={<DonationManagementPage />} />
+            <Route path="/donation-management/sponsors" element={<SponsorListPage />} />
+            <Route path="/donation-management/donations" element={<DonationListPage />} />
+            <Route path="/donation-management/inventory" element={<InventoryPage />} />
+            <Route path="/donation-management/distribution" element={<DistributionPage />} />
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>

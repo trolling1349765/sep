@@ -29,5 +29,5 @@ public interface AuthService {
 
     void logoutAllDevices(String userId, HttpServletResponse response);
 
-    void generateCaptcha(HttpServletResponse response, Map<String, String> captchaStore) throws Exception;
+    void generateCaptcha(HttpServletResponse response, Map<String, String> captchaStore);
 }

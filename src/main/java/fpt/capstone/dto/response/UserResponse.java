@@ -38,7 +38,7 @@ public class UserResponse {
         this.createBy = user.getCreateBy();
         this.updateAt = user.getUpdateAt();
         this.updateBy = user.getUpdateBy();
-        this.isDelete = user.isDelete();
+        this.isDelete = user.getIsDelete();
     }
 
 }

@@ -1,6 +1,5 @@
 package fpt.capstone.dto.request;
 
-import fpt.capstone.service.WounderSoldierService;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
