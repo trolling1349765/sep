@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +65,15 @@ public class WounderSoldierServiceImpl implements WounderSoldierService {
                 .data(new WounderSoldierResponse(woundedSoldiers))
                 .build();
         return response;
+    }
+
+    @Override
+    public List<WounderSoldierResponse> getWoundedSoldierByBenificiaryId(int benificiaryId) {
+        List<WoundedSoldiers> woundedSoldiers = wounderSoldierRepository.findByBenificiary(benificiaryId);
+        List<WounderSoldierResponse> woundedSoldierResponses = new ArrayList<>();
+        for (WoundedSoldiers woundedSoldier: woundedSoldiers) {
+            woundedSoldierResponses.add(new WounderSoldierResponse(woundedSoldier));
+        }
+        return woundedSoldierResponses;
     }
 }

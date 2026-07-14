@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +44,17 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     }
 
     @Override
-    public APIResponse<Page<BenificiaryResponse>> getBenificiary(int size, int page) {
+    public List<BenificiaryResponse> getBenificiariesByApplicationId(int applicationId) {
+        List<BenificiaryResponse>  benificiaryResponses = new ArrayList<>();
+        List<Benificiary> benificiaries = benificiaryRepository.findByApplication(applicationId);
+        for(Benificiary benificiary : benificiaries) {
+            benificiaryResponses.add(new BenificiaryResponse(benificiary));
+        }
+        return benificiaryResponses;
+    }
+
+    @Override
+    public APIResponse<Page<BenificiaryResponse>> getBenificiaries(int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Benificiary> benificiaryPage = benificiaryRepository.findAll(pageable);
         Page<BenificiaryResponse> benificiaryResponses = benificiaryPage.map(BenificiaryResponse::new);

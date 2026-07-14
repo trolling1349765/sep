@@ -95,6 +95,10 @@ public class User extends BaseEntity {
     List<Application> approvedApplications;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "submitBy")
+    List<Application> submitByApplications;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "issuer")
     List<DecisionDocument> decisionDocuments;
 

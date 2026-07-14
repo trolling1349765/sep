@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Integer> {
     Page<Application> findAll( Pageable pageable);
+
+    Page<Application> findBySubmitBy_Id(String submitBy, Pageable pageable);
 }
