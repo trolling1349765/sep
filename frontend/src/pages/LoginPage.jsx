@@ -6,7 +6,7 @@ export default function LoginPage() {
     const { login, requestPasswordReset, confirmPasswordReset } = useAuth();
     const navigate = useNavigate();
 
-    const [nationalId, setNationalId] = useState('');
+    const [credential, setCredential] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,13 +21,13 @@ export default function LoginPage() {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
-        if (!nationalId || !password) {
-            setError('National ID and password are required.');
+        if (!credential || !password) {
+            setError('Email, phone number, or National ID and password are required.');
             return;
         }
         setLoading(true);
         try {
-            const result = await login(nationalId, password);
+            const result = await login(credential, password);
             if (result.success) {
                 const userRole = result.role || result.user?.role || result.user?.data?.role;
                 if (userRole === 'OFF1') {
@@ -103,19 +103,15 @@ export default function LoginPage() {
                 {!showForgotPassword ? (
                     <form onSubmit={handleLogin}>
                         <div style={styles.field}>
-                            <label htmlFor="nationalId">National ID</label>
+                            <label htmlFor="credential">Email, Phone, or National ID</label>
                             <input
-                                id="nationalId"
+                                id="credential"
                                 type="text"
-                                value={nationalId}
-                                onChange={(e) => {
-                                    const val = e.target.value.replace(/\D/g, '');
-                                    if (val.length <= 12) setNationalId(val);
-                                }}
+                                value={credential}
+                                onChange={(e) => setCredential(e.target.value)}
                                 style={styles.input}
-                                autoComplete="off"
-                                placeholder="Enter 12-digit National ID"
-                                maxLength={12}
+                                autoComplete="username"
+                                placeholder="Enter your email, phone number, or 12-digit National ID"
                             />
                         </div>
                         <div style={styles.field}>

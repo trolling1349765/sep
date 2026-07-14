@@ -45,9 +45,9 @@ export function AuthProvider({ children }) {
         };
     };
 
-    const login = async (nationalId, password) => {
+    const login = async (credential, password) => {
         const response = await apiClient.post('/auth/login', {
-            nationalId: nationalId.trim(),
+            credential: credential.trim(),
             password,
         }, { withCredentials: true });
 

@@ -140,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
         user.setWardName(request.getWardName());
         user.setSpecificAddress(request.getSpecificAddress());
 
-        Role defaultRole = roleRepository.findById(2);//.orElse(null)
+        Role defaultRole = roleRepository.findById(2);// .orElse(null)
         user.setRole(defaultRole);
 
         userRepository.save(user);
@@ -181,9 +181,21 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "Too many login attempts. Retry after " + rateLimit.retryAfterSeconds() + " seconds.");
         }
-        String nationalId = request.getNationalId().trim();
+        String credential = request.getCredential().trim();
 
-        User user = userRepository.findUserByNationalId(nationalId);
+        // Determine credential type: email, phone, or national ID
+        User user = null;
+        if (credential.contains("@")) {
+            // Email
+            user = userRepository.findUserByEmail(credential.toLowerCase());
+        } else if (credential.matches("\\d{12}")) {
+            // National ID (12 digits)
+            user = userRepository.findUserByNationalId(credential);
+        } else {
+            // Phone number
+            user = userRepository.findUserByPhone(credential);
+        }
+
         if (user == null) {
             // Generic error message (MSG-05) - don't reveal which field is wrong
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
