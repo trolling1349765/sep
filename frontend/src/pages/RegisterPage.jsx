@@ -1,36 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const PROVINCES_CACHE_KEY = 'provinces_cache';
-const WARDS_CACHE_PREFIX = 'wards_cache_';
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
-function getCachedData(key) {
-    try {
-        const cached = sessionStorage.getItem(key);
-        if (cached) {
-            const { data, timestamp } = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_TTL) {
-                return data;
-            }
-        }
-    } catch { }
-    return null;
-}
-
-function setCachedData(key, data) {
-    try {
-        sessionStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch { }
-}
 
 export default function RegisterPage() {
     const { registerUser } = useAuth();
     const navigate = useNavigate();
 
     const [fullName, setFullName] = useState('');
-    const [nationalId, setNationalId] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -42,69 +18,10 @@ export default function RegisterPage() {
     const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Address dropdowns (2-tier: Province -> Ward)
-    const [provinces, setProvinces] = useState([]);
-    const [wards, setWards] = useState([]);
-    const [selectedProvince, setSelectedProvince] = useState('');
-    const [selectedWard, setSelectedWard] = useState('');
-    const [selectedProvinceName, setSelectedProvinceName] = useState('');
-    const [selectedWardName, setSelectedWardName] = useState('');
-    const [specificAddress, setSpecificAddress] = useState('');
-    const [apiError, setApiError] = useState(false);
-
-    // Fetch provinces on mount with caching
-    useEffect(() => {
-        const cached = getCachedData(PROVINCES_CACHE_KEY);
-        if (cached) {
-            setProvinces(cached);
-            return;
-        }
-        fetch('/api/provinces')
-            .then(res => res.json())
-            .then(data => {
-                if (data?.code === 200 && data?.data) {
-                    setProvinces(data.data);
-                    setCachedData(PROVINCES_CACHE_KEY, data.data);
-                }
-            })
-            .catch(() => {
-                setApiError(true);
-            });
-    }, []);
-
-    // Fetch wards when province changes with caching
-    useEffect(() => {
-        if (!selectedProvince) {
-            setWards([]);
-            setSelectedWard('');
-            setSelectedWardName('');
-            return;
-        }
-        const cacheKey = WARDS_CACHE_PREFIX + selectedProvince;
-        const cached = getCachedData(cacheKey);
-        if (cached) {
-            setWards(cached);
-            return;
-        }
-        fetch(`/api/provinces/${selectedProvince}/wards`)
-            .then(res => res.json())
-            .then(data => {
-                if (data?.code === 200 && data?.data) {
-                    setWards(data.data);
-                    setCachedData(cacheKey, data.data);
-                }
-            })
-            .catch(() => { });
-        setSelectedWard('');
-        setSelectedWardName('');
-    }, [selectedProvince]);
-
     // Validation
-    const nationalIdValid = /^[0-9]{12}$/.test(nationalId);
     const emailTouched = email.length > 0;
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const phoneValid = /^(0[0-9]{9}|\+84[0-9]{9})$/.test(phone);
-    const dobValid = /^\d{2}\/\d{2}\/\d{4}$/.test(dateOfBirth);
+    const phoneValid = /^0[0-9]{9}$/.test(phone);
     const has8Chars = password.length >= 8;
     const hasUppercase = /[A-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
@@ -115,10 +32,9 @@ export default function RegisterPage() {
     const passwordsMatch = passwordConfirmation.length > 0 && password === passwordConfirmation;
 
     const formValid = fullName.trim().length > 0
-        && nationalIdValid
+        && dateOfBirth.length > 0
         && emailValid
         && phoneValid
-        && dobValid
         && allPasswordRulesMet
         && passwordMaxOk
         && passwordsMatch;
@@ -137,6 +53,9 @@ export default function RegisterPage() {
 
     const strength = getPasswordStrength();
 
+    // Get today's date for max date attribute
+    const today = new Date().toISOString().split('T')[0];
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -146,19 +65,17 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
+            // Convert date from YYYY-MM-DD to DD/MM/YYYY for backend
+            const dobParts = dateOfBirth.split('-');
+            const formattedDob = `${dobParts[2]}/${dobParts[1]}/${dobParts[0]}`;
+
             const formData = {
                 fullName: fullName.trim(),
-                nationalId: nationalId.trim(),
-                dateOfBirth: dateOfBirth.trim(),
+                dateOfBirth: formattedDob,
                 email: email.toLowerCase().trim(),
                 phone: phone.trim(),
                 password,
                 passwordConfirmation,
-                provinceCode: selectedProvince || null,
-                provinceName: selectedProvinceName || null,
-                wardCode: selectedWard || null,
-                wardName: selectedWardName || null,
-                specificAddress: specificAddress.trim() || null,
             };
             const result = await registerUser(formData);
             if (result.success && result.message) {
@@ -186,11 +103,6 @@ export default function RegisterPage() {
                 <h1 style={styles.title}>Create Account</h1>
 
                 {error && <div style={styles.error}>{error}</div>}
-                {apiError && (
-                    <div style={styles.warning}>
-                        Administrative data service is currently unavailable. Please try again later.
-                    </div>
-                )}
                 {successMessage && (
                     <div style={styles.success}>
                         <p>{successMessage}</p>
@@ -213,50 +125,19 @@ export default function RegisterPage() {
                         />
                     </div>
 
-                    {/* National ID */}
-                    <div style={styles.field}>
-                        <label htmlFor="nationalId">National ID (CCCD) *</label>
-                        <input
-                            id="nationalId"
-                            type="text"
-                            value={nationalId}
-                            onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '');
-                                if (val.length <= 12) setNationalId(val);
-                            }}
-                            style={{
-                                ...styles.input,
-                                borderColor: nationalId.length > 0
-                                    ? (nationalIdValid ? '#2e7d32' : '#d32f2f') : '#ddd',
-                            }}
-                            placeholder="12-digit National ID"
-                            autoComplete="off"
-                            maxLength={12}
-                        />
-                        {nationalId.length > 0 && !nationalIdValid && (
-                            <span style={styles.inlineError}>Must be exactly 12 digits.</span>
-                        )}
-                    </div>
-
                     {/* Date of Birth */}
                     <div style={styles.field}>
                         <label htmlFor="dateOfBirth">Date of Birth *</label>
                         <input
                             id="dateOfBirth"
-                            type="text"
+                            type="date"
                             value={dateOfBirth}
                             onChange={(e) => setDateOfBirth(e.target.value)}
-                            style={{
-                                ...styles.input,
-                                borderColor: dateOfBirth.length > 0
-                                    ? (dobValid ? '#2e7d32' : '#d32f2f') : '#ddd',
-                            }}
-                            placeholder="DD/MM/YYYY"
+                            min="1900-01-01"
+                            max={today}
+                            style={styles.input}
                             autoComplete="bday"
                         />
-                        {dateOfBirth.length > 0 && !dobValid && (
-                            <span style={styles.inlineError}>Use format DD/MM/YYYY.</span>
-                        )}
                     </div>
 
                     {/* Email */}
@@ -286,7 +167,10 @@ export default function RegisterPage() {
                             id="phone"
                             type="tel"
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                if (val.length <= 10) setPhone(val);
+                            }}
                             style={{
                                 ...styles.input,
                                 borderColor: phone.length > 0
@@ -294,70 +178,11 @@ export default function RegisterPage() {
                             }}
                             placeholder="e.g., 0912345678"
                             autoComplete="tel"
+                            maxLength={10}
                         />
                         {phone.length > 0 && !phoneValid && (
-                            <span style={styles.inlineError}>Must be 10 digits starting with 0 or +84.</span>
+                            <span style={styles.inlineError}>Must be exactly 10 digits starting with 0.</span>
                         )}
-                    </div>
-
-                    {/* Address - Province */}
-                    <div style={styles.field}>
-                        <label htmlFor="province">Province/City *</label>
-                        <select
-                            id="province"
-                            value={selectedProvince}
-                            onChange={(e) => {
-                                const idx = e.target.selectedIndex;
-                                setSelectedProvince(e.target.value);
-                                setSelectedProvinceName(idx > 0 ? e.target.options[idx].text : '');
-                            }}
-                            style={styles.input}
-                            disabled={apiError}
-                        >
-                            <option value="">-- Select Province --</option>
-                            {provinces.map((p) => (
-                                <option key={p.code} value={p.code}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Address - Ward (2-tier: directly under province) */}
-                    <div style={styles.field}>
-                        <label htmlFor="ward">Ward/Commune *</label>
-                        <select
-                            id="ward"
-                            value={selectedWard}
-                            disabled={!selectedProvince || apiError}
-                            onChange={(e) => {
-                                const idx = e.target.selectedIndex;
-                                setSelectedWard(e.target.value);
-                                setSelectedWardName(idx > 0 ? e.target.options[idx].text : '');
-                            }}
-                            style={{ ...styles.input, opacity: !selectedProvince ? 0.5 : 1 }}
-                        >
-                            <option value="">-- Select Ward --</option>
-                            {wards.length === 0 && selectedProvince ? (
-                                <option value="" disabled>No data available</option>
-                            ) : (
-                                wards.map((w) => (
-                                    <option key={w.code} value={w.code}>{w.name}</option>
-                                ))
-                            )}
-                        </select>
-                    </div>
-
-                    {/* Specific Address */}
-                    <div style={styles.field}>
-                        <label htmlFor="specificAddress">Specific Address</label>
-                        <input
-                            id="specificAddress"
-                            type="text"
-                            value={specificAddress}
-                            onChange={(e) => setSpecificAddress(e.target.value)}
-                            style={styles.input}
-                            placeholder="House number, street name"
-                            autoComplete="street-address"
-                        />
                     </div>
 
                     {/* Password */}
@@ -457,7 +282,7 @@ export default function RegisterPage() {
                             opacity: formValid && !loading ? 1 : 0.6,
                             cursor: formValid && !loading ? 'pointer' : 'not-allowed',
                         }}
-                        disabled={!formValid || loading || apiError}
+                        disabled={!formValid || loading}
                     >
                         {loading ? (
                             <span style={styles.loadingRow}>
@@ -593,15 +418,6 @@ const styles = {
         borderRadius: '4px',
         marginBottom: '16px',
         fontSize: '14px',
-    },
-    warning: {
-        backgroundColor: '#fff3e0',
-        color: '#e65100',
-        padding: '12px',
-        borderRadius: '4px',
-        marginBottom: '16px',
-        fontSize: '14px',
-        border: '1px solid #ffcc80',
     },
     success: {
         backgroundColor: '#e8f5e9',

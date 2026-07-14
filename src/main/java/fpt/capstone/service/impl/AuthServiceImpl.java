@@ -87,7 +87,6 @@ public class AuthServiceImpl implements AuthService {
             HttpServletResponse httpResponse) {
         String fullName = request.getFullName().trim();
         String email = request.getEmail().toLowerCase().trim();
-        String nationalId = request.getNationalId().trim();
         String phone = request.getPhone().trim();
         String password = request.getPassword();
         String passwordConfirmation = request.getPasswordConfirmation();
@@ -100,7 +99,7 @@ public class AuthServiceImpl implements AuthService {
 
         validatePassword(password);
 
-        // Validate age (minimum 15 years)
+        // Validate date of birth
         LocalDate dob;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -110,42 +109,43 @@ public class AuthServiceImpl implements AuthService {
                     "Invalid date of birth format. Use DD/MM/YYYY.");
         }
 
-        int age = Period.between(dob, LocalDate.now()).getYears();
-        if (age < MIN_AGE) {
+        LocalDate minDate = LocalDate.of(1900, 1, 1);
+        LocalDate maxDate = LocalDate.now();
+        if (dob.isBefore(minDate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "You must be at least " + MIN_AGE + " years old to register.");
+                    "Date of birth cannot be before 01/01/1900.");
+        }
+        if (dob.isAfter(maxDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Date of birth cannot be in the future.");
         }
 
-        // Check duplicate nationalId or email (BR-02)
-        if (userRepository.existsByEmail(email) || userRepository.existsByNationalId(nationalId)) {
-            log.info("Registration attempt with existing email or nationalId: {}", email);
+        // Check duplicate email or phone
+        if (userRepository.existsByEmail(email)) {
+            log.info("Registration attempt with existing email: {}", email);
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "National ID or email already exists."); // MSG-01
+                    "Email already exists.");
+        }
+        if (userRepository.existsByPhone(phone)) {
+            log.info("Registration attempt with existing phone: {}", phone);
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Phone number already exists.");
         }
 
         User user = new User();
         user.setName(fullName);
         user.setEmail(email);
-        user.setNationalId(nationalId);
         user.setPhone(phone);
         user.setDob(dob);
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(email);
-        user.setNationalIdVerified(false);
-
-        // Address fields (optional)
-        user.setProvinceCode(request.getProvinceCode());
-        user.setProvinceName(request.getProvinceName());
-        user.setWardCode(request.getWardCode());
-        user.setWardName(request.getWardName());
-        user.setSpecificAddress(request.getSpecificAddress());
 
         Role defaultRole = roleRepository.findById(2);// .orElse(null)
         user.setRole(defaultRole);
 
         userRepository.save(user);
 
-        log.info("User registered successfully: {} (National ID: {})", email, nationalId);
+        log.info("User registered successfully: {}", email);
 
         String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole().getName());
         String refreshTokenValue = UUID.randomUUID().toString();
