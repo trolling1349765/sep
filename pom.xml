@@ -153,6 +153,10 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <!-- Spring Security Crypto (bcrypt) is included via spring-boot-starter-security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

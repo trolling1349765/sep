@@ -185,7 +185,7 @@ export default function LoginPage() {
                 ) : (
                     <form onSubmit={handleConfirmReset}>
                         <p style={styles.helpText}>
-                            Check the server logs for the reset token. Enter it below with your new password.
+                            Một mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra email và nhập mã OTP cùng mật khẩu mới bên dưới.
                         </p>
                         <div style={styles.field}>
                             <label htmlFor="resetToken">Reset Token</label>

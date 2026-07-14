@@ -4,6 +4,7 @@ import fpt.capstone.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Repository
@@ -27,4 +28,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     User getUserById(String id);
 
     Optional<User> findByUsername(String username);
+
+    // Find users with non-null reset token that haven't been used and haven't
+    // expired
+    // Used for matching hashed reset tokens
+    java.util.List<User> findByPasswordResetTokenIsNotNullAndPasswordResetUsedFalseAndPasswordResetTokenExpiryAfter(
+            Instant now);
 }

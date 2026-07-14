@@ -1,0 +1,64 @@
+package fpt.capstone.service;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Per-email rate limiter for password reset OTP requests.
+ * Each email gets a token bucket with reset-password.otp.max-attempts per
+ * window.
+ */
+@Service
+public class PasswordResetRateLimiterService {
+
+    private final int maxAttempts;
+    private final long windowMillis;
+    private final ConcurrentHashMap<String, TokenBucket> cache = new ConcurrentHashMap<>();
+
+    public PasswordResetRateLimiterService(
+            @Value("${auth.reset-password.otp.max-attempts}") int maxAttempts,
+            @Value("${auth.reset-password.otp.window-minutes}") int windowMinutes) {
+        this.maxAttempts = maxAttempts;
+        this.windowMillis = windowMinutes * 60_000L;
+    }
+
+    public RateLimitResult tryConsume(String email) {
+        TokenBucket bucket = cache.computeIfAbsent(email, k -> new TokenBucket(maxAttempts));
+        synchronized (bucket) {
+            long now = System.currentTimeMillis();
+            long elapsed = now - bucket.lastRefillTimestamp;
+            if (elapsed > 0) {
+                long tokensToAdd = elapsed * maxAttempts / windowMillis;
+                if (tokensToAdd > 0) {
+                    bucket.tokens = Math.min(maxAttempts, bucket.tokens + tokensToAdd);
+                    bucket.lastRefillTimestamp = now;
+                }
+            }
+
+            if (bucket.tokens > 0) {
+                bucket.tokens--;
+                return new RateLimitResult(true, 0);
+            }
+
+            long waitMillis = windowMillis - (now - bucket.lastRefillTimestamp);
+            long retryAfterSeconds = Math.max(1, (waitMillis + 999) / 1000);
+            return new RateLimitResult(false, retryAfterSeconds);
+        }
+    }
+
+    public record RateLimitResult(boolean allowed, long retryAfterSeconds) {
+    }
+
+    private static class TokenBucket {
+        long tokens;
+        long lastRefillTimestamp;
+
+        TokenBucket(long initialTokens) {
+            this.tokens = initialTokens;
+            this.lastRefillTimestamp = System.currentTimeMillis();
+        }
+    }
+}
