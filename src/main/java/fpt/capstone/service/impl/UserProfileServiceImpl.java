@@ -36,11 +36,34 @@ public class UserProfileServiceImpl implements UserProfileService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
 
-        // Name is read-only - cannot be changed here
+        // Update name
+        if (request.getName() != null) {
+            user.setName(request.getName().trim());
+        }
+
+        // Update national ID
+        if (request.getNationalId() != null) {
+            user.setNationalId(request.getNationalId().trim());
+        }
+
+        // Update date of birth
+        if (request.getDob() != null) {
+            user.setDob(request.getDob());
+        }
+
+        // Update email
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail().trim().toLowerCase());
+        }
 
         // Update phone
         if (request.getPhone() != null) {
             user.setPhone(request.getPhone().trim());
+        }
+
+        // Update gender
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
         }
 
         // Update address fields

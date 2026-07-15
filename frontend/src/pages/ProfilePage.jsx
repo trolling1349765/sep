@@ -105,6 +105,12 @@ export default function ProfilePage() {
                         </span>
                     </div>
                     <div style={styles.infoRow}>
+                        <span style={styles.label}>Gender</span>
+                        <span style={styles.value}>
+                            {profile.gender === true ? 'Male' : profile.gender === false ? 'Female' : 'Not set'}
+                        </span>
+                    </div>
+                    <div style={styles.infoRow}>
                         <span style={styles.label}>Date of Birth</span>
                         <span style={styles.value}>{formatDob(profile.dob)}</span>
                     </div>
