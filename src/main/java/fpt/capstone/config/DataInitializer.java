@@ -108,6 +108,7 @@ public class DataInitializer implements CommandLineRunner {
                         .policy(p2)
                         .title("chapter I")
                         .build();
+                c2 = chapterRepository.save(c2);
                 articleRepository.save(Article.builder()
                                 .chapter(c2).articleNo(1)
                                 .title("Đối tượng thụ hưởng")
