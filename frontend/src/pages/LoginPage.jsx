@@ -6,7 +6,7 @@ export default function LoginPage() {
     const { login, requestPasswordReset, confirmPasswordReset } = useAuth();
     const navigate = useNavigate();
 
-    const [nationalId, setNationalId] = useState('');
+    const [credential, setCredential] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,16 +21,23 @@ export default function LoginPage() {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
-        if (!nationalId || !password) {
-            setError('National ID and password are required.');
+        if (!credential || !password) {
+            setError('Email or phone number and password are required.');
+            return;
+        }
+        const trimmed = credential.trim();
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+        const isPhone = /^0\d{9}$/.test(trimmed);
+        if (!isEmail && !isPhone) {
+            setError('Please enter a valid email or a 10-digit phone number starting with 0.');
             return;
         }
         setLoading(true);
         try {
-            const result = await login(nationalId, password);
+            const result = await login(credential, password);
             if (result.success) {
                 const userRole = result.role || result.user?.role || result.user?.data?.role;
-                if (userRole === 'OFF1') {
+                if (userRole === 'Reception') {
                     navigate('/application/receipt');
                 } else {
                     navigate('/');
@@ -103,19 +110,15 @@ export default function LoginPage() {
                 {!showForgotPassword ? (
                     <form onSubmit={handleLogin}>
                         <div style={styles.field}>
-                            <label htmlFor="nationalId">National ID</label>
+                            <label htmlFor="credential">Email or Phone Number</label>
                             <input
-                                id="nationalId"
+                                id="credential"
                                 type="text"
-                                value={nationalId}
-                                onChange={(e) => {
-                                    const val = e.target.value.replace(/\D/g, '');
-                                    if (val.length <= 12) setNationalId(val);
-                                }}
+                                value={credential}
+                                onChange={(e) => setCredential(e.target.value)}
                                 style={styles.input}
-                                autoComplete="off"
-                                placeholder="Enter 12-digit National ID"
-                                maxLength={12}
+                                autoComplete="username"
+                                placeholder="Enter your email or phone number"
                             />
                         </div>
                         <div style={styles.field}>
@@ -189,7 +192,7 @@ export default function LoginPage() {
                 ) : (
                     <form onSubmit={handleConfirmReset}>
                         <p style={styles.helpText}>
-                            Check the server logs for the reset token. Enter it below with your new password.
+                            Một mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra email và nhập mã OTP cùng mật khẩu mới bên dưới.
                         </p>
                         <div style={styles.field}>
                             <label htmlFor="resetToken">Reset Token</label>

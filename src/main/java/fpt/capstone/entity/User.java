@@ -117,5 +117,15 @@ public class User extends BaseEntity {
     Instant lastLoginAt;
 
     @Column(name = "gender")
-    boolean gender;
+    Boolean gender;
+
+    @Column(name = "password_reset_token", length = 512)
+    String passwordResetToken;
+
+    @Column(name = "password_reset_token_expiry")
+    Instant passwordResetTokenExpiry;
+
+    @Builder.Default
+    @Column(name = "password_reset_used")
+    boolean passwordResetUsed = false;
 }

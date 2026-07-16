@@ -6,28 +6,28 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Token-bucket rate limiter dedicated to registration endpoints.
- * Configured separately from login rate limiting.
+ * Per-email rate limiter for password reset OTP requests.
+ * Each email gets a token bucket with reset-password.otp.max-attempts per
+ * window.
  */
 @Service
-public class RegistrationRateLimiterService {
+public class PasswordResetRateLimiterService {
 
     private final int maxAttempts;
     private final long windowMillis;
     private final ConcurrentHashMap<String, TokenBucket> cache = new ConcurrentHashMap<>();
 
-    public RegistrationRateLimiterService(
-            @Value("${auth.rate-limit.register.max-attempts}") int maxAttempts,
-            @Value("${auth.rate-limit.register.window-minutes}") int windowMinutes) {
+    public PasswordResetRateLimiterService(
+            @Value("${auth.reset-password.otp.max-attempts}") int maxAttempts,
+            @Value("${auth.reset-password.otp.window-minutes}") int windowMinutes) {
         this.maxAttempts = maxAttempts;
         this.windowMillis = windowMinutes * 60_000L;
     }
 
-    public RateLimitResult tryConsume(String key) {
-        TokenBucket bucket = cache.computeIfAbsent(key, k -> new TokenBucket(maxAttempts));
+    public RateLimitResult tryConsume(String email) {
+        TokenBucket bucket = cache.computeIfAbsent(email, k -> new TokenBucket(maxAttempts));
         synchronized (bucket) {
             long now = System.currentTimeMillis();
-
             long elapsed = now - bucket.lastRefillTimestamp;
             if (elapsed > 0) {
                 long tokensToAdd = elapsed * maxAttempts / windowMillis;

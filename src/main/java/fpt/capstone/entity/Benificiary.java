@@ -76,7 +76,7 @@ public class Benificiary extends BaseEntity{
     @Column(name = "official_date")
     LocalDate officialDate;
 
-    @Column(name = "rank")
+    @Column(name = "ranks")
     String rank;
 
     @Column(name = "work_unit")

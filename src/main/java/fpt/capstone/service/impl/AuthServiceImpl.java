@@ -14,14 +14,14 @@ import fpt.capstone.repository.RoleRepository;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.AccountLockService;
 import fpt.capstone.service.AuthService;
+import fpt.capstone.service.EmailService;
 import fpt.capstone.service.PasswordChangeRateLimiterService;
+import fpt.capstone.service.PasswordResetRateLimiterService;
 import fpt.capstone.service.RateLimiterService;
-import fpt.capstone.service.RegistrationRateLimiterService;
 import fpt.capstone.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +31,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -39,7 +38,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
@@ -48,31 +46,49 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final JwtUtil jwtUtil;
     private final RateLimiterService rateLimiterService;
-    private final RegistrationRateLimiterService registrationRateLimiterService;
     private final AccountLockService accountLockService;
     private final PasswordChangeRateLimiterService passwordChangeRateLimiterService;
+    private final PasswordResetRateLimiterService passwordResetRateLimiterService;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+
+    private final int resetTokenExpiryMinutes;
+
+    public AuthServiceImpl(
+            UserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            RoleRepository roleRepository,
+            JwtUtil jwtUtil,
+            RateLimiterService rateLimiterService,
+            AccountLockService accountLockService,
+            PasswordChangeRateLimiterService passwordChangeRateLimiterService,
+            PasswordResetRateLimiterService passwordResetRateLimiterService,
+            EmailService emailService,
+            PasswordEncoder passwordEncoder,
+            @org.springframework.beans.factory.annotation.Value("${auth.reset-password.otp.expiry-minutes}") int resetTokenExpiryMinutes) {
+        this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.roleRepository = roleRepository;
+        this.jwtUtil = jwtUtil;
+        this.rateLimiterService = rateLimiterService;
+        this.accountLockService = accountLockService;
+        this.passwordChangeRateLimiterService = passwordChangeRateLimiterService;
+        this.passwordResetRateLimiterService = passwordResetRateLimiterService;
+        this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
+        this.resetTokenExpiryMinutes = resetTokenExpiryMinutes;
+    }
 
     private static final String ACCESS_TOKEN_COOKIE = "access_token";
     private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Z])(?=.*\\d).+$");
     private static final int MIN_PASSWORD_LENGTH = 8;
     private static final int MAX_PASSWORD_LENGTH = 128;
-    private static final int MIN_AGE = 15;
 
     @Override
     @Transactional
     public LoginResponse register(RegisterRequest request, HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String ip = getClientIp(httpRequest);
-
-        RegistrationRateLimiterService.RateLimitResult rateLimit = registrationRateLimiterService.tryConsume(ip);
-        if (!rateLimit.allowed()) {
-            httpResponse.setHeader("Retry-After", String.valueOf(rateLimit.retryAfterSeconds()));
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
-                    "Too many registration attempts. Retry after " + rateLimit.retryAfterSeconds() + " seconds.");
-        }
-
         try {
             return doRegister(request, httpRequest, httpResponse);
         } catch (org.springframework.dao.DataAccessException e) {
@@ -87,7 +103,6 @@ public class AuthServiceImpl implements AuthService {
             HttpServletResponse httpResponse) {
         String fullName = request.getFullName().trim();
         String email = request.getEmail().toLowerCase().trim();
-        String nationalId = request.getNationalId().trim();
         String phone = request.getPhone().trim();
         String password = request.getPassword();
         String passwordConfirmation = request.getPasswordConfirmation();
@@ -100,7 +115,7 @@ public class AuthServiceImpl implements AuthService {
 
         validatePassword(password);
 
-        // Validate age (minimum 15 years)
+        // Validate date of birth
         LocalDate dob;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -110,42 +125,45 @@ public class AuthServiceImpl implements AuthService {
                     "Invalid date of birth format. Use DD/MM/YYYY.");
         }
 
-        int age = Period.between(dob, LocalDate.now()).getYears();
-        if (age < MIN_AGE) {
+        LocalDate minDate = LocalDate.of(1900, 1, 1);
+        LocalDate maxDate = LocalDate.now();
+        if (dob.isBefore(minDate)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "You must be at least " + MIN_AGE + " years old to register.");
+                    "Date of birth cannot be before 01/01/1900.");
+        }
+        if (dob.isAfter(maxDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Date of birth cannot be in the future.");
         }
 
-        // Check duplicate nationalId or email (BR-02)
-        if (userRepository.existsByEmail(email) || userRepository.existsByNationalId(nationalId)) {
-            log.info("Registration attempt with existing email or nationalId: {}", email);
+        // Check duplicate email or phone
+        if (userRepository.existsByEmail(email)) {
+            log.info("Registration attempt with existing email: {}", email);
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "National ID or email already exists."); // MSG-01
+                    "Email already exists.");
+        }
+        if (userRepository.existsByPhone(phone)) {
+            log.info("Registration attempt with existing phone: {}", phone);
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Phone number already exists.");
         }
 
         User user = new User();
         user.setName(fullName);
         user.setEmail(email);
-        user.setNationalId(nationalId);
         user.setPhone(phone);
         user.setDob(dob);
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(email);
-        user.setNationalIdVerified(false);
 
-        // Address fields (optional)
-        user.setProvinceCode(request.getProvinceCode());
-        user.setProvinceName(request.getProvinceName());
-        user.setWardCode(request.getWardCode());
-        user.setWardName(request.getWardName());
-        user.setSpecificAddress(request.getSpecificAddress());
-
-        Role defaultRole = roleRepository.findById(2);//.orElse(null)
+        Role defaultRole = roleRepository.findByName("Citizen")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Default Citizen role is not configured. Please contact the administrator."));
         user.setRole(defaultRole);
 
         userRepository.save(user);
 
-        log.info("User registered successfully: {} (National ID: {})", email, nationalId);
+        log.info("User registered successfully: {}", email);
 
         String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getRole().getName());
         String refreshTokenValue = UUID.randomUUID().toString();
@@ -181,9 +199,18 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "Too many login attempts. Retry after " + rateLimit.retryAfterSeconds() + " seconds.");
         }
-        String nationalId = request.getNationalId().trim();
+        String credential = request.getCredential().trim();
 
-        User user = userRepository.findUserByNationalId(nationalId);
+        // Determine credential type: email or phone
+        User user = null;
+        if (credential.contains("@")) {
+            // Email
+            user = userRepository.findUserByEmail(credential.toLowerCase());
+        } else {
+            // Phone number
+            user = userRepository.findUserByPhone(credential);
+        }
+
         if (user == null) {
             // Generic error message (MSG-05) - don't reveal which field is wrong
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
@@ -191,8 +218,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (accountLockService.isAccountLocked(user)) {
-            long remaining = accountLockService.getLockRemainingSeconds(user);
-            long remainingMinutes = (long) Math.ceil(remaining / 60.0);
             throw new ResponseStatusException(HttpStatus.LOCKED,
                     "Your account is temporarily locked. Please try again later.");
         }
@@ -229,8 +254,6 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponse.fromUser(user, accessTokenExpiry);
     }
 
-    // ... rest of the methods remain the same (refresh, logout, changePassword,
-    // etc.)
     @Override
     @Transactional
     public LoginResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
@@ -240,10 +263,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String[] parts = refreshCookieValue.split(":", 2);
-        if (parts.length != 2) {
-            revokeTokenFamilyByCookieValue(refreshCookieValue, response);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token format.");
-        }
 
         long tokenId;
         try {
@@ -351,36 +370,57 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void requestPasswordReset(PasswordResetRequest request) {
         String email = request.getEmail().toLowerCase().trim();
+
+        // Rate limit check by email
+        PasswordResetRateLimiterService.RateLimitResult rateLimit = passwordResetRateLimiterService.tryConsume(email);
+        if (!rateLimit.allowed()) {
+            log.warn("Password reset rate limited for email: {}", email);
+            // Always return generic message to not reveal if email exists
+            return;
+        }
+
         User user = userRepository.findUserByEmail(email);
         if (user == null) {
             log.info("Password reset requested for non-existent email: {}", email);
             return;
         }
 
-        String resetToken = UUID.randomUUID().toString();
-        user.setPassword(passwordEncoder.encode("RESET_" + resetToken + "_" + user.getId()));
+        // Generate OTP token
+        String rawOtp = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+
+        // Hash OTP before storing in DB (never store plain-text)
+        user.setPasswordResetToken(passwordEncoder.encode(rawOtp));
+        user.setPasswordResetTokenExpiry(Instant.now().plusSeconds(resetTokenExpiryMinutes * 60L));
+        user.setPasswordResetUsed(false);
         userRepository.save(user);
 
-        log.warn("Password reset token for {}: {}", email, resetToken);
+        // Send email with plain-text OTP (NOT logged anywhere)
+        emailService.sendPasswordResetEmail(email, rawOtp);
+
+        log.info("Password reset OTP sent to email: {}", email);
     }
 
     @Override
     @Transactional
     public void confirmPasswordReset(PasswordResetConfirmRequest request) {
-        String resetToken = request.getResetToken();
+        String rawOtp = request.getResetToken();
         String newPassword = request.getNewPassword();
 
-        validatePassword(newPassword);
-
-        if (resetToken == null || resetToken.isBlank()) {
+        if (rawOtp == null || rawOtp.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reset token is required.");
         }
 
+        validatePassword(newPassword);
+
+        // Find all users with valid (non-expired, unused) reset tokens
+        java.util.List<User> candidates = userRepository
+                .findByPasswordResetTokenIsNotNullAndPasswordResetUsedFalseAndPasswordResetTokenExpiryAfter(
+                        Instant.now());
+
         User matchedUser = null;
-        for (User user : userRepository.findAll()) {
-            if (user.getPassword().startsWith("$2a$")
-                    && passwordEncoder.matches("RESET_" + resetToken + "_" + user.getId(), user.getPassword())) {
-                matchedUser = user;
+        for (User candidate : candidates) {
+            if (passwordEncoder.matches(rawOtp, candidate.getPasswordResetToken())) {
+                matchedUser = candidate;
                 break;
             }
         }
@@ -389,7 +429,15 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or expired reset token.");
         }
 
+        // Mark token as used (single-use)
+        matchedUser.setPasswordResetUsed(true);
+        matchedUser.setPasswordResetToken(null);
+        matchedUser.setPasswordResetTokenExpiry(null);
+
+        // Update password
         matchedUser.setPassword(passwordEncoder.encode(newPassword));
+
+        // Unlock account and revoke all sessions
         accountLockService.unlockAccount(matchedUser);
         refreshTokenRepository.revokeAllByUserId(matchedUser.getId());
         userRepository.save(matchedUser);
@@ -489,15 +537,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void revokeTokenFamilyByCookieValue(String cookieValue, HttpServletResponse response) {
-        if (cookieValue != null && cookieValue.contains(":")) {
-            try {
-                long tokenId = Long.parseLong(cookieValue.split(":")[0]);
-                RefreshToken token = refreshTokenRepository.findById(tokenId).orElse(null);
-                if (token != null) {
-                    refreshTokenRepository.revokeFamily(token.getFamilyId());
-                }
-            } catch (Exception ignored) {
+        try {
+            long tokenId = Long.parseLong(cookieValue.split(":")[0]);
+            RefreshToken token = refreshTokenRepository.findById(tokenId).orElse(null);
+            if (token != null) {
+                refreshTokenRepository.revokeFamily(token.getFamilyId());
             }
+        } catch (Exception ignored) {
         }
         revokeCookies(response);
     }

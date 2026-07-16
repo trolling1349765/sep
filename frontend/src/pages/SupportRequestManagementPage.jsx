@@ -163,7 +163,7 @@ export default function SupportRequestManagementPage() {
 
     // Check if user has officer role (simplified check)
     const isOfficer =
-        user?.role === 'RECEPTION_OFFICER' || user?.role === 'SOCIAL_AFFAIRS_OFFICER';
+        user?.role === 'Reception' || user?.role === 'Appraisal';
 
     if (!user) {
         return (

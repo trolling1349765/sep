@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 User user = userRepository.getUserById(userId);
 
                 if (user != null) {
-                    String role = user.getRole() != null ? user.getRole().getName() : "USER";
+                    String role = user.getRole() != null ? user.getRole().getName() : "Citizen";
                     List<SimpleGrantedAuthority> authorities = Collections.singletonList(
                             new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
 

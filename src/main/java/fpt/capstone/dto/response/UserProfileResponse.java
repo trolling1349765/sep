@@ -32,6 +32,7 @@ public class UserProfileResponse {
     String role;
     LocalDate dob;
     Boolean nationalIdVerified;
+    Boolean gender;
 
     public static UserProfileResponse fromUser(User user) {
         String fullAddress = buildFullAddress(user);
@@ -51,9 +52,10 @@ public class UserProfileResponse {
                 .fullAddress(fullAddress)
                 .avatarUrl(user.getAvatarUrl())
                 .status(user.getStatus() != null ? user.getStatus().name() : "ACTIVE")
-                .role(user.getRole() != null ? user.getRole().getName() : "USER")
+                .role(user.getRole() != null ? user.getRole().getName() : "Citizen")
                 .dob(user.getDob())
                 .nationalIdVerified(user.getNationalIdVerified() != null ? user.getNationalIdVerified() : false)
+                .gender(user.getGender())
                 .build();
     }
 

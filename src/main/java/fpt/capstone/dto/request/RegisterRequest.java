@@ -7,8 +7,6 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
-
 @Data
 @NoArgsConstructor
 @Builder
@@ -19,10 +17,6 @@ public class RegisterRequest {
     @NotBlank(message = "Full name is required.")
     String fullName;
 
-    @NotBlank(message = "National ID is required.")
-    @Pattern(regexp = "^[0-9]{12}$", message = "National ID must be exactly 12 digits.")
-    String nationalId;
-
     @NotBlank(message = "Date of birth is required.")
     String dateOfBirth;
 
@@ -31,7 +25,7 @@ public class RegisterRequest {
     String email;
 
     @NotBlank(message = "Phone number is required.")
-    @Pattern(regexp = "^(0[0-9]{9}|\\+84[0-9]{9})$", message = "Phone must be 10 digits starting with 0 or +84.")
+    @Pattern(regexp = "^0[0-9]{9}$", message = "Phone must be exactly 10 digits starting with 0.")
     String phone;
 
     @NotBlank(message = "Password is required.")
@@ -40,9 +34,4 @@ public class RegisterRequest {
     @NotBlank(message = "Password confirmation is required.")
     String passwordConfirmation;
 
-    String provinceCode;
-    String provinceName;
-    String wardCode;
-    String wardName;
-    String specificAddress;
 }
