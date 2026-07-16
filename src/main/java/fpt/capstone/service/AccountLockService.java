@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -23,7 +24,10 @@ public class AccountLockService {
     @Value("${auth.lock.duration-minutes}")
     private int lockDurationMinutes;
 
-    @Transactional
+    // REQUIRES_NEW: the caller (login) throws 401 right after recording the
+    // attempt, which rolls its transaction back - the counter and the lock
+    // must survive that rollback or lockout never takes effect.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void recordFailedAttempt(User user) {
         int attempts = user.getFailedLoginAttempts() + 1;
         user.setFailedLoginAttempts(attempts);

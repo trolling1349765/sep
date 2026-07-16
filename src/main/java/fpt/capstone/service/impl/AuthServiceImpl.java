@@ -236,7 +236,7 @@ public class AuthServiceImpl implements AuthService {
         String familyId = UUID.randomUUID().toString();
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .token(refreshTokenValue)
+                .token(passwordEncoder.encode(refreshTokenValue))
                 .userId(user.getId())
                 .familyId(familyId)
                 .expiresAt(Instant.now().plusMillis(jwtUtil.getRefreshTokenExpiration()))
@@ -323,7 +323,7 @@ public class AuthServiceImpl implements AuthService {
         String newRefreshTokenValue = UUID.randomUUID().toString();
 
         RefreshToken newRefreshTokenEntity = RefreshToken.builder()
-                .token(newRefreshTokenValue)
+                .token(passwordEncoder.encode(newRefreshTokenValue))
                 .userId(user.getId())
                 .familyId(storedToken.getFamilyId())
                 .expiresAt(Instant.now().plusMillis(jwtUtil.getRefreshTokenExpiration()))
