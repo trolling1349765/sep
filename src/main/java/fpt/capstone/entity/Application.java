@@ -32,7 +32,7 @@ public class Application extends BaseEntity {
     LocalDate approveDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "submit_by")
+    @JoinColumn(name = "submit_by")
     User submitBy;
 
     @Column(name = "submit_date")

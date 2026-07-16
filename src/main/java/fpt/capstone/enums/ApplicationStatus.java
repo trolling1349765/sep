@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public enum ApplicationStatus {
     DRAFT("Draft"),
-    SUBMITTED("SUBMITTED"),
+    PENDING("PENDING"),
     CHECKED("CHECKED"),
     IN_PROGRESS("IN_PROGRESS"),
     COMPLETED("COMPLETED"),
