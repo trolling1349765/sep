@@ -387,6 +387,22 @@ class AuthServiceImplTest {
                         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, ex.getStatusCode());
                         assertTrue(ex.getReason().contains("Service temporarily unavailable"));
                 }
+
+                @Test
+                void register_citizenRoleMissing_throwsInternalServerError() {
+                        // Arrange
+                        when(userRepository.existsByEmail(testEmail)).thenReturn(false);
+                        when(userRepository.existsByPhone("0123456789")).thenReturn(false);
+                        when(passwordEncoder.encode(testPassword)).thenReturn(testEncodedPassword);
+                        when(roleRepository.findByName("Citizen")).thenReturn(Optional.empty());
+
+                        // Act & Assert
+                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                                        () -> authService.register(validRequest, httpRequest, httpResponse));
+                        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getStatusCode());
+                        assertTrue(ex.getReason().contains("Default Citizen role"));
+                        verify(userRepository, never()).save(any());
+                }
         }
 
         // ============================================================
@@ -455,12 +471,13 @@ class AuthServiceImplTest {
                 }
 
                 @Test
-                void login_successByNationalId() {
-                        // Arrange
+                void login_twelveDigitCredential_looksUpByPhone() {
+                        // Arrange - national ID login was removed: a 12-digit credential
+                        // is treated as a phone number lookup
                         loginRequest.setCredential("123456789012");
                         when(rateLimiterService.tryConsume(testIp))
                                         .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
-                        when(userRepository.findUserByNationalId("123456789012")).thenReturn(testUser);
+                        when(userRepository.findUserByPhone("123456789012")).thenReturn(testUser);
                         when(accountLockService.isAccountLocked(testUser)).thenReturn(false);
                         when(passwordEncoder.matches(testPassword, testEncodedPassword)).thenReturn(true);
                         when(jwtUtil.generateAccessToken(testUserId, testEmail, "Citizen")).thenReturn("access-token");
@@ -473,6 +490,7 @@ class AuthServiceImplTest {
                         // Assert
                         assertNotNull(response);
                         assertEquals(testEmail, response.getEmail());
+                        verify(userRepository).findUserByPhone("123456789012");
                         verify(accountLockService).resetFailedAttempts(testUser);
                 }
 
@@ -497,7 +515,6 @@ class AuthServiceImplTest {
                                         .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
                         when(userRepository.findUserByEmail(testEmail.toLowerCase())).thenReturn(testUser);
                         when(accountLockService.isAccountLocked(testUser)).thenReturn(true);
-                        when(accountLockService.getLockRemainingSeconds(testUser)).thenReturn(300L);
 
                         // Act & Assert
                         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
@@ -589,6 +606,19 @@ class AuthServiceImplTest {
                 void refreshAccessToken_cookieNull() {
                         // Arrange
                         when(httpRequest.getCookies()).thenReturn(null);
+
+                        // Act & Assert
+                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                                        () -> authService.refreshAccessToken(httpRequest, httpResponse));
+                        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
+                        assertTrue(ex.getReason().contains("No valid refresh token"));
+                }
+
+                @Test
+                void refreshAccessToken_refreshCookieAbsent_throwsUnauthorized() {
+                        // Arrange - cookie array present but contains no refresh_token cookie
+                        Cookie[] cookies = new Cookie[] { new Cookie("access_token", "some-access-token") };
+                        when(httpRequest.getCookies()).thenReturn(cookies);
 
                         // Act & Assert
                         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
@@ -759,6 +789,21 @@ class AuthServiceImplTest {
 
                         // Assert
                         verify(refreshTokenRepository, never()).revokeFamily(anyString());
+                        verify(httpResponse, atLeast(1)).addCookie(any(Cookie.class));
+                }
+
+                @Test
+                void logout_tokenIdNotFound_stillClearsCookies() {
+                        // Arrange
+                        Cookie[] cookies = new Cookie[] { new Cookie("refresh_token", "99:token-value") };
+                        when(httpRequest.getCookies()).thenReturn(cookies);
+                        when(refreshTokenRepository.findById(99L)).thenReturn(Optional.empty());
+
+                        // Act
+                        authService.logout(httpRequest, httpResponse);
+
+                        // Assert - familyId resolves to null but cookies are still cleared
+                        verify(refreshTokenRepository).revokeFamily(isNull());
                         verify(httpResponse, atLeast(1)).addCookie(any(Cookie.class));
                 }
 
@@ -973,6 +1018,45 @@ class AuthServiceImplTest {
                         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
                         assertTrue(ex.getReason().contains("Password must be between"));
                 }
+
+                @Test
+                void confirmPasswordReset_newPasswordNull_throwsBadRequest() {
+                        // Arrange
+                        request.setNewPassword(null);
+
+                        // Act & Assert
+                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                                        () -> authService.confirmPasswordReset(request));
+                        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+                        assertTrue(ex.getReason().contains("Password must be between"));
+                        verify(userRepository, never()).save(any());
+                }
+
+                @Test
+                void confirmPasswordReset_secondCandidateMatches() {
+                        // Arrange - two candidates; the OTP only matches the second one
+                        User otherCandidate = new User();
+                        otherCandidate.setId("other-user-id");
+                        otherCandidate.setEmail("other@example.com");
+                        otherCandidate.setPasswordResetToken("other-encoded-otp");
+                        when(userRepository
+                                        .findByPasswordResetTokenIsNotNullAndPasswordResetUsedFalseAndPasswordResetTokenExpiryAfter(
+                                                        any(Instant.class)))
+                                        .thenReturn(List.of(otherCandidate, userWithResetToken));
+                        when(passwordEncoder.matches("VALID-OTP-TOKEN", "other-encoded-otp")).thenReturn(false);
+                        when(passwordEncoder.matches("VALID-OTP-TOKEN", "encoded-otp")).thenReturn(true);
+                        when(passwordEncoder.encode("NewPassword1")).thenReturn("new-encoded-password");
+
+                        // Act
+                        authService.confirmPasswordReset(request);
+
+                        // Assert - only the matching (second) candidate is updated
+                        verify(userRepository).save(userCaptor.capture());
+                        assertEquals(testUserId, userCaptor.getValue().getId());
+                        verify(accountLockService).unlockAccount(userWithResetToken);
+                        verify(accountLockService, never()).unlockAccount(otherCandidate);
+                        verify(refreshTokenRepository).revokeAllByUserId(testUserId);
+                }
         }
 
         // ============================================================
@@ -1163,6 +1247,35 @@ class AuthServiceImplTest {
                         LoginResponse response = authService.login(loginRequest, httpRequest, httpResponse);
                         assertNotNull(response);
                         verify(rateLimiterService).tryConsume("192.168.1.100");
+                }
+
+                @Test
+                void getClientIp_blankXForwardedFor_usesXRealIp() {
+                        // Arrange
+                        when(httpRequest.getHeader("X-Forwarded-For")).thenReturn("   ");
+                        when(httpRequest.getHeader("X-Real-IP")).thenReturn("10.0.0.7");
+                        when(rateLimiterService.tryConsume("10.0.0.7"))
+                                        .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
+
+                        // Act & Assert
+                        LoginResponse response = authService.login(loginRequest, httpRequest, httpResponse);
+                        assertNotNull(response);
+                        verify(rateLimiterService).tryConsume("10.0.0.7");
+                }
+
+                @Test
+                void getClientIp_blankXRealIp_usesRemoteAddr() {
+                        // Arrange
+                        when(httpRequest.getHeader("X-Forwarded-For")).thenReturn(null);
+                        when(httpRequest.getHeader("X-Real-IP")).thenReturn("  ");
+                        when(httpRequest.getRemoteAddr()).thenReturn("192.168.1.50");
+                        when(rateLimiterService.tryConsume("192.168.1.50"))
+                                        .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
+
+                        // Act & Assert
+                        LoginResponse response = authService.login(loginRequest, httpRequest, httpResponse);
+                        assertNotNull(response);
+                        verify(rateLimiterService).tryConsume("192.168.1.50");
                 }
         }
 }

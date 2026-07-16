@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class LoginRequest {
 
-    @NotBlank(message = "Email, phone number, or National ID is required")
+    @NotBlank(message = "Email or phone number is required")
     String credential;
 
     @NotBlank(message = "Password is required")

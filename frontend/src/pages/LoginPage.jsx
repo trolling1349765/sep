@@ -22,7 +22,14 @@ export default function LoginPage() {
         e.preventDefault();
         setError('');
         if (!credential || !password) {
-            setError('Email, phone number, or National ID and password are required.');
+            setError('Email or phone number and password are required.');
+            return;
+        }
+        const trimmed = credential.trim();
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+        const isPhone = /^0\d{9}$/.test(trimmed);
+        if (!isEmail && !isPhone) {
+            setError('Please enter a valid email or a 10-digit phone number starting with 0.');
             return;
         }
         setLoading(true);
@@ -103,7 +110,7 @@ export default function LoginPage() {
                 {!showForgotPassword ? (
                     <form onSubmit={handleLogin}>
                         <div style={styles.field}>
-                            <label htmlFor="credential">Email</label>
+                            <label htmlFor="credential">Email or Phone Number</label>
                             <input
                                 id="credential"
                                 type="text"
@@ -111,7 +118,7 @@ export default function LoginPage() {
                                 onChange={(e) => setCredential(e.target.value)}
                                 style={styles.input}
                                 autoComplete="username"
-                                placeholder="Enter your email, phone number, or 12-digit National ID"
+                                placeholder="Enter your email or phone number"
                             />
                         </div>
                         <div style={styles.field}>

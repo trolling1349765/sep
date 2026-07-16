@@ -31,7 +31,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
@@ -85,7 +84,6 @@ public class AuthServiceImpl implements AuthService {
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Z])(?=.*\\d).+$");
     private static final int MIN_PASSWORD_LENGTH = 8;
     private static final int MAX_PASSWORD_LENGTH = 128;
-    private static final int MIN_AGE = 15;
 
     @Override
     @Transactional
@@ -203,14 +201,11 @@ public class AuthServiceImpl implements AuthService {
         }
         String credential = request.getCredential().trim();
 
-        // Determine credential type: email, phone, or national ID
+        // Determine credential type: email or phone
         User user = null;
         if (credential.contains("@")) {
             // Email
             user = userRepository.findUserByEmail(credential.toLowerCase());
-        } else if (credential.matches("\\d{12}")) {
-            // National ID (12 digits)
-            user = userRepository.findUserByNationalId(credential);
         } else {
             // Phone number
             user = userRepository.findUserByPhone(credential);
@@ -223,8 +218,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (accountLockService.isAccountLocked(user)) {
-            long remaining = accountLockService.getLockRemainingSeconds(user);
-            long remainingMinutes = (long) Math.ceil(remaining / 60.0);
             throw new ResponseStatusException(HttpStatus.LOCKED,
                     "Your account is temporarily locked. Please try again later.");
         }
@@ -261,8 +254,6 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponse.fromUser(user, accessTokenExpiry);
     }
 
-    // ... rest of the methods remain the same (refresh, logout, changePassword,
-    // etc.)
     @Override
     @Transactional
     public LoginResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
@@ -272,10 +263,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String[] parts = refreshCookieValue.split(":", 2);
-        if (parts.length != 2) {
-            revokeTokenFamilyByCookieValue(refreshCookieValue, response);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token format.");
-        }
 
         long tokenId;
         try {
@@ -550,15 +537,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void revokeTokenFamilyByCookieValue(String cookieValue, HttpServletResponse response) {
-        if (cookieValue != null && cookieValue.contains(":")) {
-            try {
-                long tokenId = Long.parseLong(cookieValue.split(":")[0]);
-                RefreshToken token = refreshTokenRepository.findById(tokenId).orElse(null);
-                if (token != null) {
-                    refreshTokenRepository.revokeFamily(token.getFamilyId());
-                }
-            } catch (Exception ignored) {
+        try {
+            long tokenId = Long.parseLong(cookieValue.split(":")[0]);
+            RefreshToken token = refreshTokenRepository.findById(tokenId).orElse(null);
+            if (token != null) {
+                refreshTokenRepository.revokeFamily(token.getFamilyId());
             }
+        } catch (Exception ignored) {
         }
         revokeCookies(response);
     }
