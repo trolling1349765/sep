@@ -11,7 +11,19 @@ import java.util.List;
 public interface ApplicationService {
     APIResponse<Page<ApplicationResponse>> getAppications(int size, int page);
 
-    APIResponse<ApplicationResponse> getApplication(int id);
+    APIResponse<Page<ApplicationResponse>> getAppicationsOFF1(int size, int page);
+
+    APIResponse<Page<ApplicationResponse>> getAppicationsOFF2(int size, int page);
+
+    APIResponse<Page<ApplicationResponse>> getAppicationsOFF3(int size, int page);
+
+    APIResponse<Page<ApplicationResponse>> getAppicationsOFF4(int size, int page);
+
+    APIResponse<Page<ApplicationResponse>> getAppicationsDRAFT(int size, int page);
+
+    APIResponse<Page<ApplicationResponse>> getAppications(String submitBy, int size, int page);
+
+    ApplicationResponse getApplication(int id);
 
     Application getApplicationById(int id);
 

@@ -59,4 +59,10 @@ public class RelativeServiceImpl implements RelativeService {
         APIResponse<RelativeResponse> response = APIResponse.success(new RelativeResponse(relative));
         return response;
     }
+
+    @Override
+    public RelativeResponse getRelativeByApplicationId(int applicationId) {
+        RelativeResponse response = new RelativeResponse(relativeRepository.findByApplication(applicationId));
+        return response;
+    }
 }

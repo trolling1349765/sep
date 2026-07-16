@@ -19,12 +19,15 @@ import fpt.capstone.enums.Table;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,153 @@ public class ApplicationServiceImpl implements ApplicationService {
     public APIResponse<Page<ApplicationResponse>> getAppications(int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Application> applications = applicationRepository.findAll(pageable);
+        Page<ApplicationResponse> applicationResponseList= applications.map(ApplicationResponse::new);
+
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponseList);
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF1(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findAll(pageable);
+        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                .filter(a -> ApplicationStatus.PENDING.equals(a.getStatus()))
+                .map(a -> new ApplicationResponse(a))
+                .collect(Collectors.toList());
+
+        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
+
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return response;
+    }
+    @Override
+    public APIResponse<Page<ApplicationResponse>> getAppicationsDRAFT(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findAll(pageable);
+        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                .filter(a -> ApplicationStatus.DRAFT.equals(a.getStatus()))
+                .map(a -> new ApplicationResponse(a))
+                .collect(Collectors.toList());
+
+        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
+
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF2(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findAll(pageable);
+        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                .filter(a -> ApplicationStatus.CHECKED.equals(a.getStatus()))
+                .map(a -> new ApplicationResponse(a))
+                .collect(Collectors.toList());
+
+        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
+
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
+
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF3(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findAll(pageable);
+        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                .filter(a -> ApplicationStatus.IN_PROGRESS.equals(a.getStatus()))
+                .map(a -> new ApplicationResponse(a))
+                .collect(Collectors.toList());
+
+        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
+
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
+
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF4(int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findAll(pageable);
+        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                .filter(a -> ApplicationStatus.COMPLETED.equals(a.getStatus()))
+                .map(a -> new ApplicationResponse(a))
+                .collect(Collectors.toList());
+
+        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
+
+        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
+
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.GET_APPLICATIONS.getAction())
+                .entityType(Table.APPLICATION.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return response;
+    }
+
+    @Override
+    public APIResponse<Page<ApplicationResponse>> getAppications(String submitBy, int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Application> applications = applicationRepository.findBySubmitBy_Id(submitBy, pageable);
         Page<ApplicationResponse> applicationResponseList= applications.map(ApplicationResponse::new);
 
         APIResponse<Page<ApplicationResponse>> response = APIResponse.<Page<ApplicationResponse>>builder()
@@ -64,7 +214,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public APIResponse<ApplicationResponse> getApplication(int applicationId) {
+    public ApplicationResponse getApplication(int applicationId) {
 
         Application application = applicationRepository.findById(applicationId).orElse(null);
 
@@ -87,11 +237,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .build();
         systemLogService.write(log);
 
-        ApplicationResponse applicationResponse = new ApplicationResponse(application);
-
-        APIResponse<ApplicationResponse> response = APIResponse.success(applicationResponse);
-
-        return response;
+        return new ApplicationResponse(application);
     }
 
     @Override

@@ -8,6 +8,7 @@ import fpt.capstone.entity.User;
 import fpt.capstone.service.AdministrativeClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -6,10 +6,14 @@ import fpt.capstone.dto.response.BenificiaryResponse;
 import fpt.capstone.entity.Benificiary;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface BenificiaryService {
     APIResponse<BenificiaryResponse> getBenificiary(int id);
 
-    APIResponse<Page<BenificiaryResponse>> getBenificiary(int size, int page);
+    List<BenificiaryResponse> getBenificiariesByApplicationId(int applicationId);
+
+    APIResponse<Page<BenificiaryResponse>> getBenificiaries(int size, int page);
 
     APIResponse<BenificiaryResponse> createBenificiary(BenificiaryRequest benificiaryRequest);
 }

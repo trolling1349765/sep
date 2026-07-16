@@ -31,6 +31,10 @@ public class Application extends BaseEntity {
     @Column(name = "approve_date")
     LocalDate approveDate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submit_by")
+    User submitBy;
+
     @Column(name = "submit_date")
     LocalDate submitDate;
 

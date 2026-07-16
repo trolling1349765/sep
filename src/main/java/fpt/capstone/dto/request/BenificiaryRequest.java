@@ -16,13 +16,14 @@ public class BenificiaryRequest {
     boolean gender;
     Double assistanceAmount;
     String fullName;
-    String codeName;
     LocalDate dob;
     String CCCD;
     LocalDate issuedDate;
     String issuedPlace;
     String hometown;
     String placeOfResidence;
+
+    String codeName;
     LocalDate joinPartyDate;
     LocalDate officialDate;
     String rank;
