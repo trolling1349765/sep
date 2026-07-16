@@ -5,7 +5,6 @@ import fpt.capstone.dto.response.CccdDetailResponse;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.service.OcrService;
 import fpt.capstone.enums.Action;
-import fpt.capstone.util.OcrUtil;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,6 @@ public class OcrServiceImpl implements OcrService {
 
     @Value("${kraken.docker.url:http://localhost:8000/ocr}")
     private String krakenUrl;
-    private final OcrUtil ocrUtil;
     private final SystemLogServiceImpl systemLogService;
     private final SecurityUtil  securityUtil;
 
