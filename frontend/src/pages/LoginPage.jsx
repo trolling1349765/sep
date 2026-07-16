@@ -30,7 +30,7 @@ export default function LoginPage() {
             const result = await login(credential, password);
             if (result.success) {
                 const userRole = result.role || result.user?.role || result.user?.data?.role;
-                if (userRole === 'OFF1') {
+                if (userRole === 'Reception') {
                     navigate('/application/receipt');
                 } else {
                     navigate('/');
@@ -103,7 +103,7 @@ export default function LoginPage() {
                 {!showForgotPassword ? (
                     <form onSubmit={handleLogin}>
                         <div style={styles.field}>
-                            <label htmlFor="credential">Email, Phone, or National ID</label>
+                            <label htmlFor="credential">Email</label>
                             <input
                                 id="credential"
                                 type="text"

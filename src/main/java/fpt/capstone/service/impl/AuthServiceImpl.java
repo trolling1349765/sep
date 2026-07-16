@@ -18,7 +18,6 @@ import fpt.capstone.service.EmailService;
 import fpt.capstone.service.PasswordChangeRateLimiterService;
 import fpt.capstone.service.PasswordResetRateLimiterService;
 import fpt.capstone.service.RateLimiterService;
-import fpt.capstone.service.RegistrationRateLimiterService;
 import fpt.capstone.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,7 +47,6 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final JwtUtil jwtUtil;
     private final RateLimiterService rateLimiterService;
-    private final RegistrationRateLimiterService registrationRateLimiterService;
     private final AccountLockService accountLockService;
     private final PasswordChangeRateLimiterService passwordChangeRateLimiterService;
     private final PasswordResetRateLimiterService passwordResetRateLimiterService;
@@ -63,7 +61,6 @@ public class AuthServiceImpl implements AuthService {
             RoleRepository roleRepository,
             JwtUtil jwtUtil,
             RateLimiterService rateLimiterService,
-            RegistrationRateLimiterService registrationRateLimiterService,
             AccountLockService accountLockService,
             PasswordChangeRateLimiterService passwordChangeRateLimiterService,
             PasswordResetRateLimiterService passwordResetRateLimiterService,
@@ -75,7 +72,6 @@ public class AuthServiceImpl implements AuthService {
         this.roleRepository = roleRepository;
         this.jwtUtil = jwtUtil;
         this.rateLimiterService = rateLimiterService;
-        this.registrationRateLimiterService = registrationRateLimiterService;
         this.accountLockService = accountLockService;
         this.passwordChangeRateLimiterService = passwordChangeRateLimiterService;
         this.passwordResetRateLimiterService = passwordResetRateLimiterService;
@@ -95,15 +91,6 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public LoginResponse register(RegisterRequest request, HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String ip = getClientIp(httpRequest);
-
-        RegistrationRateLimiterService.RateLimitResult rateLimit = registrationRateLimiterService.tryConsume(ip);
-        if (!rateLimit.allowed()) {
-            httpResponse.setHeader("Retry-After", String.valueOf(rateLimit.retryAfterSeconds()));
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
-                    "Too many registration attempts. Retry after " + rateLimit.retryAfterSeconds() + " seconds.");
-        }
-
         try {
             return doRegister(request, httpRequest, httpResponse);
         } catch (org.springframework.dao.DataAccessException e) {
@@ -171,7 +158,9 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(email);
 
-        Role defaultRole = roleRepository.findById(2);// .orElse(null)
+        Role defaultRole = roleRepository.findByName("Citizen")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Default Citizen role is not configured. Please contact the administrator."));
         user.setRole(defaultRole);
 
         userRepository.save(user);

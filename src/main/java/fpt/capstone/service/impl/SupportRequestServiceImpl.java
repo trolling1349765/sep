@@ -90,8 +90,8 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 
         // Data isolation: citizen can only see their own requests
         boolean isCitizenOwner = supportRequest.getCitizen().getId().equals(user.getId());
-        boolean isOfficer = user.getRole().getName().equals("RECEPTION_OFFICER")
-                || user.getRole().getName().equals("SOCIAL_AFFAIRS_OFFICER");
+        boolean isOfficer = user.getRole().getName().equals("Reception")
+                || user.getRole().getName().equals("Appraisal");
 
         if (!isCitizenOwner && !isOfficer) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied.");

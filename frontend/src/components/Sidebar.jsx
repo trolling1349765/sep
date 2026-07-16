@@ -103,13 +103,13 @@ export default function Sidebar({ isOpen, onClose }) {
                             </Link>
                         );
                     })}
-                    {(user?.role === 'RECEPTION_OFFICER' || user?.role === 'SOCIAL_AFFAIRS_OFFICER') && (
+                    {(user?.role === 'Reception' || user?.role === 'Appraisal') && (
                         <div className="sidebar-divider">
                             <span className="sidebar-divider-label">Officer Tools</span>
                         </div>
                     )}
                     {officerMenuItems.map((item) => {
-                        const isOfficer = user?.role === 'RECEPTION_OFFICER' || user?.role === 'SOCIAL_AFFAIRS_OFFICER';
+                        const isOfficer = user?.role === 'Reception' || user?.role === 'Appraisal';
                         if (!isOfficer) return null;
                         const isActive = location.pathname === item.path;
                         return (

@@ -17,7 +17,6 @@ import fpt.capstone.service.EmailService;
 import fpt.capstone.service.PasswordChangeRateLimiterService;
 import fpt.capstone.service.PasswordResetRateLimiterService;
 import fpt.capstone.service.RateLimiterService;
-import fpt.capstone.service.RegistrationRateLimiterService;
 import fpt.capstone.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,8 +57,6 @@ class AuthServiceImplTest {
         @Mock
         private RateLimiterService rateLimiterService;
         @Mock
-        private RegistrationRateLimiterService registrationRateLimiterService;
-        @Mock
         private AccountLockService accountLockService;
         @Mock
         private PasswordChangeRateLimiterService passwordChangeRateLimiterService;
@@ -99,7 +96,6 @@ class AuthServiceImplTest {
                                 roleRepository,
                                 jwtUtil,
                                 rateLimiterService,
-                                registrationRateLimiterService,
                                 accountLockService,
                                 passwordChangeRateLimiterService,
                                 passwordResetRateLimiterService,
@@ -110,7 +106,7 @@ class AuthServiceImplTest {
 
                 testRole = new Role();
                 testRole.setId(2);
-                testRole.setName("USER");
+                testRole.setName("Citizen");
 
                 testUser = new User();
                 testUser.setId(testUserId);
@@ -132,7 +128,6 @@ class AuthServiceImplTest {
         class RegisterTests {
 
                 private RegisterRequest validRequest;
-                private final String testIp = "192.168.1.1";
 
                 @BeforeEach
                 void setUp() {
@@ -144,22 +139,16 @@ class AuthServiceImplTest {
                                         .passwordConfirmation(testPassword)
                                         .dateOfBirth("01/01/2000")
                                         .build();
-
-                        lenient().when(httpRequest.getHeader("X-Forwarded-For")).thenReturn(null);
-                        lenient().when(httpRequest.getHeader("X-Real-IP")).thenReturn(null);
-                        lenient().when(httpRequest.getRemoteAddr()).thenReturn(testIp);
                 }
 
                 @Test
                 void register_success() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         when(userRepository.existsByEmail(testEmail)).thenReturn(false);
                         when(userRepository.existsByPhone("0123456789")).thenReturn(false);
                         when(passwordEncoder.encode(testPassword)).thenReturn(testEncodedPassword);
-                        when(roleRepository.findById(2)).thenReturn(testRole);
-                        when(jwtUtil.generateAccessToken(isNull(), eq(testEmail), eq("USER")))
+                        when(roleRepository.findByName("Citizen")).thenReturn(Optional.of(testRole));
+                        when(jwtUtil.generateAccessToken(isNull(), eq(testEmail), eq("Citizen")))
                                         .thenReturn("access-token");
                         when(jwtUtil.getAccessTokenExpiration()).thenReturn(3600000L);
                         when(jwtUtil.getRefreshTokenExpiration()).thenReturn(86400000L);
@@ -171,7 +160,7 @@ class AuthServiceImplTest {
                         assertNotNull(response);
                         assertEquals(testEmail, response.getEmail());
                         assertEquals("Test User", response.getName());
-                        assertEquals("USER", response.getRole());
+                        assertEquals("Citizen", response.getRole());
 
                         verify(userRepository).save(userCaptor.capture());
                         User savedUser = userCaptor.getValue();
@@ -186,8 +175,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_passwordConfirmationMismatch() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -208,8 +195,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_passwordTooShort() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -229,8 +214,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_passwordTooLong() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         String longPassword = "A1" + "a".repeat(130);
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
@@ -250,8 +233,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_passwordMissingUppercase() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -271,8 +252,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_passwordMissingNumber() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -292,8 +271,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_passwordNull() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         // When password is null, the code throws NPE at
                         // password.equals(passwordConfirmation)
                         // which is a bug in the code - but we test the actual behavior
@@ -315,8 +292,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_invalidDateFormat() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -336,8 +311,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_dateOfBirthBefore1900() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -357,8 +330,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_dateOfBirthInFuture() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         RegisterRequest request = RegisterRequest.builder()
                                         .fullName("Test User")
                                         .email(testEmail)
@@ -378,8 +349,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_emailAlreadyExists() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         when(userRepository.existsByEmail(testEmail)).thenReturn(true);
 
                         // Act & Assert
@@ -392,8 +361,6 @@ class AuthServiceImplTest {
                 @Test
                 void register_phoneAlreadyExists() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         when(userRepository.existsByEmail(testEmail)).thenReturn(false);
                         when(userRepository.existsByPhone("0123456789")).thenReturn(true);
 
@@ -405,29 +372,12 @@ class AuthServiceImplTest {
                 }
 
                 @Test
-                void register_rateLimitExceeded() {
-                        // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(false, 120));
-
-                        // Act & Assert
-                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                                        () -> authService.register(validRequest, httpRequest, httpResponse));
-                        assertEquals(HttpStatus.TOO_MANY_REQUESTS, ex.getStatusCode());
-                        assertTrue(ex.getReason().contains("Too many registration attempts"));
-                        verify(httpResponse).setHeader("Retry-After", "120");
-                        verify(userRepository, never()).save(any());
-                }
-
-                @Test
                 void register_databaseException() {
                         // Arrange
-                        when(registrationRateLimiterService.tryConsume(testIp))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
                         when(userRepository.existsByEmail(testEmail)).thenReturn(false);
                         when(userRepository.existsByPhone("0123456789")).thenReturn(false);
                         when(passwordEncoder.encode(testPassword)).thenReturn(testEncodedPassword);
-                        when(roleRepository.findById(2)).thenReturn(testRole);
+                        when(roleRepository.findByName("Citizen")).thenReturn(Optional.of(testRole));
                         doThrow(new DataAccessException("DB error") {
                         }).when(userRepository).save(any(User.class));
 
@@ -467,7 +417,7 @@ class AuthServiceImplTest {
                         when(userRepository.findUserByEmail(testEmail.toLowerCase())).thenReturn(testUser);
                         when(accountLockService.isAccountLocked(testUser)).thenReturn(false);
                         when(passwordEncoder.matches(testPassword, testEncodedPassword)).thenReturn(true);
-                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "USER")).thenReturn("access-token");
+                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "Citizen")).thenReturn("access-token");
                         when(jwtUtil.getAccessTokenExpiration()).thenReturn(3600000L);
                         when(jwtUtil.getRefreshTokenExpiration()).thenReturn(86400000L);
 
@@ -491,7 +441,7 @@ class AuthServiceImplTest {
                         when(userRepository.findUserByPhone("0123456789")).thenReturn(testUser);
                         when(accountLockService.isAccountLocked(testUser)).thenReturn(false);
                         when(passwordEncoder.matches(testPassword, testEncodedPassword)).thenReturn(true);
-                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "USER")).thenReturn("access-token");
+                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "Citizen")).thenReturn("access-token");
                         when(jwtUtil.getAccessTokenExpiration()).thenReturn(3600000L);
                         when(jwtUtil.getRefreshTokenExpiration()).thenReturn(86400000L);
 
@@ -513,7 +463,7 @@ class AuthServiceImplTest {
                         when(userRepository.findUserByNationalId("123456789012")).thenReturn(testUser);
                         when(accountLockService.isAccountLocked(testUser)).thenReturn(false);
                         when(passwordEncoder.matches(testPassword, testEncodedPassword)).thenReturn(true);
-                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "USER")).thenReturn("access-token");
+                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "Citizen")).thenReturn("access-token");
                         when(jwtUtil.getAccessTokenExpiration()).thenReturn(3600000L);
                         when(jwtUtil.getRefreshTokenExpiration()).thenReturn(86400000L);
 
@@ -622,7 +572,7 @@ class AuthServiceImplTest {
                         when(passwordEncoder.matches("raw-refresh-token", "encoded-refresh-token")).thenReturn(true);
                         when(userRepository.getUserById(testUserId)).thenReturn(testUser);
                         when(accountLockService.isAccountLocked(testUser)).thenReturn(false);
-                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "USER")).thenReturn("new-access-token");
+                        when(jwtUtil.generateAccessToken(testUserId, testEmail, "Citizen")).thenReturn("new-access-token");
 
                         // Act
                         LoginResponse response = authService.refreshAccessToken(httpRequest, httpResponse);
@@ -1151,22 +1101,26 @@ class AuthServiceImplTest {
         }
 
         // ============================================================
-        // CLIENT IP EXTRACTION TESTS (via register)
+        // CLIENT IP EXTRACTION TESTS (via login)
         // ============================================================
         @Nested
         class ClientIpTests {
 
+                private LoginRequest loginRequest;
+
                 @BeforeEach
                 void setUp() {
-                        // All ClientIpTests need roleRepository mock since register creates a user
-                        lenient().when(roleRepository.findById(2)).thenReturn(testRole);
-                        lenient().when(passwordEncoder.encode(anyString())).thenReturn(testEncodedPassword);
-                        lenient().when(jwtUtil.generateAccessToken(any(), anyString(), anyString()))
+                        loginRequest = new LoginRequest();
+                        loginRequest.setCredential(testEmail);
+                        loginRequest.setPassword(testPassword);
+
+                        lenient().when(userRepository.findUserByEmail(testEmail.toLowerCase())).thenReturn(testUser);
+                        lenient().when(accountLockService.isAccountLocked(testUser)).thenReturn(false);
+                        lenient().when(passwordEncoder.matches(testPassword, testEncodedPassword)).thenReturn(true);
+                        lenient().when(jwtUtil.generateAccessToken(testUserId, testEmail, "Citizen"))
                                         .thenReturn("access-token");
                         lenient().when(jwtUtil.getAccessTokenExpiration()).thenReturn(3600000L);
                         lenient().when(jwtUtil.getRefreshTokenExpiration()).thenReturn(86400000L);
-                        lenient().when(userRepository.existsByEmail(anyString())).thenReturn(false);
-                        lenient().when(userRepository.existsByPhone(anyString())).thenReturn(false);
                 }
 
                 @Test
@@ -1174,21 +1128,13 @@ class AuthServiceImplTest {
                         // Arrange
                         when(httpRequest.getHeader("X-Forwarded-For")).thenReturn("10.0.0.1, 10.0.0.2");
                         // X-Real-IP defaults to null (mock default)
-                        when(registrationRateLimiterService.tryConsume("10.0.0.1"))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
-                        RegisterRequest request = RegisterRequest.builder()
-                                        .fullName("Test")
-                                        .email("test2@example.com")
-                                        .phone("0987654321")
-                                        .password("Password1")
-                                        .passwordConfirmation("Password1")
-                                        .dateOfBirth("01/01/2000")
-                                        .build();
+                        when(rateLimiterService.tryConsume("10.0.0.1"))
+                                        .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
 
-                        // Act & Assert - registration succeeds
-                        LoginResponse response = authService.register(request, httpRequest, httpResponse);
+                        // Act & Assert - login succeeds
+                        LoginResponse response = authService.login(loginRequest, httpRequest, httpResponse);
                         assertNotNull(response);
-                        verify(registrationRateLimiterService).tryConsume("10.0.0.1");
+                        verify(rateLimiterService).tryConsume("10.0.0.1");
                 }
 
                 @Test
@@ -1196,21 +1142,13 @@ class AuthServiceImplTest {
                         // Arrange
                         lenient().when(httpRequest.getHeader("X-Forwarded-For")).thenReturn(null);
                         lenient().when(httpRequest.getHeader("X-Real-IP")).thenReturn("10.0.0.5");
-                        when(registrationRateLimiterService.tryConsume("10.0.0.5"))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
-                        RegisterRequest request = RegisterRequest.builder()
-                                        .fullName("Test")
-                                        .email("test3@example.com")
-                                        .phone("0977777777")
-                                        .password("Password1")
-                                        .passwordConfirmation("Password1")
-                                        .dateOfBirth("01/01/2000")
-                                        .build();
+                        when(rateLimiterService.tryConsume("10.0.0.5"))
+                                        .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
 
                         // Act & Assert
-                        LoginResponse response = authService.register(request, httpRequest, httpResponse);
+                        LoginResponse response = authService.login(loginRequest, httpRequest, httpResponse);
                         assertNotNull(response);
-                        verify(registrationRateLimiterService).tryConsume("10.0.0.5");
+                        verify(rateLimiterService).tryConsume("10.0.0.5");
                 }
 
                 @Test
@@ -1218,21 +1156,13 @@ class AuthServiceImplTest {
                         // Arrange
                         when(httpRequest.getRemoteAddr()).thenReturn("192.168.1.100");
                         // X-Forwarded-For and X-Real-IP default to null (mock default)
-                        when(registrationRateLimiterService.tryConsume("192.168.1.100"))
-                                        .thenReturn(new RegistrationRateLimiterService.RateLimitResult(true, 0));
-                        RegisterRequest request = RegisterRequest.builder()
-                                        .fullName("Test")
-                                        .email("test4@example.com")
-                                        .phone("0966666666")
-                                        .password("Password1")
-                                        .passwordConfirmation("Password1")
-                                        .dateOfBirth("01/01/2000")
-                                        .build();
+                        when(rateLimiterService.tryConsume("192.168.1.100"))
+                                        .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
 
                         // Act & Assert
-                        LoginResponse response = authService.register(request, httpRequest, httpResponse);
+                        LoginResponse response = authService.login(loginRequest, httpRequest, httpResponse);
                         assertNotNull(response);
-                        verify(registrationRateLimiterService).tryConsume("192.168.1.100");
+                        verify(rateLimiterService).tryConsume("192.168.1.100");
                 }
         }
 }

@@ -57,7 +57,7 @@ public class SupportRequestController {
     }
 
     @GetMapping("/manage")
-    @PreAuthorize("hasAnyRole('RECEPTION_OFFICER', 'SOCIAL_AFFAIRS_OFFICER')")
+    @PreAuthorize("hasAnyRole('RECEPTION', 'APPRAISAL')")
     public ResponseEntity<APIResponse<Page<SupportRequestListResponse>>> getAllRequests(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -71,7 +71,7 @@ public class SupportRequestController {
     }
 
     @PostMapping("/{id}/reply")
-    @PreAuthorize("hasAnyRole('RECEPTION_OFFICER', 'SOCIAL_AFFAIRS_OFFICER')")
+    @PreAuthorize("hasAnyRole('RECEPTION', 'APPRAISAL')")
     public ResponseEntity<APIResponse<SupportReplyResponse>> replyToRequest(
             @AuthenticationPrincipal User user,
             @PathVariable String id,
@@ -81,7 +81,7 @@ public class SupportRequestController {
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('RECEPTION_OFFICER', 'SOCIAL_AFFAIRS_OFFICER')")
+    @PreAuthorize("hasAnyRole('RECEPTION', 'APPRAISAL')")
     public ResponseEntity<APIResponse<SupportRequestDetailResponse>> updateStatus(
             @AuthenticationPrincipal User user,
             @PathVariable String id,

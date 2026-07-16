@@ -52,7 +52,7 @@ public class UserProfileResponse {
                 .fullAddress(fullAddress)
                 .avatarUrl(user.getAvatarUrl())
                 .status(user.getStatus() != null ? user.getStatus().name() : "ACTIVE")
-                .role(user.getRole() != null ? user.getRole().getName() : "USER")
+                .role(user.getRole() != null ? user.getRole().getName() : "Citizen")
                 .dob(user.getDob())
                 .nationalIdVerified(user.getNationalIdVerified() != null ? user.getNationalIdVerified() : false)
                 .gender(user.getGender())

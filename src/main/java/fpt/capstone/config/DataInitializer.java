@@ -16,26 +16,31 @@ public class DataInitializer implements CommandLineRunner {
         private final EligibilityCriteriaRepository eligibilityCriteriaRepository;
         private final BenifitRuleRepository benefitRuleRepository;
         private final ChapterRepository chapterRepository;
+        private final RoleRepository roleRepository;
 
         public DataInitializer(
                 PolicyRepository policyRepository,
                 ArticleRepository articleRepository,
                 EligibilityCriteriaRepository eligibilityCriteriaRepository,
                 BenifitRuleRepository benefitRuleRepository,
-                ChapterRepository chapterRepository
+                ChapterRepository chapterRepository,
+                RoleRepository roleRepository
         ) {
                 this.policyRepository = policyRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
                 this.benefitRuleRepository = benefitRuleRepository;
                 this.chapterRepository = chapterRepository;
+                this.roleRepository = roleRepository;
         }
 
         @Override
         @Transactional
         public void run(String... args) {
+                seedRoles();
+
                 if (policyRepository.count() > 0) {
-                        // Data already exists, skip seeding
+                        // Policy data already exists, skip policy seeding
                         return;
                 }
 
@@ -462,5 +467,27 @@ public class DataInitializer implements CommandLineRunner {
 
                 System.out.println(">>> Seeded " + policyRepository.count()
                                 + " sample policies with articles, eligibility criteria, and benefit rules.");
+        }
+
+        private void seedRoles() {
+                // Insertion order matters on a fresh DB (IDENTITY ids): Citizen=1 ... Admin=8
+                createRoleIfMissing("Citizen", "Công dân đăng ký sử dụng cổng dịch vụ");
+                createRoleIfMissing("Reception", "Cán bộ tiếp nhận hồ sơ");
+                createRoleIfMissing("Appraisal", "Cán bộ thẩm định");
+                createRoleIfMissing("Head", "Trưởng bộ phận");
+                createRoleIfMissing("Leader", "Lãnh đạo");
+                createRoleIfMissing("Records", "Cán bộ lưu trữ hồ sơ");
+                createRoleIfMissing("Management", "Quản lý");
+                createRoleIfMissing("Admin", "Quản trị hệ thống");
+                System.out.println(">>> Role seeding complete. Total roles: " + roleRepository.count());
+        }
+
+        private void createRoleIfMissing(String name, String description) {
+                if (roleRepository.findByName(name).isEmpty()) {
+                        roleRepository.save(Role.builder()
+                                        .name(name)
+                                        .description(description)
+                                        .build());
+                }
         }
 }

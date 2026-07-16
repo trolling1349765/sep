@@ -31,31 +31,11 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        try {
-            LoginResponse result = authService.register(request, httpRequest, httpResponse);
-            if (result.getMessage() != null) {
-                return ResponseEntity.ok(APIResponse.success(result.getMessage(), null));
-            }
-            return ResponseEntity.ok(APIResponse.success("Registration successful", result));
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                int retryAfter = 60;
-                String reason = e.getReason();
-                if (reason != null && reason.contains("Retry after")) {
-                    try {
-                        String[] parts = reason.split("Retry after ");
-                        if (parts.length > 1) {
-                            retryAfter = Integer.parseInt(parts[1].replaceAll("[^0-9]", ""));
-                        }
-                    } catch (NumberFormatException ignored) {
-                    }
-                }
-                httpResponse.setHeader("Retry-After", String.valueOf(retryAfter));
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                        .body(APIResponse.error(429, e.getReason()));
-            }
-            throw e;
+        LoginResponse result = authService.register(request, httpRequest, httpResponse);
+        if (result.getMessage() != null) {
+            return ResponseEntity.ok(APIResponse.success(result.getMessage(), null));
         }
+        return ResponseEntity.ok(APIResponse.success("Registration successful", result));
     }
 
     @PostMapping("/login")
