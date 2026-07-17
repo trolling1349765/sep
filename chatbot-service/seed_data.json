@@ -1,0 +1,230 @@
+[
+  {
+    "question": "Người cao tuổi bao nhiêu tuổi thì được hưởng trợ cấp xã hội hàng tháng?",
+    "answer": "Theo Nghị định 01/2024/NĐ-CP, công dân từ đủ 80 tuổi trở lên, không có lương hưu hoặc trợ cấp BHXH, thuộc hộ nghèo hoặc cận nghèo thì được hưởng trợ cấp xã hội hàng tháng.",
+    "keywords": "người cao tuổi, 80 tuổi, người già, lương hưu, hộ nghèo",
+    "category": "NGUOI_CAO_TUOI"
+  },
+  {
+    "question": "Mức trợ cấp hàng tháng cho người cao tuổi là bao nhiêu tiền?",
+    "answer": "Mức trợ cấp = chuẩn nghèo 1.500.000đ/tháng nhân hệ số 1,2, tức khoảng 1.800.000đ/tháng theo Nghị định 01/2024/NĐ-CP.",
+    "keywords": "mức trợ cấp, người cao tuổi, bao nhiêu tiền, 1.8 triệu",
+    "category": "NGUOI_CAO_TUOI"
+  },
+  {
+    "question": "Người cao tuổi đang hưởng lương hưu có được nhận thêm trợ cấp xã hội không?",
+    "answer": "Không. Điều kiện hưởng trợ cấp người cao tuổi theo Nghị định 01/2024/NĐ-CP là KHÔNG có lương hưu hoặc trợ cấp bảo hiểm xã hội hàng tháng.",
+    "keywords": "lương hưu, người cao tuổi, hưởng đồng thời, bảo hiểm xã hội",
+    "category": "NGUOI_CAO_TUOI"
+  },
+  {
+    "question": "Trẻ em mồ côi được nhà nước hỗ trợ như thế nào?",
+    "answer": "Theo Nghị định 02/2024/NĐ-CP, trẻ dưới 16 tuổi mồ côi cả cha lẫn mẹ hoặc bị bỏ rơi được trợ cấp hàng tháng bằng 2,5 lần mức chuẩn trợ giúp xã hội (500.000đ), tức 1.250.000đ/tháng, kèm hỗ trợ chi phí học tập.",
+    "keywords": "trẻ em, mồ côi, bỏ rơi, dưới 16 tuổi",
+    "category": "TRE_MO_COI"
+  },
+  {
+    "question": "Trẻ mồ côi bao nhiêu tuổi thì hết được hưởng trợ cấp?",
+    "answer": "Chính sách hỗ trợ trẻ em mồ côi theo Nghị định 02/2024/NĐ-CP áp dụng cho trẻ DƯỚI 16 tuổi. Từ đủ 16 tuổi trở lên sẽ không còn thuộc diện này.",
+    "keywords": "trẻ mồ côi, 16 tuổi, độ tuổi, hết hưởng",
+    "category": "TRE_MO_COI"
+  },
+  {
+    "question": "Trẻ em bị bỏ rơi đang ở cơ sở bảo trợ xã hội có được trợ cấp không?",
+    "answer": "Có. Trẻ em bị bỏ rơi được nuôi dưỡng tại cơ sở bảo trợ xã hội thuộc diện hưởng của Nghị định 02/2024/NĐ-CP, mức 500.000đ x 2,5 = 1.250.000đ/tháng cùng hỗ trợ học tập.",
+    "keywords": "trẻ bỏ rơi, cơ sở bảo trợ, nuôi dưỡng",
+    "category": "TRE_MO_COI"
+  },
+  {
+    "question": "Người khuyết tật muốn học nghề thì được hỗ trợ những gì?",
+    "answer": "Theo Thông tư 03/2024/TT-BLĐTBXH, người khuyết tật 15-55 tuổi có giấy xác nhận khuyết tật được miễn 100% học phí học nghề (tối đa 12 tháng/khóa), tiền ăn 0,5 lần lương cơ sở (~900.000đ/tháng) và tiền đi lại tối đa 300.000đ/tháng.",
+    "keywords": "người khuyết tật, học nghề, đào tạo nghề, học phí",
+    "category": "NGUOI_KHUYET_TAT"
+  },
+  {
+    "question": "Điều kiện tuổi để người khuyết tật được hỗ trợ đào tạo nghề là gì?",
+    "answer": "Từ 15 đến 55 tuổi, có giấy xác nhận khuyết tật và còn khả năng học nghề, theo Thông tư 03/2024/TT-BLĐTBXH.",
+    "keywords": "khuyết tật, 15 tuổi, 55 tuổi, điều kiện, giấy xác nhận",
+    "category": "NGUOI_KHUYET_TAT"
+  },
+  {
+    "question": "Học nghề dành cho người khuyết tật được hỗ trợ trong bao lâu?",
+    "answer": "Mỗi khóa học nghề được hỗ trợ tối đa 12 tháng theo Thông tư 03/2024/TT-BLĐTBXH, gồm học phí, tiền ăn hàng ngày và chi phí đi lại.",
+    "keywords": "thời gian, 12 tháng, khóa học, học nghề khuyết tật",
+    "category": "NGUOI_KHUYET_TAT"
+  },
+  {
+    "question": "Gia đình bị thiệt hại do bão lũ thì được nhà nước hỗ trợ gì?",
+    "answer": "Theo Quyết định 04/2024/QĐ-TTg, hộ bị thiên tai (bão, lũ, hạn hán, sạt lở) thiệt hại từ 30% tài sản trở lên, có xác nhận của UBND cấp xã, được hỗ trợ 15kg gạo/người/tháng (tối đa 6 tháng) và tối đa 20 triệu đồng sửa chữa nhà ở.",
+    "keywords": "thiên tai, bão lũ, sạt lở, hạn hán, hỗ trợ khẩn cấp",
+    "category": "THIEN_TAI"
+  },
+  {
+    "question": "Hỗ trợ gạo cho người dân vùng thiên tai là bao nhiêu và trong bao lâu?",
+    "answer": "Mức hỗ trợ là 15kg gạo/người/tháng, thời gian tối đa 6 tháng, theo Quyết định 04/2024/QĐ-TTg.",
+    "keywords": "gạo, 15kg, 6 tháng, thiên tai",
+    "category": "THIEN_TAI"
+  },
+  {
+    "question": "Nhà bị sập do lũ thì được hỗ trợ bao nhiêu tiền để sửa chữa?",
+    "answer": "Hộ dân bị thiên tai làm hư hỏng nhà ở được hỗ trợ kinh phí sửa chữa tối đa 20 triệu đồng, cần xác nhận thiệt hại của UBND cấp xã (Quyết định 04/2024/QĐ-TTg).",
+    "keywords": "sửa nhà, 20 triệu, nhà sập, thiệt hại",
+    "category": "THIEN_TAI"
+  },
+  {
+    "question": "Hộ nghèo có được nhà nước đóng bảo hiểm y tế cho không?",
+    "answer": "Có. Theo Nghị định 05/2024/NĐ-CP, ngân sách nhà nước đóng 100% mức đóng BHYT cho người thuộc hộ nghèo và 70% cho hộ cận nghèo; người dân tộc thiểu số ở vùng đặc biệt khó khăn cũng được hỗ trợ.",
+    "keywords": "bảo hiểm y tế, BHYT, hộ nghèo, cận nghèo, miễn phí",
+    "category": "BHYT"
+  },
+  {
+    "question": "Hộ cận nghèo được hỗ trợ bao nhiêu phần trăm tiền bảo hiểm y tế?",
+    "answer": "Hộ cận nghèo được ngân sách hỗ trợ 70% mức đóng BHYT (hộ nghèo là 100%), theo Nghị định 05/2024/NĐ-CP.",
+    "keywords": "cận nghèo, 70%, BHYT, mức đóng",
+    "category": "BHYT"
+  },
+  {
+    "question": "Mức đóng bảo hiểm y tế được tính như thế nào?",
+    "answer": "Mức đóng BHYT = 4,5% lương cơ sở (lương cơ sở hiện là 1.800.000đ) nhân với tỷ lệ hỗ trợ theo diện đối tượng, theo Nghị định 05/2024/NĐ-CP.",
+    "keywords": "mức đóng, 4.5%, lương cơ sở, cách tính",
+    "category": "BHYT"
+  },
+  {
+    "question": "Người có công với cách mạng được hỗ trợ về nhà ở như thế nào?",
+    "answer": "Theo Quyết định 06/2024/QĐ-TTg, người có công với cách mạng hoặc thân nhân liệt sĩ đang ở nhà tạm, nhà dột nát được hỗ trợ 40 triệu đồng/hộ để xây mới hoặc 20 triệu đồng/hộ để sửa chữa.",
+    "keywords": "người có công, cách mạng, liệt sĩ, nhà ở, nhà dột nát",
+    "category": "NGUOI_CO_CONG"
+  },
+  {
+    "question": "Xây nhà mới cho gia đình liệt sĩ được hỗ trợ bao nhiêu tiền?",
+    "answer": "Hỗ trợ xây mới là 40 triệu đồng/hộ, sửa chữa là 20 triệu đồng/hộ, theo Quyết định 06/2024/QĐ-TTg (ngân sách trung ương 70%, địa phương 30%).",
+    "keywords": "40 triệu, xây mới, liệt sĩ, thân nhân",
+    "category": "NGUOI_CO_CONG"
+  },
+  {
+    "question": "Chính sách hỗ trợ nhà ở cho người có công áp dụng đến khi nào?",
+    "answer": "Quyết định 06/2024/QĐ-TTg có hiệu lực từ 01/11/2024 và áp dụng đến hết 31/12/2026.",
+    "keywords": "thời hạn, hiệu lực, người có công, nhà ở",
+    "category": "NGUOI_CO_CONG"
+  },
+  {
+    "question": "Học sinh tiểu học có phải đóng học phí không?",
+    "answer": "Không. Theo Nghị định 07/2024/NĐ-CP, từ năm học 2025 học sinh tiểu học trường công lập trên cả nước được miễn 100% học phí, không kèm điều kiện.",
+    "keywords": "học phí, tiểu học, miễn học phí, học sinh",
+    "category": "HOC_PHI"
+  },
+  {
+    "question": "Học sinh THCS thuộc hộ nghèo được giảm học phí bao nhiêu?",
+    "answer": "Học sinh trung học cơ sở thuộc hộ nghèo được giảm 70% học phí theo Nghị định 07/2024/NĐ-CP.",
+    "keywords": "THCS, trung học cơ sở, giảm 70%, hộ nghèo, học phí",
+    "category": "HOC_PHI"
+  },
+  {
+    "question": "Muốn xin miễn giảm học phí cho con thì làm thế nào?",
+    "answer": "Phụ huynh nộp đơn kèm giấy chứng nhận hộ nghèo/cận nghèo cho nhà trường nơi con theo học; tiểu học công lập được miễn tự động không cần điều kiện (Nghị định 07/2024/NĐ-CP).",
+    "keywords": "xin miễn giảm, đơn, phụ huynh, giấy chứng nhận hộ nghèo",
+    "category": "HOC_PHI"
+  },
+  {
+    "question": "Gia đình hộ nghèo có người mất thì được hỗ trợ chi phí mai táng bao nhiêu?",
+    "answer": "Theo Thông tư 08/2024/TT-BLĐTBXH, hỗ trợ chi phí mai táng bằng 20 lần mức chuẩn trợ giúp xã hội (500.000đ), tức 10.000.000đ, cần xác nhận của UBND cấp xã.",
+    "keywords": "mai táng, hộ nghèo, 10 triệu, người mất, qua đời",
+    "category": "MAI_TANG"
+  },
+  {
+    "question": "Những ai thuộc diện được hỗ trợ chi phí mai táng?",
+    "answer": "Người thuộc hộ nghèo, người cao tuổi neo đơn không nơi nương tựa và người khuyết tật nặng, theo Thông tư 08/2024/TT-BLĐTBXH.",
+    "keywords": "diện hưởng, mai táng, neo đơn, khuyết tật nặng",
+    "category": "MAI_TANG"
+  },
+  {
+    "question": "Thủ tục nhận tiền hỗ trợ mai táng cần giấy tờ gì?",
+    "answer": "Cần đơn đề nghị, giấy chứng tử, giấy tờ chứng minh thuộc diện (sổ hộ nghèo, giấy xác nhận khuyết tật...) và xác nhận của UBND cấp xã nơi cư trú (Thông tư 08/2024/TT-BLĐTBXH).",
+    "keywords": "giấy chứng tử, thủ tục, mai táng, giấy tờ",
+    "category": "MAI_TANG"
+  },
+  {
+    "question": "Phụ nữ làm việc tự do sinh con có được hỗ trợ thai sản không?",
+    "answer": "Có. Theo Quyết định 09/2024/QĐ-TTg, lao động nữ khu vực phi chính thức (không tham gia BHXH bắt buộc) thuộc hộ nghèo hoặc cận nghèo, sinh con trong thời gian chính sách có hiệu lực, được trợ cấp một lần 2.000.000đ cho mỗi con.",
+    "keywords": "thai sản, sinh con, lao động tự do, phi chính thức, phụ nữ",
+    "category": "THAI_SAN"
+  },
+  {
+    "question": "Mức trợ cấp thai sản một lần cho lao động nữ phi chính thức là bao nhiêu?",
+    "answer": "2.000.000đ cho mỗi con sinh ra, không phân biệt số lần sinh, theo Quyết định 09/2024/QĐ-TTg.",
+    "keywords": "2 triệu, thai sản, một lần, mỗi con",
+    "category": "THAI_SAN"
+  },
+  {
+    "question": "Đang đóng bảo hiểm xã hội ở công ty thì có được nhận trợ cấp thai sản 2 triệu không?",
+    "answer": "Không. Chính sách theo Quyết định 09/2024/QĐ-TTg chỉ dành cho lao động nữ KHÔNG thuộc diện tham gia BHXH bắt buộc; người đóng BHXH ở công ty hưởng chế độ thai sản của BHXH.",
+    "keywords": "BHXH bắt buộc, công ty, thai sản, không thuộc diện",
+    "category": "THAI_SAN"
+  },
+  {
+    "question": "Hộ nghèo ở nông thôn có được hỗ trợ lắp đặt nước sạch không?",
+    "answer": "Có. Theo Quyết định 10/2024/QĐ-TTg, hộ nghèo/cận nghèo tại các xã nông thôn khó khăn được hỗ trợ tối đa 5.000.000đ/hộ để lắp đặt hệ thống nước sạch và công trình vệ sinh.",
+    "keywords": "nước sạch, nông thôn, lắp đặt, vệ sinh",
+    "category": "NUOC_SACH"
+  },
+  {
+    "question": "Hỗ trợ nước sạch nông thôn có được nhận nhiều lần không?",
+    "answer": "Không. Đây là hỗ trợ một lần; tối thiểu 5 năm sau mới được xem xét hỗ trợ lại, theo Quyết định 10/2024/QĐ-TTg.",
+    "keywords": "một lần, 5 năm, nước sạch, nhận lại",
+    "category": "NUOC_SACH"
+  },
+  {
+    "question": "Chương trình hỗ trợ nước sạch nông thôn kéo dài đến khi nào?",
+    "answer": "Quyết định 10/2024/QĐ-TTg có hiệu lực từ 01/02/2025 và áp dụng đến hết 31/12/2027, kinh phí trung ương 70% - địa phương 30%.",
+    "keywords": "thời hạn, 2027, nước sạch, hiệu lực",
+    "category": "NUOC_SACH"
+  },
+  {
+    "question": "Tôi cần chuẩn bị những giấy tờ gì để nộp hồ sơ xin trợ cấp?",
+    "answer": "Hồ sơ cơ bản gồm: đơn đề nghị theo mẫu, bản sao CCCD, giấy xác nhận của UBND cấp xã và giấy tờ chứng minh thuộc diện hưởng (sổ hộ nghèo, giấy xác nhận khuyết tật, giấy chứng tử...). Mỗi chính sách có thể yêu cầu thêm giấy tờ riêng — xem chi tiết ở trang thông tin từng chính sách.",
+    "keywords": "hồ sơ, giấy tờ, CCCD, đơn đề nghị, chuẩn bị",
+    "category": "THU_TUC"
+  },
+  {
+    "question": "Nộp hồ sơ xin trợ cấp xã hội ở đâu?",
+    "answer": "Bạn nộp hồ sơ tại UBND cấp xã nơi cư trú hoặc nộp trực tuyến qua cổng trợ cấp xã hội. Cán bộ tiếp nhận sẽ kiểm tra và hẹn thời gian trả kết quả.",
+    "keywords": "nộp hồ sơ, ở đâu, UBND xã, trực tuyến, đăng ký",
+    "category": "THU_TUC"
+  },
+  {
+    "question": "Làm sao để tra cứu trạng thái hồ sơ đã nộp?",
+    "answer": "Đăng nhập cổng trợ cấp xã hội, vào mục \"Hồ sơ của tôi\" để xem trạng thái xử lý (đã tiếp nhận, đang thẩm định, đã ra quyết định). Bạn cũng có thể liên hệ trực tiếp UBND cấp xã nơi nộp.",
+    "keywords": "tra cứu, trạng thái, hồ sơ, theo dõi",
+    "category": "THU_TUC"
+  },
+  {
+    "question": "Thời gian giải quyết hồ sơ trợ cấp mất bao lâu?",
+    "answer": "Thông thường hồ sơ được thẩm định và trả kết quả trong khoảng 15-22 ngày làm việc kể từ khi nhận đủ hồ sơ hợp lệ, tùy từng chính sách. Nếu quá hạn chưa có kết quả, bạn liên hệ UBND cấp xã để được giải đáp.",
+    "keywords": "thời gian, bao lâu, xử lý, ngày làm việc",
+    "category": "THU_TUC"
+  },
+  {
+    "question": "Hồ sơ bị từ chối thì phải làm gì, có được khiếu nại không?",
+    "answer": "Có. Khi hồ sơ bị từ chối, bạn có quyền yêu cầu nêu rõ lý do bằng văn bản và nộp đơn khiếu nại đến UBND cấp xã nơi giải quyết; nếu không đồng ý với kết quả, có thể khiếu nại lên cấp trên theo Luật Khiếu nại.",
+    "keywords": "từ chối, khiếu nại, lý do, quyền lợi",
+    "category": "THU_TUC"
+  },
+  {
+    "question": "Làm mất quyết định hưởng trợ cấp thì xin cấp lại ở đâu?",
+    "answer": "Bạn liên hệ UBND cấp xã nơi đã ra quyết định để đề nghị cấp lại bản sao quyết định hưởng trợ cấp, mang theo CCCD để đối chiếu.",
+    "keywords": "mất quyết định, cấp lại, bản sao",
+    "category": "THU_TUC"
+  },
+  {
+    "question": "Xin chào, bạn có thể giúp gì cho tôi?",
+    "answer": "Xin chào! Mình là trợ lý ảo của cổng trợ cấp xã hội. Mình có thể giải đáp về các chính sách: trợ cấp người cao tuổi, trẻ mồ côi, người khuyết tật, hỗ trợ thiên tai, BHYT hộ nghèo, nhà ở người có công, miễn giảm học phí, mai táng phí, thai sản phi chính thức và nước sạch nông thôn — cùng thủ tục nộp hồ sơ. Bạn cứ đặt câu hỏi nhé!",
+    "keywords": "xin chào, chào, giúp đỡ, hỗ trợ",
+    "category": "CHUNG"
+  },
+  {
+    "question": "Cảm ơn bạn nhiều nhé!",
+    "answer": "Không có gì! Nếu còn thắc mắc về chính sách trợ cấp hay thủ tục hồ sơ, bạn cứ hỏi thêm. Chúc bạn một ngày tốt lành!",
+    "keywords": "cảm ơn, tạm biệt",
+    "category": "CHUNG"
+  }
+]

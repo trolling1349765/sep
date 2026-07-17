@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Chatbot Service",
+    "description": "API chatbot hoi-dap chinh sach tro cap xa hoi. Set collection variable `apiKey` truoc khi chay cac request admin.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8001" },
+    { "key": "apiKey", "value": "dev-admin-key" }
+  ],
+  "item": [
+    {
+      "name": "Chatbot",
+      "item": [
+        {
+          "name": "Ask - cau hoi thuong (MATCHED)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));", "pm.test('MATCHED', () => pm.expect(pm.response.json().result_type).to.eql('MATCHED'));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/chatbot/ask",
+            "body": { "mode": "raw", "raw": "{\"question\": \"Người cao tuổi bao nhiêu tuổi được trợ cấp?\"}" }
+          }
+        },
+        {
+          "name": "Ask - khong dau + viet tat (MATCHED)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));", "pm.test('MATCHED', () => pm.expect(pm.response.json().result_type).to.eql('MATCHED'));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/chatbot/ask",
+            "body": { "mode": "raw", "raw": "{\"question\": \"nguoi gia 80 tuoi co dc tro cap ko\"}" }
+          }
+        },
+        {
+          "name": "Ask - paraphrase (embedding)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));", "pm.test('khong FALLBACK', () => pm.expect(pm.response.json().result_type).to.not.eql('FALLBACK'));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/chatbot/ask",
+            "body": { "mode": "raw", "raw": "{\"question\": \"ba toi gia roi nha nuoc co cho tien khong\"}" }
+          }
+        },
+        {
+          "name": "Ask - lac de (FALLBACK)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));", "pm.test('FALLBACK', () => pm.expect(pm.response.json().result_type).to.eql('FALLBACK'));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/chatbot/ask",
+            "body": { "mode": "raw", "raw": "{\"question\": \"hom nay an gi\"}" }
+          }
+        },
+        {
+          "name": "Ask - rong (422)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('422', () => pm.response.to.have.status(422));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/chatbot/ask",
+            "body": { "mode": "raw", "raw": "{\"question\": \"   \"}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "QA Admin",
+      "item": [
+        {
+          "name": "List QA",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-API-Key", "value": "{{apiKey}}" }],
+            "url": "{{baseUrl}}/api/v1/qa?page=1&size=10"
+          }
+        },
+        {
+          "name": "Get QA by id",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-API-Key", "value": "{{apiKey}}" }],
+            "url": "{{baseUrl}}/api/v1/qa/1"
+          }
+        },
+        {
+          "name": "Create QA",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('createdQaId', pm.response.json().id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/qa",
+            "body": { "mode": "raw", "raw": "{\"question\": \"Câu hỏi test từ Postman?\", \"answer\": \"Câu trả lời test.\", \"category\": \"TEST\"}" }
+          }
+        },
+        {
+          "name": "Update QA",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/qa/{{createdQaId}}",
+            "body": { "mode": "raw", "raw": "{\"answer\": \"Câu trả lời đã sửa.\"}" }
+          }
+        },
+        {
+          "name": "Delete QA (soft)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('204', () => pm.response.to.have.status(204));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "X-API-Key", "value": "{{apiKey}}" }],
+            "url": "{{baseUrl}}/api/v1/qa/{{createdQaId}}"
+          }
+        },
+        {
+          "name": "Create QA - thieu key (401)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('401', () => pm.response.to.have.status(401));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/v1/qa",
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Health",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));", "pm.test('ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+        },
+        {
+          "name": "Reload index",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-API-Key", "value": "{{apiKey}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/reload"
+          }
+        },
+        {
+          "name": "Reload index + reembed",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('200', () => pm.response.to.have.status(200));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-API-Key", "value": "{{apiKey}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/reload?reembed=true"
+          }
+        }
+      ]
+    }
+  ]
+}

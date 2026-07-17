@@ -12,6 +12,11 @@ services:
       - '1435:3306'
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-p123456']
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -22,6 +27,26 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
+
+  chatbot-service:
+    build: ./chatbot-service
+    container_name: chatbot-capstone
+    restart: unless-stopped
+    ports:
+      - '8001:8001'
+    environment:
+      DATABASE_URL: mysql+pymysql://chatbot_user:${CHATBOT_DB_PASSWORD:-chatbot_pass_490}@db:3306/chatbot_service?charset=utf8mb4
+      CHATBOT_ADMIN_API_KEY: ${CHATBOT_ADMIN_API_KEY:-dev-admin-key}
+    depends_on:
+      db:
+        condition: service_healthy
+    mem_limit: 2g
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8001/health', timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
 volumes:
   mysql_data:

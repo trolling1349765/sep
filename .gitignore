@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Python (chatbot-service) ###
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+chatbot-service/.venv/
