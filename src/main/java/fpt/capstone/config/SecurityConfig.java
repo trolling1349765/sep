@@ -67,7 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/capstone/provinces/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/capstone/provinces/{provinceCode}/wards").permitAll()
                         .requestMatchers(HttpMethod.GET, "/capstone/citizen-portal/policies/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/capstone/citizen-portal/chatbot/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/chatbot/ask").permitAll()
                         .requestMatchers(HttpMethod.GET, "/applications/**").hasAnyRole("CITIZEN", "RECEPTION")
                         .requestMatchers(HttpMethod.POST, "/applications/**").hasRole("CITIZEN")
                         .anyRequest().permitAll())

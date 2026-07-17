@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatbotQueryRequest {
-    @NotBlank(message = "Message cannot be empty")
-    @Size(max = 1000, message = "Message must not exceed 1000 characters")
-    private String message;
+public class ChatbotAskRequest {
+
+    @NotBlank(message = "Question is required")
+    @Size(max = 500, message = "Question must be at most 500 characters")
+    private String question;
 }
