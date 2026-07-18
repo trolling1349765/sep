@@ -2,12 +2,13 @@ package fpt.capstone.service;
 
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.DecisionDocumentResponse;
+import fpt.capstone.dto.response.DecisionDocumentResponseWrapper;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.DecisionDocument;
 import org.springframework.data.domain.Page;
 
 public interface DecisionDocumentService {
-    APIResponse<DecisionDocumentResponse> createDecisionDocument(Application application, String path) throws Throwable;
+    DecisionDocumentResponseWrapper createDecisionDocumentWrapper(Application application) throws Throwable;
 
     APIResponse<DecisionDocumentResponse> getDecisionDocument(int id);
 

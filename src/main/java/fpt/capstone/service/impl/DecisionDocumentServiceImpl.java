@@ -1,16 +1,20 @@
 package fpt.capstone.service.impl;
 
+import fpt.capstone.dto.response.DecisionDocumentResponseWrapper;
 import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.enums.Table;
 import fpt.capstone.exceprion.AppException;
 import fpt.capstone.exceprion.InvalidArgsException;
 import org.apache.poi.xwpf.usermodel.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.DecisionDocumentResponse;
 import fpt.capstone.entity.Application;
+import fpt.capstone.entity.Benificiary;
 import fpt.capstone.entity.DecisionDocument;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.enums.Action;
@@ -42,25 +46,25 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
     private final UserRepository userRepository;
 
     @Override
-    public APIResponse<DecisionDocumentResponse> createDecisionDocument(Application application, String path) throws Throwable {
+    public DecisionDocumentResponseWrapper createDecisionDocumentWrapper(Application application) throws Throwable {
         String userId = securityUtil.getCurrentUserId();
         List<APIResponse> list = new ArrayList<>();
+
+        XWPFDocument document = new XWPFDocument();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName = "Giay_quyet_dinh_" + timeStamp + ".docx";
 
         DecisionDocument decisionDocument = DecisionDocument.builder()
                 .application(application)
                 .issuer(userRepository.getUserById(userId))
                 .issueDate(LocalDate.now())
-                .filePath(path)
+                .filePath(fileName)
                 .build();
         decisionDocument = decisionDocumentRepository.save(decisionDocument);
 
-            XWPFDocument document = new XWPFDocument();
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        try (
-                FileOutputStream out = new FileOutputStream(
-                        path + "Giay_quyet_dinh_" + timeStamp + ".docx"
-                )
-        ) {
+        byte[] fileBytes = null;
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()        ) {
             XWPFParagraph headerPara = document.createParagraph();
             headerPara.setAlignment(ParagraphAlignment.CENTER);
             XWPFRun run1 = headerPara.createRun();
@@ -104,16 +108,27 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
             XWPFParagraph title2Para = document.createParagraph();
             title2Para.setAlignment(ParagraphAlignment.CENTER);
             title2Para.setSpacingBefore(200); // Khoảng cách phía trên
-            XWPFRun title2Run = titlePara.createRun();
+            XWPFRun title2Run = title2Para.createRun();
             title2Run.setText("THÔNG TIN CỦA ĐỐI TƯỢNG");
             title2Run.setBold(true);
             title2Run.setFontSize(24);
             title2Run.setFontFamily("Times New Roman");
 
+            Benificiary beneficiary = application.getBenificiary();
+            String beneficiaryName = beneficiary != null && beneficiary.getFullName() != null
+                    ? beneficiary.getFullName()
+                    : "Chưa có thông tin";
+            String beneficiaryCccd = beneficiary != null && beneficiary.getCCCD() != null
+                    ? beneficiary.getCCCD()
+                    : "Chưa có thông tin";
+            String beneficiaryHometown = beneficiary != null && beneficiary.getHometown() != null
+                    ? beneficiary.getHometown()
+                    : "Chưa có thông tin";
+
             String[] content = {
-                    "",
-                    "",
-                    "",
+                    "Họ và tên người được hỗ trợ: " + beneficiaryName,
+                    "Số CCCD: " + beneficiaryCccd,
+                    "Quê quán: " + beneficiaryHometown,
                     ""
             };
 
@@ -140,10 +155,9 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
             signerRun.setFontSize(13);
 
             document.write(out);
-        }catch (IOException e){
-
+            fileBytes = out.toByteArray();
+        } catch (IOException e) {
             list.add(APIResponse.error(ErrorCode.FILE_IO_ERROR.getCode(), ErrorCode.FILE_IO_ERROR.getMessage()));
-
         }
 
         if (!list.isEmpty()) {
@@ -161,19 +175,17 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
         systemLogService.write(systemLog);
 
         DecisionDocumentResponse documentResponse = new DecisionDocumentResponse(decisionDocument);
-        return APIResponse.<DecisionDocumentResponse>builder()
-                .data(documentResponse)
-                .build();
+        return new DecisionDocumentResponseWrapper(documentResponse, fileBytes, fileName);
     }
 
     @Override
     public APIResponse<DecisionDocumentResponse> getDecisionDocument(int id) {
         DecisionDocument decisionDocument = decisionDocumentRepository.findById(id).orElse(null);
         if (decisionDocument == null)
-        throw new InvalidArgsException(APIResponse.error(
-                        ErrorCode.ARGUMENT_INVALID.getCode(),
-                        ErrorCode.ARGUMENT_INVALID.getMessage()
-        ));
+            throw new InvalidArgsException(APIResponse.error(
+                    ErrorCode.ARGUMENT_INVALID.getCode(),
+                    ErrorCode.ARGUMENT_INVALID.getMessage()
+            ));
         DecisionDocumentResponse documentResponse = new DecisionDocumentResponse(decisionDocument);
         APIResponse<DecisionDocumentResponse> response = APIResponse.success(documentResponse);
         return response;
@@ -186,6 +198,6 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
         Page<DecisionDocumentResponse> documentResponse = documents.map(DecisionDocumentResponse::new);
 
         APIResponse<Page<DecisionDocumentResponse>> response = APIResponse.success(documentResponse);
-        return response ;
+        return response;
     }
 }
