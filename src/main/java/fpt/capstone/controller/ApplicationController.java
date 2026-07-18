@@ -40,7 +40,7 @@ public class ApplicationController {
         return responses;
     }
 
-    @GetMapping("/intake/pending")
+    @GetMapping("/intake/submitted")
     public APIResponse<Page<ApplicationResponse>> getApplicationOFF1(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
@@ -49,8 +49,17 @@ public class ApplicationController {
         return responses;
     }
 
-    @GetMapping("/intake/checked")
+    @GetMapping("/intake/pending")
     public APIResponse<Page<ApplicationResponse>> getApplicationOFF2(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppicationsOFF1(size, page);
+        return responses;
+    }
+
+    @GetMapping("/intake/checked")
+    public APIResponse<Page<ApplicationResponse>> getApplicationOFF3(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
@@ -59,7 +68,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/intake/in-progress")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF3(
+    public APIResponse<Page<ApplicationResponse>> getApplicationOFF4(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
@@ -68,7 +77,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/intake/completed")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF4(
+    public APIResponse<Page<ApplicationResponse>> getApplicationOFF(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
@@ -76,7 +85,7 @@ public class ApplicationController {
         return responses;
     }
 
-    @GetMapping("/submit-by/{id}")
+    @GetMapping("/submit-by/{submitBy}")
     public APIResponse<Page<ApplicationResponse>> getApplicationBySubmiter(
             @PathVariable String submitBy,
             @RequestParam(defaultValue = "0") int page,
@@ -102,4 +111,40 @@ public class ApplicationController {
         APIResponse apiResponse = APIResponse.success(data);
         return APIResponse.success(apiResponse);
     }
+
+    @PutMapping("/to-pending/{applicationId}")
+    public APIResponse pendingStatusUpdate(@PathVariable int applicationId) {
+        ApplicationResponse applicationResponse = applicationService.toPending(applicationId);
+        return APIResponse.success(applicationResponse);
+    }
+
+    @PutMapping("/to-checked/{applicationId}")
+    public APIResponse checkedStatusUpdate(@PathVariable int applicationId) {
+        ApplicationResponse applicationResponse = applicationService.toChecked(applicationId);
+        return APIResponse.success(applicationResponse);
+    }
+
+    @PutMapping("/to-progress/{applicationId}")
+    public APIResponse inProgressStatusUpdate(@PathVariable int applicationId) {
+        ApplicationResponse applicationResponse = applicationService.toInProgress(applicationId);
+        return APIResponse.success(applicationResponse);
+    }
+
+    @PutMapping("/to-completed/{applicationId}")
+    public APIResponse completedStatusUpdate(@PathVariable int applicationId) {
+        ApplicationResponse applicationResponse = applicationService.toCompleted(applicationId);
+        return APIResponse.success(applicationResponse);
+    }
+
+    @PutMapping("/add-more/{applicationId}")
+    public APIResponse insufficentUpdate(@PathVariable int applicationId) {
+        ApplicationResponse applicationResponse = applicationService.toInsufficent(applicationId);
+        return APIResponse.success(applicationResponse);
+    }
+
+    @DeleteMapping("/{applicationId}")
+    public APIResponse deleteApplication(@PathVariable int applicationId) {
+        return APIResponse.success(applicationService.deleteApplication(applicationId));
+    }
+
 }

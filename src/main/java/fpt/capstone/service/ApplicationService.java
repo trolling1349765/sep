@@ -30,4 +30,16 @@ public interface ApplicationService {
     APIResponse<ApplicationResponse> createApplication(ApplicationRequest request);
 
     APIResponse<ApplicationResponse> updateApplication(ApplicationRequest request);
+
+    ApplicationResponse toPending(int applicationId);
+
+    ApplicationResponse toChecked(int applicationId);
+
+    ApplicationResponse toInProgress(int applicationId);
+
+    ApplicationResponse toCompleted(int applicationId);
+
+    ApplicationResponse toInsufficent(int applicationId);
+
+    Object deleteApplication(int applicationId);
 }

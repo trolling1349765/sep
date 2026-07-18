@@ -13,4 +13,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
     Page<Application> findAll( Pageable pageable);
 
     Page<Application> findBySubmitBy_Id(String submitBy, Pageable pageable);
+
+    Page<Application> findByDelete(boolean delete, Pageable pageable);
+
+    Page<Application> findBySubmitBy_IdAndDelete(String submitById, boolean delete, Pageable pageable);
 }
