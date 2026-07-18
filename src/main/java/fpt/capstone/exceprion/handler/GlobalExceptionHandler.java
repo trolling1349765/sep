@@ -96,8 +96,17 @@ public class GlobalExceptionHandler {
                 servletResponse.setHeader("Retry-After", retryAfter);
             }
         }
-        return ResponseEntity.status(status)
-                .body(APIResponse.error(status.value(), e.getReason()));
+        // Some services pass an ErrorCode enum name as the reason; map it to the business code/message.
+        ErrorCode errorCode = null;
+        if (e.getReason() != null) {
+            try {
+                errorCode = ErrorCode.valueOf(e.getReason());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        int code = errorCode != null ? errorCode.getCode() : status.value();
+        String message = errorCode != null ? errorCode.getMessage() : e.getReason();
+        return ResponseEntity.status(status).body(APIResponse.error(code, message));
     }
 
     @ExceptionHandler(value = Exception.class)
