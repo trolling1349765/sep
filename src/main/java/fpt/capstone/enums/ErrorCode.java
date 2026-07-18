@@ -20,6 +20,7 @@ public enum ErrorCode {
     ARGUMENT_INVALID(10010, "Argument out of range"),
     BENIFIT_HISTORY_NOT_FOUND(10011, "Benifit history not found"),
     ADDITIONAL_DOCUMENT_NOT_FOUND(10012, "Additional document not found"),
+    BENIFICIARY_NOT_FOUND(10013, "Benificiary not found"),
     ;
 
     private int code;

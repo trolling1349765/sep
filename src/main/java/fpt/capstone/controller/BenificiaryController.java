@@ -1,5 +1,6 @@
 package fpt.capstone.controller;
 
+import fpt.capstone.dto.request.BenificiaryRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.BenificiaryResponse;
 import fpt.capstone.dto.response.RelativeResponse;
@@ -66,5 +67,15 @@ public class BenificiaryController {
     @GetMapping("/application/{id}")
     public APIResponse<List<BenificiaryResponse>> getBenificiariesByApplicationId(@PathVariable int applicationId) {
         return APIResponse.success(benificiaryService.getBenificiariesByApplicationId(applicationId));
+    }
+
+    @PutMapping
+    public APIResponse updateBenificiary(@RequestBody BenificiaryRequest request) {
+        return APIResponse.success(benificiaryService.update(request));
+    }
+
+    @DeleteMapping("/{id}")
+    public APIResponse deleteBenificiary(@PathVariable int id) {
+        return APIResponse.success(benificiaryService.delete(id));
     }
 }

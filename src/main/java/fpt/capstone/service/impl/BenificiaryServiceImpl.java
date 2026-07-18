@@ -6,7 +6,9 @@ import fpt.capstone.dto.response.BenificiaryResponse;
 import fpt.capstone.entity.Benificiary;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.enums.Action;
+import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.enums.Table;
+import fpt.capstone.exceprion.InvalidArgsException;
 import fpt.capstone.repository.BenificiaryRepository;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.BenificiaryService;
@@ -35,8 +37,8 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     @Override
     public BenificiaryResponse getBenificiary(int id) {
         Benificiary  benificiary = benificiaryRepository.findById(id).orElse(null);
-        if (benificiary == null) {
-
+        if (benificiary == null || benificiary.isDelete()) {
+            throw new InvalidArgsException(APIResponse.error(ErrorCode.BENIFICIARY_NOT_FOUND.getCode(), ErrorCode.BENIFICIARY_NOT_FOUND.getMessage()));
         }
         BenificiaryResponse benificiaryResponse = new BenificiaryResponse(benificiary);
         String currentUserId = securityUtil.getCurrentUserId();
@@ -54,7 +56,8 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     @Override
     public List<BenificiaryResponse> getBenificiariesByApplicationId(int applicationId) {
         List<BenificiaryResponse>  benificiaryResponses = new ArrayList<>();
-        List<Benificiary> benificiaries = benificiaryRepository.findByApplication(applicationId);
+        List<Benificiary> benificiaries = benificiaryRepository.findByApplicationIdAndDelete(applicationId, false);
+
         for(Benificiary benificiary : benificiaries) {
             benificiaryResponses.add(new BenificiaryResponse(benificiary));
         }
@@ -74,7 +77,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     @Override
     public APIResponse<Page<BenificiaryResponse>> getBenificiaries(int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Benificiary> benificiaryPage = benificiaryRepository.findAll(pageable);
+        Page<Benificiary> benificiaryPage = benificiaryRepository.findAllByDelete(false, pageable);
         Page<BenificiaryResponse> benificiaryResponses = benificiaryPage.map(BenificiaryResponse::new);
         APIResponse<Page<BenificiaryResponse>> response = APIResponse.success(benificiaryResponses);
 
@@ -137,5 +140,75 @@ public class BenificiaryServiceImpl implements BenificiaryService {
         APIResponse<BenificiaryResponse> benificiaryResponse = APIResponse.success(response);
 
         return benificiaryResponse;
+    }
+
+    @Override
+    public BenificiaryResponse update(BenificiaryRequest benificiaryRequest) {
+        String userId = securityUtil.getCurrentUserId();
+
+        Benificiary benificiary = benificiaryRepository.getReferenceById(benificiaryRequest.getId());
+        if (benificiary == null || benificiary.isDelete()) {
+            throw new InvalidArgsException(
+                    APIResponse.error(ErrorCode.BENIFICIARY_NOT_FOUND.getCode(), ErrorCode.BENIFICIARY_NOT_FOUND.getMessage())
+            );
+        }
+
+        benificiary = Benificiary.builder()
+                .application(applicationService.getApplicationById(benificiaryRequest.getApplicationId()))
+                .gender(benificiaryRequest.isGender())
+                .assistanceAmount(benificiaryRequest.getAssistanceAmount())
+                .fullName(benificiaryRequest.getFullName())
+                .codeName(benificiaryRequest.getCodeName())
+                .dob(benificiaryRequest.getDob())
+                .CCCD(benificiaryRequest.getCCCD())
+                .issuedDate(benificiaryRequest.getIssuedDate())
+                .issuedPlace(benificiaryRequest.getIssuedPlace())
+                .hometown(benificiaryRequest.getHometown())
+                .placeOfResidence(benificiaryRequest.getPlaceOfResidence())
+                .joinPartyDate(benificiaryRequest.getJoinPartyDate())
+                .officialDate(benificiaryRequest.getOfficialDate())
+                .rank(benificiaryRequest.getRank())
+                .workUnit(benificiaryRequest.getWorkUnit())
+                .beginRevolutionaryActivities(benificiaryRequest.getBeginRevolutionaryActivities())
+                .endRevolutionaryActivities(benificiaryRequest.getEndRevolutionaryActivities())
+                .sacrificeDate(benificiaryRequest.getSacrificeDate())
+                .sacrificeAt(benificiaryRequest.getSacrificeAt())
+                .rankWhenSacrifice(benificiaryRequest.getRankWhenSacrifice())
+                .nationMeritNumber(benificiaryRequest.getNationMeritNumber())
+                .decisionNumberOfMerit(benificiaryRequest.getDecisionNumberOfMerit())
+                .recognizedDate(benificiaryRequest.getRecognizedDate())
+                .createBy(userId)
+                .createAt(LocalDate.now())
+                .build();
+
+        benificiary = benificiaryRepository.save(benificiary);
+        SystemLog systemLog = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .userId(userId)
+                .entityId(Table.BENIFICIARY.getTableName())
+                .entityId(benificiary.getId() + "")
+                .action(Action.BENIFICIARY_CREATE.getAction())
+                .newValue(benificiary)
+                .build();
+        systemLogService.write(systemLog);
+
+        BenificiaryResponse response = new BenificiaryResponse(benificiary);
+
+        return response;
+    }
+
+    @Override
+    public BenificiaryResponse delete(int id) {
+        String userId = securityUtil.getCurrentUserId();
+        Benificiary benificiary = benificiaryRepository.getReferenceById(id);
+        if (benificiary == null || !benificiary.isDelete()) {
+            throw new InvalidArgsException(APIResponse.error(ErrorCode.BENIFICIARY_NOT_FOUND.getCode(), ErrorCode.BENIFICIARY_NOT_FOUND.getMessage()));
+        }
+        benificiary.setDelete(true);
+        benificiary.setUpdateAt(LocalDate.now());
+        benificiary.setUpdateBy(userId);
+        benificiaryRepository.save(benificiary);
+        BenificiaryResponse response = new BenificiaryResponse(benificiary);
+        return response;
     }
 }
