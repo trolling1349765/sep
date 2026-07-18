@@ -32,6 +32,7 @@ public class SupportRequestController {
     private final SupportRequestService supportRequestService;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAuthority('SUPPORT_REQUEST_CREATE')")
     public ResponseEntity<APIResponse<SupportRequestDetailResponse>> createSupportRequest(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody CreateSupportRequest request) {
@@ -91,6 +92,7 @@ public class SupportRequestController {
     }
 
     @PostMapping("/upload")
+    @PreAuthorize("hasAuthority('SUPPORT_REQUEST_CREATE')")
     public ResponseEntity<APIResponse<String>> uploadAttachment(
             @RequestParam("file") MultipartFile file) {
         String attachmentId = supportRequestService.uploadAttachment(file);

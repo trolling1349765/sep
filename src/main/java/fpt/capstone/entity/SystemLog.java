@@ -39,6 +39,9 @@ public class SystemLog {
     @Column(name = "new_value",columnDefinition = "TEXT")
     Object newValue;
 
+    @Column(name = "ip_address", length = 45)
+    String ipAddress;
+
     @Column(name = "created_at")
     LocalDateTime createdAt;
 }

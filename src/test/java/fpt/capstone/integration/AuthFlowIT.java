@@ -128,7 +128,9 @@ class AuthFlowIT extends AbstractIntegrationTest {
                         assertNotNull(saved);
                         assertTrue(saved.getPassword().startsWith("$2a$12$"));
                         assertEquals(email, saved.getUsername());
-                        assertEquals("Citizen", saved.getRole().getName());
+                        // role is LAZY since the RBAC change - reload with fetch-join
+                        assertEquals("Citizen", userRepository.findWithRoleById(saved.getId())
+                                        .orElseThrow().getRole().getName());
 
                         List<RefreshToken> active = refreshTokenRepository.findByUserIdAndRevokedFalse(saved.getId());
                         assertEquals(1, active.size());

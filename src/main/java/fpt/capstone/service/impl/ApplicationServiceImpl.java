@@ -33,462 +33,501 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ApplicationServiceImpl implements ApplicationService {
 
-    private final SecurityUtil securityUtil;
-    private final ApplicationRepository applicationRepository;
-    private final UserRepository userRepository;
-    private final PolicyRepository policyRepository;
-    private final SystemLogService  systemLogService;
-    private final FormTypeService formTypeService;
+        private final SecurityUtil securityUtil;
+        private final ApplicationRepository applicationRepository;
+        private final UserRepository userRepository;
+        private final PolicyRepository policyRepository;
+        private final SystemLogService systemLogService;
+        private final FormTypeService formTypeService;
 
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppications(int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDelete(false, pageable);
-        Page<ApplicationResponse> applicationResponseList= applications.map(ApplicationResponse::new);
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppications(int size, int page) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findByDelete(false, pageable);
+                Page<ApplicationResponse> applicationResponseList = applications.map(ApplicationResponse::new);
 
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponseList);
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponseList);
 
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        return response;
-    }
-
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF1(int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDelete(false, pageable);
-        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
-                .filter(a -> ApplicationStatus.PENDING.equals(a.getStatus()))
-                .map(a -> new ApplicationResponse(a))
-                .collect(Collectors.toList());
-
-        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
-
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
-
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
-
-        return response;
-    }
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppicationsDRAFT(int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDelete(false, pageable);
-        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
-                .filter(a -> ApplicationStatus.DRAFT.equals(a.getStatus()))
-                .map(a -> new ApplicationResponse(a))
-                .collect(Collectors.toList());
-
-        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
-
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
-
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
-
-        return response;
-    }
-
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF2(int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDelete(false, pageable);
-        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
-                .filter(a -> ApplicationStatus.CHECKED.equals(a.getStatus()))
-                .map(a -> new ApplicationResponse(a))
-                .collect(Collectors.toList());
-
-        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
-
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
-
-
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
-
-        return response;
-    }
-
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF3(int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDelete(false, pageable);
-        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
-                .filter(a -> ApplicationStatus.IN_PROGRESS.equals(a.getStatus()))
-                .map(a -> new ApplicationResponse(a))
-                .collect(Collectors.toList());
-
-        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
-
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
-
-
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
-
-        return response;
-    }
-
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppicationsOFF4(int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDelete(false, pageable);
-        List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
-                .filter(a -> ApplicationStatus.COMPLETED.equals(a.getStatus()))
-                .map(a -> new ApplicationResponse(a))
-                .collect(Collectors.toList());
-
-        Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable, applicationResponseList.size());
-
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
-
-
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
-
-        return response;
-    }
-
-    @Override
-    public APIResponse<Page<ApplicationResponse>> getAppications(String submitBy, int size, int page) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findBySubmitBy_IdAndDelete(submitBy, false, pageable);
-        Page<ApplicationResponse> applicationResponseList= applications.map(ApplicationResponse::new);
-
-        APIResponse<Page<ApplicationResponse>> response = APIResponse.<Page<ApplicationResponse>>builder()
-                .data(applicationResponseList)
-                .build();
-
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
-
-        response.setData(applicationResponseList);
-        response.setCode(ErrorCode.SUCCESS.getCode());
-        response.setMessage(ErrorCode.SUCCESS.getMessage());
-
-        return response;
-    }
-
-    @Override
-    public ApplicationResponse getApplication(int applicationId) {
-
-        Application application = applicationRepository.findById(applicationId).orElse(null);
-
-        if (application == null || application.isDelete()) {
-            APIResponse<Object> response = APIResponse.builder()
-                    .code(ErrorCode.APPLICATION_NOT_FOUND.getCode())
-                    .message(ErrorCode.APPLICATION_NOT_FOUND.getMessage())
-                    .data(applicationId)
-                    .build();
-            throw new InvalidArgsException(response);
+                return response;
         }
 
-        String currentUserId = securityUtil.getCurrentUserId();
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.GET_APPLICATIONS.getAction())
-                .entityId(application.getId()+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppicationsOFF1(int size, int page) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findByDelete(false, pageable);
+                List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                                .filter(a -> ApplicationStatus.PENDING.equals(a.getStatus()))
+                                .map(a -> new ApplicationResponse(a))
+                                .collect(Collectors.toList());
 
-        return new ApplicationResponse(application);
-    }
+                Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable,
+                                applicationResponseList.size());
 
-    @Override
-    public Application getApplicationById(int id) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null || application.isDelete()) return null;
-        return application;
-    }
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
 
-    @Override
-    public APIResponse<ApplicationResponse> createApplication(ApplicationRequest request, String status) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        String currentUserId = securityUtil.getCurrentUserId();
+                return response;
+        }
 
-        Application application = Application.builder()
-                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
-                .approveDate(request.getApprovedDate())
-                .status(ApplicationStatus.valueOf(status))
-                .submitDate(request.getSubmitDate())
-                .formType(formTypeService.getFormType(request.getFormTypeId()))
-                .createAt(LocalDate.now())
-                .createBy(currentUserId)
-                .isDelete(false)
-                .build();
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppicationsDRAFT(int size, int page) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findByDelete(false, pageable);
+                List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                                .filter(a -> ApplicationStatus.DRAFT.equals(a.getStatus()))
+                                .map(a -> new ApplicationResponse(a))
+                                .collect(Collectors.toList());
 
-        application = applicationRepository.save(application);
+                Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable,
+                                applicationResponseList.size());
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.CREATE_APPLICATION.getAction())
-                .entityId(application.getId()+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
 
-        return APIResponse.<ApplicationResponse>builder()
-                .data(new  ApplicationResponse(application))
-                .build();
-    }
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-    @Override
-    public APIResponse<ApplicationResponse> updateApplication(ApplicationRequest request) {
+                return response;
+        }
 
-        String currentUserId = securityUtil.getCurrentUserId();
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppicationsOFF2(int size, int page) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findByDelete(false, pageable);
+                List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                                .filter(a -> ApplicationStatus.CHECKED.equals(a.getStatus()))
+                                .map(a -> new ApplicationResponse(a))
+                                .collect(Collectors.toList());
 
-        Application oldApplication = applicationRepository.findById(request.getId()).orElse(null);
-        if (oldApplication == null || oldApplication.isDelete()) throw new InvalidArgsException(APIResponse.error(
-                ErrorCode.APPLICATION_NOT_FOUND.getCode(),
-                ErrorCode.APPLICATION_NOT_FOUND.getMessage()
-        ));
-        Application newApplication = Application.builder()
-                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
-                .approveDate(request.getApprovedDate())
-                .submitDate(request.getSubmitDate())
-                .status(ApplicationStatus.valueOf(request.getStatus()))
-                .formType(formTypeService.getFormType(request.getFormTypeId()))
-                .updateAt(LocalDate.now())
-                .updateBy(currentUserId)
-                .isDelete(request.isDeleted())
-                .build();
+                Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable,
+                                applicationResponseList.size());
 
-        newApplication = applicationRepository.save(newApplication);
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.UPDATE_APPLICATION.getAction())
-                .entityId(newApplication.getId()+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(newApplication)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        return APIResponse.<ApplicationResponse>builder()
-                .data(new  ApplicationResponse(newApplication))
-                .build();
-    }
+                return response;
+        }
 
-    @Override
-    public ApplicationResponse toPending(int applicationId) {
-        String currentUserId = securityUtil.getCurrentUserId();
-        Application application = applicationRepository.getReferenceById(applicationId);
-        if (application.isDelete()) throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(), ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
-        Application oldApplication = application;
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppicationsOFF3(int size, int page) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findByDelete(false, pageable);
+                List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                                .filter(a -> ApplicationStatus.IN_PROGRESS.equals(a.getStatus()))
+                                .map(a -> new ApplicationResponse(a))
+                                .collect(Collectors.toList());
 
-        application.setStatus(ApplicationStatus.PENDING);
-        application.setUpdateAt(LocalDate.now());
-        application.setUpdateBy(currentUserId);
+                Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable,
+                                applicationResponseList.size());
 
-        applicationRepository.save(application);
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.UPDATE_APPLICATION.getAction())
-                .entityId(applicationId+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        ApplicationResponse response = new ApplicationResponse(application);
-        return response;
-    }
+                return response;
+        }
 
-    @Override
-    public ApplicationResponse toChecked(int applicationId) {
-        String currentUserId = securityUtil.getCurrentUserId();
-        Application application = applicationRepository.getReferenceById(applicationId);
-        if (application.isDelete()) throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(), ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppicationsOFF4(int size, int page) {
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findByDelete(false, pageable);
+                List<ApplicationResponse> applicationResponseList = applications.getContent().stream()
+                                .filter(a -> ApplicationStatus.COMPLETED.equals(a.getStatus()))
+                                .map(a -> new ApplicationResponse(a))
+                                .collect(Collectors.toList());
 
-        Application oldApplication = application;
+                Page<ApplicationResponse> applicationResponses = new PageImpl<>(applicationResponseList, pageable,
+                                applicationResponseList.size());
 
-        application.setStatus(ApplicationStatus.CHECKED);
-        application.setUpdateAt(LocalDate.now());
-        application.setUpdateBy(currentUserId);
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.success(applicationResponses);
 
-        applicationRepository.save(application);
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.UPDATE_APPLICATION.getAction())
-                .entityId(applicationId+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                return response;
+        }
 
-        ApplicationResponse response = new ApplicationResponse(application);
-        return response;
-    }
+        @Override
+        public APIResponse<Page<ApplicationResponse>> getAppications(String submitBy, int size, int page) {
+                requireOwnershipUnlessFullView(submitBy);
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Application> applications = applicationRepository.findBySubmitBy_IdAndDelete(submitBy, false,
+                                pageable);
+                Page<ApplicationResponse> applicationResponseList = applications.map(ApplicationResponse::new);
 
-    @Override
-    public ApplicationResponse toInProgress(int applicationId) {
-        String currentUserId = securityUtil.getCurrentUserId();
-        Application application = applicationRepository.getReferenceById(applicationId);
-        if (application.isDelete()) throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(), ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+                APIResponse<Page<ApplicationResponse>> response = APIResponse.<Page<ApplicationResponse>>builder()
+                                .data(applicationResponseList)
+                                .build();
 
-        Application oldApplication = application;
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        application.setStatus(ApplicationStatus.IN_PROGRESS);
-        application.setUpdateAt(LocalDate.now());
-        application.setUpdateBy(currentUserId);
+                response.setData(applicationResponseList);
+                response.setCode(ErrorCode.SUCCESS.getCode());
+                response.setMessage(ErrorCode.SUCCESS.getMessage());
 
-        applicationRepository.save(application);
+                return response;
+        }
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.UPDATE_APPLICATION.getAction())
-                .entityId(applicationId+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+        @Override
+        public ApplicationResponse getApplication(int applicationId) {
 
-        ApplicationResponse response = new ApplicationResponse(application);
-        return response;
-    }
+                Application application = applicationRepository.findById(applicationId).orElse(null);
 
-    @Override
-    public ApplicationResponse toCompleted(int applicationId) {
-        String currentUserId = securityUtil.getCurrentUserId();
-        Application application = applicationRepository.getReferenceById(applicationId);
-        if (application.isDelete()) throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(), ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+                if (application == null || application.isDelete()) {
+                        APIResponse<Object> response = APIResponse.builder()
+                                        .code(ErrorCode.APPLICATION_NOT_FOUND.getCode())
+                                        .message(ErrorCode.APPLICATION_NOT_FOUND.getMessage())
+                                        .data(applicationId)
+                                        .build();
+                        throw new InvalidArgsException(response);
+                }
 
-        Application oldApplication = application;
+                requireOwnershipUnlessFullView(
+                                application.getSubmitBy() != null ? application.getSubmitBy().getId() : null);
 
-        application.setStatus(ApplicationStatus.COMPLETED);
-        application.setUpdateAt(LocalDate.now());
-        application.setUpdateBy(currentUserId);
+                String currentUserId = securityUtil.getCurrentUserId();
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.GET_APPLICATIONS.getAction())
+                                .entityId(application.getId() + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        applicationRepository.save(application);
+                return new ApplicationResponse(application);
+        }
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.UPDATE_APPLICATION.getAction())
-                .entityId(applicationId+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+        /**
+         * Ownership guard for the APPLICATION_VIEW_OWN qualifier: callers
+         * holding the full APPLICATION_VIEW right may read any record; callers with
+         * only the _OWN variant are limited to applications they submitted.
+         * Throwing Spring Security's AccessDeniedException routes the request through
+         * the AccessDeniedHandler, so the attempt is also audited as ILLEGAL_REQUEST.
+         */
+        private void requireOwnershipUnlessFullView(String ownerId) {
+                if (securityUtil.hasAuthority("APPLICATION_VIEW")) {
+                        return;
+                }
+                String currentUserId = securityUtil.getCurrentUserId();
+                if (ownerId == null || currentUserId == null || !ownerId.equals(currentUserId)) {
+                        throw new org.springframework.security.access.AccessDeniedException(
+                                        ErrorCode.ACCESS_DENIED.getMessage());
+                }
+        }
 
-        ApplicationResponse response = new ApplicationResponse(application);
-        return response;
-    }
+        @Override
+        public Application getApplicationById(int id) {
+                Application application = applicationRepository.findById(id).orElse(null);
+                if (application == null || application.isDelete())
+                        return null;
+                return application;
+        }
 
-    @Override
-    public ApplicationResponse toInsufficent(int applicationId) {
-        String currentUserId = securityUtil.getCurrentUserId();
-        Application application = applicationRepository.getReferenceById(applicationId);
-        if (application.isDelete()) throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(), ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+        @Override
+        public APIResponse<ApplicationResponse> createApplication(ApplicationRequest request, String status) {
 
-        Application oldApplication = application;
+                String currentUserId = securityUtil.getCurrentUserId();
 
-        application.setStatus(ApplicationStatus.INSUFFICIENT);
-        application.setUpdateAt(LocalDate.now());
-        application.setUpdateBy(currentUserId);
+                Application application = Application.builder()
+                                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
+                                .approveDate(request.getApprovedDate())
+                                .status(ApplicationStatus.valueOf(status))
+                                .submitDate(request.getSubmitDate())
+                                .formType(formTypeService.getFormType(request.getFormTypeId()))
+                                .createAt(LocalDate.now())
+                                .createBy(currentUserId)
+                                .isDelete(false)
+                                .build();
 
-        applicationRepository.save(application);
+                application = applicationRepository.save(application);
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.UPDATE_APPLICATION.getAction())
-                .entityId(applicationId+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.CREATE_APPLICATION.getAction())
+                                .entityId(application.getId() + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        ApplicationResponse response = new ApplicationResponse(application);
-        return response;
-    }
+                return APIResponse.<ApplicationResponse>builder()
+                                .data(new ApplicationResponse(application))
+                                .build();
+        }
 
-    @Override
-    public Object deleteApplication(int applicationId) {
-        String currentUserId = securityUtil.getCurrentUserId();
-        Application application = applicationRepository.getReferenceById(applicationId);
-        if (!application.isDelete()) throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(), ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+        @Override
+        public APIResponse<ApplicationResponse> updateApplication(ApplicationRequest request) {
 
-        Application oldApplication = application;
+                String currentUserId = securityUtil.getCurrentUserId();
 
-        application.setDelete(true);
-        application.setUpdateAt(LocalDate.now());
-        application.setUpdateBy(currentUserId);
+                Application oldApplication = applicationRepository.findById(request.getId()).orElse(null);
+                if (oldApplication == null || oldApplication.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(
+                                        ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+                Application newApplication = Application.builder()
+                                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
+                                .approveDate(request.getApprovedDate())
+                                .submitDate(request.getSubmitDate())
+                                .status(ApplicationStatus.valueOf(request.getStatus()))
+                                .formType(formTypeService.getFormType(request.getFormTypeId()))
+                                .updateAt(LocalDate.now())
+                                .updateBy(currentUserId)
+                                .isDelete(request.isDeleted())
+                                .build();
 
-        applicationRepository.save(application);
+                newApplication = applicationRepository.save(newApplication);
 
-        SystemLog log = SystemLog.builder()
-                .createdAt(LocalDateTime.now())
-                .action(Action.APPLICATION_DELETE.getAction())
-                .entityId(applicationId+"")
-                .entityType(Table.APPLICATION.getTableName())
-                .newValue(application)
-                .oldValue(oldApplication)
-                .userId(currentUserId)
-                .build();
-        systemLogService.write(log);
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.UPDATE_APPLICATION.getAction())
+                                .entityId(newApplication.getId() + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(newApplication)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
 
-        ApplicationResponse response = new ApplicationResponse(application);
-        return response;
-    }
+                return APIResponse.<ApplicationResponse>builder()
+                                .data(new ApplicationResponse(newApplication))
+                                .build();
+        }
+
+        @Override
+        public ApplicationResponse toPending(int applicationId) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                Application application = applicationRepository.getReferenceById(applicationId);
+                if (application.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+                Application oldApplication = application;
+
+                application.setStatus(ApplicationStatus.PENDING);
+                application.setUpdateAt(LocalDate.now());
+                application.setUpdateBy(currentUserId);
+
+                applicationRepository.save(application);
+
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.UPDATE_APPLICATION.getAction())
+                                .entityId(applicationId + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
+
+                ApplicationResponse response = new ApplicationResponse(application);
+                return response;
+        }
+
+        @Override
+        public ApplicationResponse toChecked(int applicationId) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                Application application = applicationRepository.getReferenceById(applicationId);
+                if (application.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+
+                Application oldApplication = application;
+
+                application.setStatus(ApplicationStatus.CHECKED);
+                application.setUpdateAt(LocalDate.now());
+                application.setUpdateBy(currentUserId);
+
+                applicationRepository.save(application);
+
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.UPDATE_APPLICATION.getAction())
+                                .entityId(applicationId + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
+
+                ApplicationResponse response = new ApplicationResponse(application);
+                return response;
+        }
+
+        @Override
+        public ApplicationResponse toInProgress(int applicationId) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                Application application = applicationRepository.getReferenceById(applicationId);
+                if (application.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+
+                Application oldApplication = application;
+
+                application.setStatus(ApplicationStatus.IN_PROGRESS);
+                application.setUpdateAt(LocalDate.now());
+                application.setUpdateBy(currentUserId);
+
+                applicationRepository.save(application);
+
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.UPDATE_APPLICATION.getAction())
+                                .entityId(applicationId + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
+
+                ApplicationResponse response = new ApplicationResponse(application);
+                return response;
+        }
+
+        @Override
+        public ApplicationResponse toCompleted(int applicationId) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                Application application = applicationRepository.getReferenceById(applicationId);
+                if (application.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+
+                Application oldApplication = application;
+
+                application.setStatus(ApplicationStatus.COMPLETED);
+                application.setUpdateAt(LocalDate.now());
+                application.setUpdateBy(currentUserId);
+
+                applicationRepository.save(application);
+
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.UPDATE_APPLICATION.getAction())
+                                .entityId(applicationId + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
+
+                ApplicationResponse response = new ApplicationResponse(application);
+                return response;
+        }
+
+        @Override
+        public ApplicationResponse toInsufficent(int applicationId) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                Application application = applicationRepository.getReferenceById(applicationId);
+                if (application.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+
+                Application oldApplication = application;
+
+                application.setStatus(ApplicationStatus.INSUFFICIENT);
+                application.setUpdateAt(LocalDate.now());
+                application.setUpdateBy(currentUserId);
+
+                applicationRepository.save(application);
+
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.UPDATE_APPLICATION.getAction())
+                                .entityId(applicationId + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
+
+                ApplicationResponse response = new ApplicationResponse(application);
+                return response;
+        }
+
+        @Override
+        public Object deleteApplication(int applicationId) {
+                String currentUserId = securityUtil.getCurrentUserId();
+                Application application = applicationRepository.getReferenceById(applicationId);
+                if (!application.isDelete())
+                        throw new InvalidArgsException(APIResponse.error(ErrorCode.APPLICATION_NOT_FOUND.getCode(),
+                                        ErrorCode.APPLICATION_NOT_FOUND.getMessage()));
+
+                Application oldApplication = application;
+
+                application.setDelete(true);
+                application.setUpdateAt(LocalDate.now());
+                application.setUpdateBy(currentUserId);
+
+                applicationRepository.save(application);
+
+                SystemLog log = SystemLog.builder()
+                                .createdAt(LocalDateTime.now())
+                                .action(Action.APPLICATION_DELETE.getAction())
+                                .entityId(applicationId + "")
+                                .entityType(Table.APPLICATION.getTableName())
+                                .newValue(application)
+                                .oldValue(oldApplication)
+                                .userId(currentUserId)
+                                .build();
+                systemLogService.write(log);
+
+                ApplicationResponse response = new ApplicationResponse(application);
+                return response;
+        }
 }

@@ -11,6 +11,7 @@ import fpt.capstone.service.RelativeService;
 import fpt.capstone.service.WounderSoldierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class BenificiaryController {
      * @return
      */
     @GetMapping
+    @PreAuthorize("hasAuthority('BENEFICIARY_VIEW')")
     public APIResponse<Page<BenificiaryResponse>> getBenificiary(
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "0") int page
@@ -45,6 +47,7 @@ public class BenificiaryController {
      * @return
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('BENEFICIARY_VIEW')")
     public APIResponse getBenificiary(@PathVariable int id) {
         BenificiaryResponse benificiaryResponse = benificiaryService.getBenificiary(id);
         RelativeResponse relativeResponse = relativeService.getRelativeByApplicationId(benificiaryResponse.getApplicationId());
@@ -65,15 +68,19 @@ public class BenificiaryController {
      * @return
      */
     @GetMapping("/application/{id}")
+    @PreAuthorize("hasAuthority('BENEFICIARY_VIEW')")
     public APIResponse<List<BenificiaryResponse>> getBenificiariesByApplicationId(@PathVariable int applicationId) {
         return APIResponse.success(benificiaryService.getBenificiariesByApplicationId(applicationId));
     }
 
     @PutMapping
+    @PreAuthorize("hasAuthority('BENEFICIARY_UPDATE')")
     public APIResponse updateBenificiary(@RequestBody BenificiaryRequest request) {
         return APIResponse.success(benificiaryService.update(request));
     }
 
+    // No delete right exists in the 102-right catalogue: authenticated-only for
+    // now (decided 18/07/2026); extend the catalogue via POST /admin/rights.
     @DeleteMapping("/{id}")
     public APIResponse deleteBenificiary(@PathVariable int id) {
         return APIResponse.success(benificiaryService.delete(id));

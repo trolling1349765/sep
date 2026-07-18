@@ -3,6 +3,7 @@ package fpt.capstone.controller;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.service.impl.OcrServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,7 @@ public class OcrController {
     }
 
     @PostMapping("/extract")
+    @PreAuthorize("hasAuthority('DOCUMENT_OCR')")
     public ResponseEntity<APIResponse> extractText(@RequestParam("file") MultipartFile file) {
         return ocrService.transformToText(file);
     }

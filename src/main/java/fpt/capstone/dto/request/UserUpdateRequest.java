@@ -22,5 +22,6 @@ public class UserUpdateRequest {
     @Size(min = 8, max = 20, message = "PASSWORD_INVALID")
     String password;
     LocalDate dob;
+    Integer roleId;
 
 }

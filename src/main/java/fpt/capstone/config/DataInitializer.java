@@ -17,27 +17,34 @@ public class DataInitializer implements CommandLineRunner {
         private final BenifitRuleRepository benefitRuleRepository;
         private final ChapterRepository chapterRepository;
         private final RoleRepository roleRepository;
+        private final RightRepository rightRepository;
+        private final PermissionRepository permissionRepository;
 
         public DataInitializer(
-                PolicyRepository policyRepository,
-                ArticleRepository articleRepository,
-                EligibilityCriteriaRepository eligibilityCriteriaRepository,
-                BenifitRuleRepository benefitRuleRepository,
-                ChapterRepository chapterRepository,
-                RoleRepository roleRepository
-        ) {
+                        PolicyRepository policyRepository,
+                        ArticleRepository articleRepository,
+                        EligibilityCriteriaRepository eligibilityCriteriaRepository,
+                        BenifitRuleRepository benefitRuleRepository,
+                        ChapterRepository chapterRepository,
+                        RoleRepository roleRepository,
+                        RightRepository rightRepository,
+                        PermissionRepository permissionRepository) {
                 this.policyRepository = policyRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
                 this.benefitRuleRepository = benefitRuleRepository;
                 this.chapterRepository = chapterRepository;
                 this.roleRepository = roleRepository;
+                this.rightRepository = rightRepository;
+                this.permissionRepository = permissionRepository;
         }
 
         @Override
         @Transactional
         public void run(String... args) {
                 seedRoles();
+                seedRights();
+                seedPermissions();
 
                 if (policyRepository.count() > 0) {
                         // Policy data already exists, skip policy seeding
@@ -58,9 +65,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p1 = policyRepository.save(p1);
                 Chapter c1 = Chapter.builder()
-                        .policy(p1)
-                        .title("chapter I")
-                        .build();
+                                .policy(p1)
+                                .title("chapter I")
+                                .build();
                 c1 = chapterRepository.save(c1);
                 articleRepository.save(Article.builder()
                                 .chapter(c1)
@@ -110,9 +117,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p2 = policyRepository.save(p2);
                 Chapter c2 = Chapter.builder()
-                        .policy(p2)
-                        .title("chapter I")
-                        .build();
+                                .policy(p2)
+                                .title("chapter I")
+                                .build();
                 c2 = chapterRepository.save(c2);
                 articleRepository.save(Article.builder()
                                 .chapter(c2).articleNo(1)
@@ -201,9 +208,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p4 = policyRepository.save(p4);
                 Chapter c4 = Chapter.builder()
-                        .policy(p4)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p4)
+                                .title("Chapter I")
+                                .build();
                 c4 = chapterRepository.save(c4);
                 articleRepository.save(Article.builder()
                                 .chapter(c4).articleNo(1)
@@ -239,9 +246,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p5 = policyRepository.save(p5);
                 Chapter c5 = Chapter.builder()
-                        .policy(p5)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p5)
+                                .title("Chapter I")
+                                .build();
                 c5 = chapterRepository.save(c5);
                 articleRepository.save(Article.builder()
                                 .chapter(c5).articleNo(1)
@@ -284,9 +291,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p6 = policyRepository.save(p6);
                 Chapter c6 = Chapter.builder()
-                        .policy(p6)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p6)
+                                .title("Chapter I")
+                                .build();
                 c6 = chapterRepository.save(c6);
                 articleRepository.save(Article.builder()
                                 .chapter(c6).articleNo(1)
@@ -323,9 +330,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p7 = policyRepository.save(p7);
                 Chapter c7 = Chapter.builder()
-                        .policy(p7)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p7)
+                                .title("Chapter I")
+                                .build();
                 c7 = chapterRepository.save(c7);
                 articleRepository.save(Article.builder()
                                 .chapter(c7).articleNo(1)
@@ -362,9 +369,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p8 = policyRepository.save(p8);
                 Chapter c8 = Chapter.builder()
-                        .policy(p8)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p8)
+                                .title("Chapter I")
+                                .build();
                 c8 = chapterRepository.save(c8);
                 articleRepository.save(Article.builder()
                                 .chapter(c8).articleNo(1)
@@ -401,9 +408,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p9 = policyRepository.save(p9);
                 Chapter c9 = Chapter.builder()
-                        .policy(p9)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p9)
+                                .title("Chapter I")
+                                .build();
                 c9 = chapterRepository.save(c9);
                 articleRepository.save(Article.builder()
                                 .chapter(c9).articleNo(1)
@@ -440,9 +447,9 @@ public class DataInitializer implements CommandLineRunner {
                                 .build();
                 p10 = policyRepository.save(p10);
                 Chapter c10 = Chapter.builder()
-                        .policy(p10)
-                        .title("Chapter I")
-                        .build();
+                                .policy(p10)
+                                .title("Chapter I")
+                                .build();
                 c10 = chapterRepository.save(c10);
                 articleRepository.save(Article.builder()
                                 .chapter(c10).articleNo(1)
@@ -489,5 +496,70 @@ public class DataInitializer implements CommandLineRunner {
                                         .description(description)
                                         .build());
                 }
+        }
+
+        private void seedRights() {
+                java.util.Set<String> existingCodes = rightRepository.findAll().stream()
+                                .map(Right::getCode)
+                                .filter(java.util.Objects::nonNull)
+                                .collect(java.util.stream.Collectors.toSet());
+
+                java.util.Map<String, Integer> sortPerModule = new java.util.HashMap<>();
+                java.util.List<Right> toInsert = new java.util.ArrayList<>();
+                for (String[] row : RightsCatalog.RIGHTS) {
+                        int order = sortPerModule.merge(row[1], 1, Integer::sum);
+                        if (existingCodes.contains(row[0])) {
+                                continue;
+                        }
+                        toInsert.add(Right.builder()
+                                        .code(row[0])
+                                        .module(row[1])
+                                        .moduleName(row[2])
+                                        .name(row[3])
+                                        .isSystem("1".equals(row[4]))
+                                        .sortOrder(order)
+                                        .createAt(LocalDate.now())
+                                        .createBy("system")
+                                        .build());
+                }
+                if (!toInsert.isEmpty()) {
+                        rightRepository.saveAll(toInsert);
+                }
+                System.out.println(">>> Rights seeding complete. Total rights: " + rightRepository.count());
+        }
+
+        // Base matrix is applied only to roles that have no permissions at all, so
+        // grants edited by an admin are never overwritten on restart.
+        private void seedPermissions() {
+                java.util.Map<String, Right> rightByCode = rightRepository.findAll().stream()
+                                .collect(java.util.stream.Collectors.toMap(Right::getCode, r -> r));
+
+                RightsCatalog.BASE_MATRIX.forEach((roleName, codes) -> {
+                        Role role = roleRepository.findByName(roleName).orElse(null);
+                        if (role == null) {
+                                System.out.println(">>> Skipping permission seed: role not found: " + roleName);
+                                return;
+                        }
+                        if (permissionRepository.countByRoleId(role.getId()) > 0) {
+                                return;
+                        }
+                        java.util.List<Permission> permissions = new java.util.ArrayList<>();
+                        for (String code : codes) {
+                                Right right = rightByCode.get(code);
+                                if (right == null) {
+                                        throw new IllegalStateException(
+                                                        "Base matrix references unknown right code: " + code);
+                                }
+                                permissions.add(Permission.builder()
+                                                .role(role)
+                                                .right(right)
+                                                .createAt(LocalDate.now())
+                                                .createBy("system")
+                                                .build());
+                        }
+                        permissionRepository.saveAll(permissions);
+                        System.out.println(">>> Seeded " + permissions.size() + " base permissions for role "
+                                        + roleName);
+                });
         }
 }

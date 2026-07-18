@@ -18,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 
 @Configuration
@@ -28,6 +27,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final AuditingAccessDeniedHandler auditingAccessDeniedHandler;
 
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
@@ -41,36 +42,34 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // NOTE: matchers are evaluated AFTER the servlet context-path
+                // (/capstone) is stripped, so paths here must NOT carry that prefix.
+                // Authorization is deny-by-default; per-endpoint rules live in
+                // @PreAuthorize annotations mapped to RBAC right codes.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/password-reset/request").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/password-reset/confirm").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/capstone/auth/me").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/logout").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/logout-all").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/capstone/auth/change-password").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/capstone/users/profile").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/capstone/users/profile").authenticated()
-                        .requestMatchers("/capstone/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/capstone/notifications/**").authenticated()
-                        .requestMatchers("/capstone/support-requests/**").authenticated()
-                        .requestMatchers("/capstone/support-requests/manage")
-                        .hasAnyRole("RECEPTION", "APPRAISAL")
-                        .requestMatchers("/capstone/support-requests/*/reply")
-                        .hasAnyRole("RECEPTION", "APPRAISAL")
-                        .requestMatchers("/capstone/support-requests/*/status")
-                        .hasAnyRole("RECEPTION", "APPRAISAL")
-                        .requestMatchers(HttpMethod.GET, "/capstone/provinces").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/capstone/provinces/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/capstone/provinces/{provinceCode}/wards").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/capstone/citizen-portal/policies/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/auth/register",
+                                "/auth/login",
+                                "/auth/refresh",
+                                "/auth/password-reset/request",
+                                "/auth/password-reset/confirm",
+                                // Logout is idempotent and must work with expired/absent
+                                // tokens so clients can always clear their cookies
+                                "/auth/logout",
+                                "/auth/logout-all")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/provinces", "/provinces/**").permitAll()
+                        // Public citizen-facing policy browsing
+                        .requestMatchers(HttpMethod.GET, "/policy", "/policy/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/citizen-portal/policies/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/chatbot/ask").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/applications/**").hasAnyRole("CITIZEN", "RECEPTION")
-                        .requestMatchers(HttpMethod.POST, "/applications/**").hasRole("CITIZEN")
-                        .anyRequest().permitAll())
+                        // Error dispatch must stay reachable or exceptions surface as bogus 401s
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(auditingAccessDeniedHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -100,8 +99,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(12);
     }
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 }

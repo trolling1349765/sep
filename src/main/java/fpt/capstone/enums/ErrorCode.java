@@ -21,6 +21,14 @@ public enum ErrorCode {
     BENIFIT_HISTORY_NOT_FOUND(10011, "Benifit history not found"),
     ADDITIONAL_DOCUMENT_NOT_FOUND(10012, "Additional document not found"),
     BENIFICIARY_NOT_FOUND(10013, "Benificiary not found"),
+    ROLE_NOT_FOUND(10014, "Role not found"),
+    RIGHT_NOT_FOUND(10015, "Right not found"),
+    SYSTEM_RIGHT_REQUIRED(10016, "System rights cannot be removed from any role"),
+    ADMIN_ROLE_LOCKED(10017, "Permissions of the Admin role cannot be modified"),
+    RIGHT_CODE_EXISTS(10018, "Right code already exists"),
+    INVALID_RIGHT_CODE(10019, "Right code does not match the naming convention"),
+    ACCESS_DENIED(10020, "Access denied"),
+    CANNOT_CHANGE_OWN_ROLE(10021, "Cannot change the role of your own account"),
     ;
 
     private int code;

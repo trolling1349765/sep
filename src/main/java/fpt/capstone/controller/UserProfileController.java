@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +22,7 @@ public class UserProfileController {
     private final UserProfileService userProfileService;
     private final JwtUtil jwtUtil;
 
+    @PreAuthorize("hasAuthority('PROFILE_VIEW')")
     @GetMapping("/profile")
     public ResponseEntity<APIResponse<UserProfileResponse>> getProfile(HttpServletRequest request) {
         String userId = extractUserIdFromToken(request);
@@ -28,6 +30,7 @@ public class UserProfileController {
         return ResponseEntity.ok(APIResponse.success("Profile retrieved successfully", profile));
     }
 
+    @PreAuthorize("hasAuthority('PROFILE_UPDATE')")
     @PutMapping("/profile")
     public ResponseEntity<APIResponse<UserProfileResponse>> updateProfile(
             @Valid @RequestBody UpdateProfileRequest updateRequest,

@@ -156,6 +156,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        <!-- AOP (@Auditable audit-log aspect) — Boot 4 dropped the aop starter,
+             spring-aop comes with spring-boot-starter; only the weaver is needed -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
         <!-- Spring Security Crypto (bcrypt) is included via spring-boot-starter-security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -81,6 +81,7 @@ public class GlobalExceptionHandler {
     @SuppressWarnings("rawtypes")
     @ExceptionHandler(value = DataAccessException.class)
     ResponseEntity<APIResponse> handleDataAccessException(DataAccessException e) {
+        log.error("Data access failure", e);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(APIResponse.error(503, "Service temporarily unavailable. Please try again later."));
     }

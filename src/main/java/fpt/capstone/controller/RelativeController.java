@@ -6,6 +6,7 @@ import fpt.capstone.service.RelativeService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ public class RelativeController {
     RelativeService relativeService;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('APPLICATION_VIEW', 'APPLICATION_VIEW_OWN')")
     public APIResponse<RelativeResponse> getRelativeByApplicationId(@PathVariable int applicationId) {
         RelativeResponse relativeResponse = relativeService.getRelativeByApplicationId(applicationId);
         return APIResponse.success(relativeResponse);

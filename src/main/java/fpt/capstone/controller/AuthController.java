@@ -7,6 +7,8 @@ import fpt.capstone.dto.request.PasswordResetRequest;
 import fpt.capstone.dto.request.RegisterRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.LoginResponse;
+import fpt.capstone.enums.Action;
+import fpt.capstone.service.AuthAuditLogger;
 import fpt.capstone.service.AuthService;
 import fpt.capstone.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,6 +28,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final AuthAuditLogger authAuditLogger;
 
     @PostMapping("/register")
     public ResponseEntity<APIResponse<LoginResponse>> register(
@@ -35,6 +39,7 @@ public class AuthController {
         if (result.getMessage() != null) {
             return ResponseEntity.ok(APIResponse.success(result.getMessage(), null));
         }
+        authAuditLogger.logAuthEvent(Action.CREATE_USER, result.getUserId(), httpRequest, "SELF_REGISTER");
         return ResponseEntity.ok(APIResponse.success("Registration successful", result));
     }
 
@@ -45,8 +50,11 @@ public class AuthController {
             HttpServletResponse httpResponse) {
         try {
             LoginResponse result = authService.login(request, httpRequest, httpResponse);
+            authAuditLogger.logAuthEvent(Action.USER_LOGIN, result.getUserId(), httpRequest, "SUCCESS");
             return ResponseEntity.ok(APIResponse.success("Login successful", result));
         } catch (ResponseStatusException e) {
+            // Failed attempts are audited too (actor unknown -> userId null)
+            authAuditLogger.logAuthEvent(Action.USER_LOGIN, null, httpRequest, "FAILED");
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                 int retryAfter = 60;
                 String reason = e.getReason();
@@ -79,7 +87,11 @@ public class AuthController {
     public ResponseEntity<APIResponse<Void>> logout(
             HttpServletRequest request,
             HttpServletResponse response) {
+        String logoutToken = extractAccessToken(request);
+        String logoutUserId = (logoutToken != null && jwtUtil.isTokenValid(logoutToken))
+                ? jwtUtil.extractUserId(logoutToken) : null;
         authService.logout(request, response);
+        authAuditLogger.logAuthEvent(Action.USER_LOGOUT, logoutUserId, request, null);
         return ResponseEntity.ok(APIResponse.success("Logged out successfully", null));
     }
 
@@ -91,8 +103,10 @@ public class AuthController {
         if (accessToken != null && jwtUtil.isTokenValid(accessToken) && !jwtUtil.isTokenExpired(accessToken)) {
             String userId = jwtUtil.extractUserId(accessToken);
             authService.logoutAllDevices(userId, response);
+            authAuditLogger.logAuthEvent(Action.USER_LOGOUT, userId, request, "ALL_DEVICES");
         } else {
             authService.logout(request, response);
+            authAuditLogger.logAuthEvent(Action.USER_LOGOUT, null, request, "ALL_DEVICES");
         }
         return ResponseEntity.ok(APIResponse.success("Logged out from all devices", null));
     }
@@ -107,12 +121,15 @@ public class AuthController {
 
     @PostMapping("/password-reset/confirm")
     public ResponseEntity<APIResponse<Void>> confirmPasswordReset(
-            @Valid @RequestBody PasswordResetConfirmRequest request) {
+            @Valid @RequestBody PasswordResetConfirmRequest request,
+            HttpServletRequest httpRequest) {
         authService.confirmPasswordReset(request);
+        authAuditLogger.logAuthEvent(Action.PASSWORD_RESET, null, httpRequest, null);
         return ResponseEntity.ok(APIResponse.success("Password reset successful. You can now log in.", null));
     }
 
     @PostMapping("/change-password")
+    @PreAuthorize("hasAuthority('PASSWORD_CHANGE')")
     public ResponseEntity<APIResponse<Void>> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             HttpServletRequest httpRequest) {
@@ -122,6 +139,7 @@ public class AuthController {
         }
         String userId = jwtUtil.extractUserId(accessToken);
         authService.changePassword(userId, request);
+        authAuditLogger.logAuthEvent(Action.CHANGE_PASSWORD, userId, httpRequest, null);
         return ResponseEntity.ok(APIResponse.success("Password changed successfully.", null));
     }
 

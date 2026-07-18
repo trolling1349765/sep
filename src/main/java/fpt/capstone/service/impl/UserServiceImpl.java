@@ -4,32 +4,45 @@ import fpt.capstone.dto.request.UserCreationRequest;
 import fpt.capstone.dto.request.UserUpdateRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.UserResponse;
+import fpt.capstone.entity.Role;
+import fpt.capstone.entity.SystemLog;
 import fpt.capstone.entity.User;
-import fpt.capstone.exceprion.ArgumentNotValidException;
+import fpt.capstone.enums.Action;
 import fpt.capstone.enums.ErrorCode;
+import fpt.capstone.enums.Table;
+import fpt.capstone.exceprion.ArgumentNotValidException;
 import fpt.capstone.repository.RoleRepository;
 import fpt.capstone.repository.UserRepository;
+import fpt.capstone.service.SystemLogService;
 import fpt.capstone.service.UserService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import fpt.capstone.util.RequestIpUtil;
+import fpt.capstone.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
-        this.userRepository = userRepository;
-        this.roleRepository =  roleRepository;
-    }
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final SecurityUtil securityUtil;
+    private final SystemLogService systemLogService;
 
     @Override
+    @Transactional
     public UserResponse createRequest(UserCreationRequest request) {
 
         List<APIResponse> exceptions = new ArrayList<>();
@@ -48,35 +61,83 @@ public class UserServiceImpl implements UserService {
             response.setData(request.getUsername());
             exceptions.add(response);
         }
+        if (!exceptions.isEmpty()) {
+            throw new ArgumentNotValidException(exceptions);
+        }
 
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        Role role = roleRepository.findById(request.getRole());
+        if (role == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorCode.ROLE_NOT_FOUND.name());
+        }
 
+        String actorId = securityUtil.getCurrentUserId();
         User user = User.builder()
-                .role(roleRepository.findById(request.getRole()))
+                .role(role)
                 .email(request.getEmail())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .dob(request.getDob())
                 .createAt(LocalDate.now())
-                .createBy("")
+                .createBy(actorId != null ? actorId : "")
                 .build();
 
-        if (!exceptions.isEmpty()) {
-            throw new ArgumentNotValidException(exceptions);
-        }
         userRepository.save(user);
+        writeLog(Action.CREATE_USER, user.getId(), actorId, role.getName());
         return new UserResponse(user);
     }
 
     @Override
-    public User updateUser(UserUpdateRequest request) {
-        User user = userRepository.getUserById(request.getUserId());
-        user.setEmail(request.getEmail());
-        user.setDob(request.getDob());
-        user.setName(request.getName());
-        user.setPassword(request.getPassword());
-        return userRepository.save(user);
+    @Transactional
+    public UserResponse updateUser(String userId, UserUpdateRequest request) {
+        User user = userRepository.getUserById(userId);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorCode.USERNAME_NOT_EXISTED.name());
+        }
+
+        String actorId = securityUtil.getCurrentUserId();
+
+        String oldRoleName = user.getRole() != null ? user.getRole().getName() : null;
+        boolean roleChanged = false;
+        if (request.getRoleId() != null
+                && (user.getRole() == null || user.getRole().getId() != request.getRoleId())) {
+            if (userId.equals(actorId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        ErrorCode.CANNOT_CHANGE_OWN_ROLE.name());
+            }
+            Role newRole = roleRepository.findById(request.getRoleId().intValue());
+            if (newRole == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorCode.ROLE_NOT_FOUND.name());
+            }
+            user.setRole(newRole);
+            roleChanged = true;
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
+        if (request.getDob() != null) {
+            user.setDob(request.getDob());
+        }
+        // Password is optional on update; never store it raw
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        user.setUpdateAt(LocalDate.now());
+        user.setUpdateBy(actorId);
+
+        userRepository.save(user);
+
+        if (roleChanged) {
+            writeLog(Action.CHANGE_ROLE, user.getId(), actorId,
+                    oldRoleName + " -> " + user.getRole().getName());
+        } else {
+            writeLog(Action.UPDATE_USER, user.getId(), actorId, null);
+        }
+        return new UserResponse(user);
     }
 
     @Override
@@ -84,8 +145,7 @@ public class UserServiceImpl implements UserService {
         List<UserResponse> userResponseList = new ArrayList<>();
         List<User> users = userRepository.findAll();
         for (User user : users) {
-            UserResponse userResponse = new UserResponse(user);
-            userResponseList.add(userResponse);
+            userResponseList.add(new UserResponse(user));
         }
         return userResponseList;
     }
@@ -93,6 +153,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUser(String id) {
         User user = userRepository.getUserById(id);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ErrorCode.USERNAME_NOT_EXISTED.name());
+        }
         return new UserResponse(user);
+    }
+
+    private void writeLog(Action action, String targetUserId, String actorId, String detail) {
+        try {
+            systemLogService.write(SystemLog.builder()
+                    .userId(actorId)
+                    .action(action.getAction())
+                    .entityType(Table.USER.getTableName())
+                    .entityId(targetUserId)
+                    .newValue(detail)
+                    .ipAddress(RequestIpUtil.getCurrentClientIp())
+                    .createdAt(LocalDateTime.now())
+                    .build());
+        } catch (Exception e) {
+            log.error("Failed to write {} audit log: {}", action, e.getMessage());
+        }
     }
 }

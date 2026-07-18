@@ -30,6 +30,7 @@ public enum Table {
     WOUNDER_SOLDIER("WOUNDER_SOLDIERS"),
     RELATIVE("RELATIVES"),
     CHAPTER("CHAPTERS"),
+    SUPPORT_REQUEST("SUPPORT_REQUESTS"),
     ;
 
     private String tableName;
