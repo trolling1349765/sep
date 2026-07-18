@@ -27,7 +27,7 @@ public interface ApplicationService {
 
     Application getApplicationById(int id);
 
-    APIResponse<ApplicationResponse> createApplication(ApplicationRequest request);
+    APIResponse<ApplicationResponse> createApplication(ApplicationRequest request, String status);
 
     APIResponse<ApplicationResponse> updateApplication(ApplicationRequest request);
 

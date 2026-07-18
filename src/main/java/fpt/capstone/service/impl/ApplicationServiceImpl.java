@@ -248,15 +248,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public APIResponse<ApplicationResponse> createApplication(ApplicationRequest request) {
+    public APIResponse<ApplicationResponse> createApplication(ApplicationRequest request, String status) {
 
         String currentUserId = securityUtil.getCurrentUserId();
 
         Application application = Application.builder()
                 .approvedBy(userRepository.getUserById(request.getApprovedBy()))
                 .approveDate(request.getApprovedDate())
+                .status(ApplicationStatus.valueOf(status))
                 .submitDate(request.getSubmitDate())
-                .status(ApplicationStatus.valueOf(request.getStatus()))
                 .formType(formTypeService.getFormType(request.getFormTypeId()))
                 .createAt(LocalDate.now())
                 .createBy(currentUserId)
