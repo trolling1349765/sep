@@ -7,6 +7,7 @@ import fpt.capstone.dto.response.UserResponse;
 import fpt.capstone.entity.Role;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.entity.User;
+import fpt.capstone.enums.AccountStatus;
 import fpt.capstone.enums.Action;
 import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.enums.Table;
@@ -78,6 +79,7 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .name(request.getName())
                 .dob(request.getDob())
+                .status(AccountStatus.ACTIVE)
                 .createAt(LocalDate.now())
                 .createBy(actorId != null ? actorId : "")
                 .build();

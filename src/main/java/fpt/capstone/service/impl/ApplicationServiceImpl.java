@@ -16,6 +16,7 @@ import fpt.capstone.service.SystemLogService;
 import fpt.capstone.service.FormTypeService;
 import fpt.capstone.enums.Action;
 import fpt.capstone.enums.Table;
+import fpt.capstone.util.AuditJson;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -297,7 +298,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.CREATE_APPLICATION.getAction())
                                 .entityId(application.getId() + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -335,8 +336,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.UPDATE_APPLICATION.getAction())
                                 .entityId(newApplication.getId() + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(newApplication)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(newApplication)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -366,8 +367,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.UPDATE_APPLICATION.getAction())
                                 .entityId(applicationId + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -397,8 +398,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.UPDATE_APPLICATION.getAction())
                                 .entityId(applicationId + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -428,8 +429,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.UPDATE_APPLICATION.getAction())
                                 .entityId(applicationId + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -459,8 +460,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.UPDATE_APPLICATION.getAction())
                                 .entityId(applicationId + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -490,8 +491,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.UPDATE_APPLICATION.getAction())
                                 .entityId(applicationId + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);
@@ -521,8 +522,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 .action(Action.APPLICATION_DELETE.getAction())
                                 .entityId(applicationId + "")
                                 .entityType(Table.APPLICATION.getTableName())
-                                .newValue(application)
-                                .oldValue(oldApplication)
+                                .newValue(AuditJson.toJson(new ApplicationResponse(application)))
+                                .oldValue(AuditJson.toJson(new ApplicationResponse(oldApplication)))
                                 .userId(currentUserId)
                                 .build();
                 systemLogService.write(log);

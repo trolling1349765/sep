@@ -19,6 +19,7 @@ public class DataInitializer implements CommandLineRunner {
         private final RoleRepository roleRepository;
         private final RightRepository rightRepository;
         private final PermissionRepository permissionRepository;
+        private final UserRepository userRepository;
 
         public DataInitializer(
                         PolicyRepository policyRepository,
@@ -28,7 +29,8 @@ public class DataInitializer implements CommandLineRunner {
                         ChapterRepository chapterRepository,
                         RoleRepository roleRepository,
                         RightRepository rightRepository,
-                        PermissionRepository permissionRepository) {
+                        PermissionRepository permissionRepository,
+                        UserRepository userRepository) {
                 this.policyRepository = policyRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
@@ -37,11 +39,15 @@ public class DataInitializer implements CommandLineRunner {
                 this.roleRepository = roleRepository;
                 this.rightRepository = rightRepository;
                 this.permissionRepository = permissionRepository;
+                this.userRepository = userRepository;
         }
 
         @Override
         @Transactional
         public void run(String... args) {
+                // Backfill rows created before the AccountStatus lifecycle existed
+                userRepository.backfillNullStatusToActive();
+
                 seedRoles();
                 seedRights();
                 seedPermissions();

@@ -9,6 +9,8 @@ import fpt.capstone.dto.response.LoginResponse;
 import fpt.capstone.entity.RefreshToken;
 import fpt.capstone.entity.Role;
 import fpt.capstone.entity.User;
+import fpt.capstone.enums.AccountStatus;
+import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.repository.RefreshTokenRepository;
 import fpt.capstone.repository.RoleRepository;
 import fpt.capstone.repository.UserRepository;
@@ -155,6 +157,8 @@ public class AuthServiceImpl implements AuthService {
         user.setDob(dob);
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(email);
+        user.setStatus(AccountStatus.ACTIVE);
+        user.setNationalIdVerified(false);
 
         Role defaultRole = roleRepository.findByName("Citizen")
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
@@ -215,6 +219,11 @@ public class AuthServiceImpl implements AuthService {
             // Generic error message (MSG-05) - don't reveal which field is wrong
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Incorrect username or password. Please check again.");
+        }
+
+        // Permanent ban outranks the temporary failed-attempt lock
+        if (user.getStatus() == AccountStatus.BANNED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_BANNED.name());
         }
 
         if (accountLockService.isAccountLocked(user)) {

@@ -29,6 +29,7 @@ public enum ErrorCode {
     INVALID_RIGHT_CODE(10019, "Right code does not match the naming convention"),
     ACCESS_DENIED(10020, "Access denied"),
     CANNOT_CHANGE_OWN_ROLE(10021, "Cannot change the role of your own account"),
+    ACCOUNT_BANNED(10022, "Your account has been banned. Please contact the administrator."),
     ;
 
     private int code;

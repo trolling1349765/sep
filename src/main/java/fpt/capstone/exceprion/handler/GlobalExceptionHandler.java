@@ -17,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -84,6 +85,14 @@ public class GlobalExceptionHandler {
         log.error("Data access failure", e);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(APIResponse.error(503, "Service temporarily unavailable. Please try again later."));
+    }
+
+    // Malformed typed @RequestParam/@PathVariable (bad int, bad ISO datetime...)
+    // would otherwise fall through to the generic 500 handler.
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    ResponseEntity<APIResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        return ResponseEntity.badRequest()
+                .body(APIResponse.error(400, "Invalid value for parameter '" + e.getName() + "'."));
     }
 
     @ExceptionHandler(value = ResponseStatusException.class)

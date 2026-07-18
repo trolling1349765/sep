@@ -81,7 +81,8 @@ class UserServiceImplTest {
 
             assertEquals("Reception", response.getRole());
             verify(passwordEncoder).encode("Password1");
-            verify(userRepository).save(argThat(u -> "encoded".equals(u.getPassword())));
+            verify(userRepository).save(argThat(u -> "encoded".equals(u.getPassword())
+                    && u.getStatus() == fpt.capstone.enums.AccountStatus.ACTIVE));
             verify(systemLogService).write(argThat(log -> "CREATE_USER".equals(log.getAction())));
         }
 

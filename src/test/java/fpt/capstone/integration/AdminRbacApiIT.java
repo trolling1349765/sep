@@ -70,7 +70,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         mockMvc.perform(post("/admin/users").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content(body))
                                         .andExpect(status().isBadRequest())
-                                        .andExpect(jsonPath("$.message").value("ROLE_NOT_FOUND"));
+                                        .andExpect(jsonPath("$.code").value(10014));
                 }
         }
 
@@ -103,7 +103,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         mockMvc.perform(post("/admin/rights").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content(body))
                                         .andExpect(status().isConflict())
-                                        .andExpect(jsonPath("$.message").value("RIGHT_CODE_EXISTS"));
+                                        .andExpect(jsonPath("$.code").value(10018));
                 }
 
                 @Test
@@ -113,7 +113,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{ \"code\": \"bad-code\", \"name\": \"x\", \"module\": \"BAO_CAO\" }"))
                                         .andExpect(status().isBadRequest())
-                                        .andExpect(jsonPath("$.message").value("INVALID_RIGHT_CODE"));
+                                        .andExpect(jsonPath("$.code").value(10019));
                 }
 
                 @Test
@@ -142,7 +142,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{ \"rightIds\": [999999] }"))
                                         .andExpect(status().isBadRequest())
-                                        .andExpect(jsonPath("$.message").value("RIGHT_NOT_FOUND"));
+                                        .andExpect(jsonPath("$.code").value(10015));
 
                         assertEquals(before, new HashSet<>(permissionRepository.findRightIdsByRoleId(citizenRoleId())));
                 }
@@ -159,7 +159,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         mockMvc.perform(put("/admin/roles/" + citizenRoleId() + "/permissions").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content(body))
                                         .andExpect(status().isBadRequest())
-                                        .andExpect(jsonPath("$.message").value("SYSTEM_RIGHT_REQUIRED"));
+                                        .andExpect(jsonPath("$.code").value(10016));
                 }
 
                 @Test
@@ -170,7 +170,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         mockMvc.perform(put("/admin/roles/" + adminRoleId + "/permissions").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content("{ \"rightIds\": [1] }"))
                                         .andExpect(status().isForbidden())
-                                        .andExpect(jsonPath("$.message").value("ADMIN_ROLE_LOCKED"));
+                                        .andExpect(jsonPath("$.code").value(10017));
                 }
 
                 @Test
@@ -179,7 +179,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         mockMvc.perform(put("/admin/roles/999/permissions").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content("{ \"rightIds\": [1] }"))
                                         .andExpect(status().isNotFound())
-                                        .andExpect(jsonPath("$.message").value("ROLE_NOT_FOUND"));
+                                        .andExpect(jsonPath("$.code").value(10014));
                 }
         }
 
@@ -245,7 +245,7 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content("{ \"roleId\": " + receptionId + " }"))
                                         .andExpect(status().isBadRequest())
-                                        .andExpect(jsonPath("$.message").value("CANNOT_CHANGE_OWN_ROLE"));
+                                        .andExpect(jsonPath("$.code").value(10021));
                 }
 
                 @Test
