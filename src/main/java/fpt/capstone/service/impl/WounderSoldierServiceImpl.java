@@ -74,6 +74,16 @@ public class WounderSoldierServiceImpl implements WounderSoldierService {
         for (WoundedSoldiers woundedSoldier: woundedSoldiers) {
             woundedSoldierResponses.add(new WounderSoldierResponse(woundedSoldier));
         }
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.WOUNDER_SOLDIER_GET.getAction())
+                .entityType(Table.WOUNDER_SOLDIER.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
         return woundedSoldierResponses;
     }
 }

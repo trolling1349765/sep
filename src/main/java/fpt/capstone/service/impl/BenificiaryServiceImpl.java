@@ -33,14 +33,22 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     private final SystemLogService systemLogService;
 
     @Override
-    public APIResponse<BenificiaryResponse> getBenificiary(int id) {
+    public BenificiaryResponse getBenificiary(int id) {
         Benificiary  benificiary = benificiaryRepository.findById(id).orElse(null);
         if (benificiary == null) {
 
         }
         BenificiaryResponse benificiaryResponse = new BenificiaryResponse(benificiary);
-        APIResponse<BenificiaryResponse> response = APIResponse.success(benificiaryResponse);
-        return response;
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.BENIFICIARY_GET.getAction())
+                .entityType(Table.BENIFICIARY.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
+        return benificiaryResponse;
     }
 
     @Override
@@ -50,6 +58,16 @@ public class BenificiaryServiceImpl implements BenificiaryService {
         for(Benificiary benificiary : benificiaries) {
             benificiaryResponses.add(new BenificiaryResponse(benificiary));
         }
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.BENIFICIARY_GET.getAction())
+                .entityType(Table.BENIFICIARY.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
         return benificiaryResponses;
     }
 
@@ -59,6 +77,16 @@ public class BenificiaryServiceImpl implements BenificiaryService {
         Page<Benificiary> benificiaryPage = benificiaryRepository.findAll(pageable);
         Page<BenificiaryResponse> benificiaryResponses = benificiaryPage.map(BenificiaryResponse::new);
         APIResponse<Page<BenificiaryResponse>> response = APIResponse.success(benificiaryResponses);
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.BENIFICIARY_GET.getAction())
+                .entityType(Table.BENIFICIARY.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
         return response;
     }
 

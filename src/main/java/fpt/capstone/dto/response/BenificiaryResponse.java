@@ -15,9 +15,9 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 public class BenificiaryResponse {
-    int id;
-    int applicationId;
-    boolean gender;
+    Integer id;
+    Integer applicationId;
+    Boolean gender;
     Double assistanceAmount;
     String fullName;
     String codeName;

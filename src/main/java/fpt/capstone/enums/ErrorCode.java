@@ -18,6 +18,8 @@ public enum ErrorCode {
     APPLICATION_NOT_FOUND(1008, "Application not found"),
     FILE_IO_ERROR(1009, "Cannot access file service"),
     ARGUMENT_INVALID(10010, "Argument out of range"),
+    BENIFIT_HISTORY_NOT_FOUND(10011, "Benifit history not found"),
+    ADDITIONAL_DOCUMENT_NOT_FOUND(10012, "Additional document not found"),
     ;
 
     private int code;

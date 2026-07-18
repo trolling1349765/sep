@@ -63,6 +63,16 @@ public class RelativeServiceImpl implements RelativeService {
     @Override
     public RelativeResponse getRelativeByApplicationId(int applicationId) {
         RelativeResponse response = new RelativeResponse(relativeRepository.findByApplication(applicationId));
+
+        String currentUserId = securityUtil.getCurrentUserId();
+        SystemLog log = SystemLog.builder()
+                .createdAt(LocalDateTime.now())
+                .action(Action.RELATIVE_GET.getAction())
+                .entityType(Table.RELATIVE.getTableName())
+                .userId(currentUserId)
+                .build();
+        systemLogService.write(log);
+
         return response;
     }
 }

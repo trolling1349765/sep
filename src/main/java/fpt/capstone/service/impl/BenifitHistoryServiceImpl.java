@@ -1,15 +1,17 @@
 package fpt.capstone.service.impl;
 
+import fpt.capstone.dto.request.BenifitHistoryRequest;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.ApplicationResponse;
 import fpt.capstone.dto.response.BenifitHistoryResponse;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.BenefitHistory;
 import fpt.capstone.entity.SystemLog;
-import fpt.capstone.enums.Action;
-import fpt.capstone.enums.ApplicationStatus;
-import fpt.capstone.enums.Table;
+import fpt.capstone.enums.*;
+import fpt.capstone.exceprion.InvalidArgsException;
+import fpt.capstone.repository.BenificiaryRepository;
 import fpt.capstone.repository.BenifitHistoryRepository;
+import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.BenifitHistoryService;
 import fpt.capstone.service.SystemLogService;
 import fpt.capstone.util.SecurityUtil;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +37,8 @@ public class BenifitHistoryServiceImpl implements BenifitHistoryService {
     BenifitHistoryRepository  benifitHistoryRepository;
     SecurityUtil securityUtil;
     SystemLogService systemLogService;
+    BenificiaryRepository benificiaryRepository;
+    UserRepository userRepository;
 
     @Override
     public APIResponse<Page<BenifitHistoryResponse>> getBenificiaries(int size, int page) {
@@ -56,5 +61,37 @@ public class BenifitHistoryServiceImpl implements BenifitHistoryService {
         systemLogService.write(log);
 
         return response;
+    }
+
+    @Override
+    public Page<BenifitHistoryResponse> getBenefiByBeneficiaryId(Integer id, int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BenefitHistory> benefitHistories = benifitHistoryRepository.findByBenificiary(id, pageable);
+        Page<BenifitHistoryResponse> benifitHistoryResponsePage = benefitHistories.map(BenifitHistoryResponse::new);
+
+        return benifitHistoryResponsePage;
+    }
+
+    @Override
+    public BenifitHistoryResponse getBenificiaryHistory(Integer id) {
+        BenefitHistory benefitHistory = benifitHistoryRepository.findById(id).orElseThrow();
+        BenifitHistoryResponse benifitHistoryResponse = new BenifitHistoryResponse(benefitHistory);
+        return benifitHistoryResponse;
+    }
+
+    @Override
+    public BenifitHistoryResponse create(BenifitHistoryRequest benifitHistoryRequest) {
+        BenefitHistory benefitHistory = BenefitHistory.builder()
+                .benificiary(benificiaryRepository.findById(benifitHistoryRequest.getBenificiaryId()).orElseThrow())
+                .deliver(userRepository.findById(benifitHistoryRequest.getDeliverId()).orElseThrow())
+                .receiver(benifitHistoryRequest.getReceiver())
+                .transferMethod(benifitHistoryRequest.getTransferMethod())
+                .createAt(LocalDate.now())
+                .createBy("")
+                .isDelete(false)
+                .build();
+
+        BenifitHistoryResponse benifitHistoryResponse = new BenifitHistoryResponse(benifitHistoryRepository.save(benefitHistory));
+        return benifitHistoryResponse;
     }
 }

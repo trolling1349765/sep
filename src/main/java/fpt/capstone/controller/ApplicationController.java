@@ -1,10 +1,7 @@
 package fpt.capstone.controller;
 
 import fpt.capstone.dto.request.ApplicationRequest;
-import fpt.capstone.dto.response.APIResponse;
-import fpt.capstone.dto.response.ApplicationResponse;
-import fpt.capstone.dto.response.BenificiaryResponse;
-import fpt.capstone.dto.response.RelativeResponse;
+import fpt.capstone.dto.response.*;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.WoundedSoldiers;
 import fpt.capstone.service.ApplicationService;
@@ -18,7 +15,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.function.EntityResponse;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 @RestController
@@ -28,6 +27,9 @@ import java.util.logging.Level;
 public class ApplicationController {
 
     ApplicationService applicationService;
+    BenificiaryService benificiaryService;
+    RelativeService relativeService;
+    WounderSoldierService wounderSoldierService;
 
     @GetMapping()
     public APIResponse<Page<ApplicationResponse>> getApplication(
@@ -85,8 +87,19 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}")
-    public APIResponse<ApplicationResponse> getApplication(@PathVariable int id) {
+    public APIResponse getApplicationDetail(@PathVariable int id) {
         ApplicationResponse applicationResponse = applicationService.getApplication(id);
-        return APIResponse.success(applicationResponse);
+        BenificiaryResponse benificiaryResponse = benificiaryService.getBenificiary(id);
+        RelativeResponse relativeResponse = relativeService.getRelativeByApplicationId(benificiaryResponse.getApplicationId());
+        List<WounderSoldierResponse> wounderSoldierResponse = wounderSoldierService.getWoundedSoldierByBenificiaryId(benificiaryResponse.getId());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("benificiary", benificiaryResponse);
+        data.put("relative", relativeResponse);
+        data.put("wounderSoldier", wounderSoldierResponse);
+        data.put("application", applicationResponse);
+
+        APIResponse apiResponse = APIResponse.success(data);
+        return APIResponse.success(apiResponse);
     }
 }

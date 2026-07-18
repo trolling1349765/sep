@@ -31,4 +31,5 @@ public class AdditionalDocument extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "application_id")
     Application application;
+
 }

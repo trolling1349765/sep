@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface BenificiaryService {
-    APIResponse<BenificiaryResponse> getBenificiary(int id);
+    BenificiaryResponse getBenificiary(int id);
 
     List<BenificiaryResponse> getBenificiariesByApplicationId(int applicationId);
 
