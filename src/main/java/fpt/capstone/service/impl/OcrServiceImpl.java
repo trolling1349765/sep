@@ -108,34 +108,171 @@ public class OcrServiceImpl implements OcrService {
 
     private static Map<String, String> mapCccdGanchip(String rawOcrText) {
         Map<String, String> resultMap = new LinkedHashMap<>();
+        String normalizedText = normalizeOcrText(rawOcrText);
 
-        // Bộ Pattern mới phù hợp với nhãn Song ngữ trên CCCD gắn chíp
-        Map<String, String> patterns = new LinkedHashMap<>();
-        patterns.put("idNumber", "Số\\s*/\\s*No\\.:?\\s*(\\d{12})");
-        patterns.put("fullName", "Họ\\s*và\\s*tên\\s*/\\s*Full\\s*name:?\\s*\\n*(.*?)(?=\\n*\\s*(Ngày\\s*sinh|Giới|Quốc|$))");
-        patterns.put("dateOfBirth", "Ngày\\s*sinh\\s*/\\s*Date\\s*of\\s*birth:?\\s*(\\d{2}/\\d{2}/\\d{4})");
-        patterns.put("gender", "Giới\\s*tính\\s*/\\s*Sex:?\\s*(Nam|Nữ)");
-        patterns.put("nationality", "Quốc\\s*tịch\\s*/\\s*Nationality:?\\s*(.*?)(?=\\n|\\s*Quê|$)");
-        patterns.put("placeOfOrigin", "Quê\\s*quán\\s*/\\s*Place\\s*of\\s*origin:?\\s*\\n*(.*?)(?=\\n*\\s*(Nơi\\s*thường|Có\\s*giá|$))");
-        patterns.put("placeOfResidence", "Nơi\\s*thường\\s*trú\\s*/\\s*Place\\s*of\\s*residence:?\\s*\\n*(.*?)(?=\\n*\\s*(Có\\s*giá|\\d{2}/\\d{2}/|$))");
-        patterns.put("issueDate", "Ngày,\\s*tháng,\\s*năm\\s*/\\s*Date,\\s*month,\\s*year\\s*(\\d{2}/\\d{2}/\\d{4})");
-        patterns.put("issuePlace", "year\\s*\\d{2}/\\d{2}/\\d{4}\\s*\\n*(.*?)(?=\\n+[^A-ZĂÂĐÊÔƠƯ]*[a-z]|\\n+IDVNM|$)");
-        patterns.put("issueSigner", "(?:CỤC TRƯỞNG|CẢNH SÁT|XÃ HỘI)\\s*\\n*(?:.*?\\n){1,3}?(([A-ZĐÁÀẢÃẠÂẤẦẨẪẬĂẮẰẲẴẶÉÈÉẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰ][a-zàáảãạâầấnẩẫậăắằẳẵặèéẻẽẹêềểễệiíìỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữự]+\\s*)+)");
+        // 1. Số CCCD/CMND (Bắt được cả lỗi OCR như S0, Sô, s0, No, Io, ... và lấy chính xác 12 số hoặc 9 số)
+        resultMap.put("idNumber", matchPattern(normalizedText, "(?im)(?:s[oó0đb]|no|io|số|s0)\\s*[:/.-]?\\s*(\\d{12}|\\d{9})"));
 
-        for (Map.Entry<String, String> entry : patterns.entrySet()) {
-            Pattern pattern = Pattern.compile(entry.getValue(), Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-            Matcher matcher = pattern.matcher(rawOcrText);
+// 2. Họ và tên (Bắt được các biến thể chữ hoa, chữ thường, mất dấu hoặc sai chính tả của OCR)
+        resultMap.put("fullName", extractHeaderValue(normalizedText, "(?i)(?:họ\\s*và\\s*tên|ho\\s*va\\s*ten|ho\\s*va\\s*len|full\\s*name|citizen\\s*identity\\s*card)"));
 
-            if (matcher.find()) {
-                String value = matcher.group(1).trim();
-                // Làm sạch các ký tự lạ hoặc dính dấu gạch do OCR nhận diện sai đường kẻ thẻ
-                value = value.replaceAll("[_\\-\\|]+", "").trim();
-                resultMap.put(entry.getKey(), value.isEmpty() ? "Trống" : value);
-            } else {
-                resultMap.put(entry.getKey(), "Không tìm thấy");
+// 3. Ngày sinh (Định dạng dd/mm/yyyy, dd-mm-yyyy hoặc dd.mm.yyyy)
+        resultMap.put("dateOfBirth", matchPattern(normalizedText, "(?im)(?:ngày\\s*sinh|ngay\\s*sinh|dob|date\\s*of\\s*birth|da[:e]{1,4}).*?(\\d{2}[/.\\-]\\d{2}[/.\\-]\\d{4})"));
+
+// 4. Giới tính (Bao gồm cả khoảng trắng thừa do OCR quét lỗi)
+        resultMap.put("gender", matchPattern(normalizedText, "(?im)(?:giới\\s*tính|gioi\\s*tinh|sex|gender).*?(nam|nữ|nu|female|male)"));
+
+// 5. Quốc tịch
+        resultMap.put("nationality", extractHeaderValue(normalizedText, "(?i)(?:quốc\\s*tịch|quoc\\s*tich|nationality)"));
+
+// 6. Quê quán / Nơi đóng khẩu gốc
+        resultMap.put("placeOfOrigin", extractHeaderValue(normalizedText, "(?i)(?:quê\\s*quán|que\\s*quan|place\\s*of\\s*orgin|place\\s*of\\s*origin)"));
+
+// 7. Nơi thường trú / Nơi cư trú
+        resultMap.put("placeOfResidence", extractHeaderValue(normalizedText, "(?i)(?:nơi\\s*thường\\s*trú|noi\\s*thuong\\s*tru|nơi\\s*cư\\s*trú|place\\s*af\\s*residence|place\\s*of\\s*residence)"));
+
+// 8. Ngày cấp (Đã tách rời khỏi ngày hết hạn để tránh lấy nhầm dữ liệu)
+        resultMap.put("issueDate", matchPattern(normalizedText, "(?im)(?:ngày\\s*cấp|ngay\\s*cap|issued\\s*date|date\\s*of\\s*issue).*?(\\d{2}[/.\\-]\\d{2}[/.\\-]\\d{4})"));
+
+// 9. Ngày hết hạn (Bổ sung thêm trường này cho CCCD mẫu mới)
+        resultMap.put("expiryDate", matchPattern(normalizedText, "(?im)(?:có\\s*giá\\s*trị\\s*đến|co\\s*gia\\s*tri\\s*den|date\\s*of\\s*expiry|expiry\\s*date).*?(\\d{2}[/.\\-]\\d{2}[/.\\-]\\d{4})"));
+
+// 10. Nơi cấp
+        resultMap.put("issuePlace", extractHeaderValue(normalizedText, "(?i)(?:nơi\\s*cấp|noi\\s*cap|place\\s*of\\s*issue|cục\\s*trưởng|cuc\\s*truong)"));
+        String issueSigner = extractHeaderValue(normalizedText, "(?:CUC\\s*TRUONG|CANH\\s*SAT|XA\\s*HOI)");
+        if (issueSigner == null) {
+            issueSigner = matchPattern(normalizedText, "(?m)(CUC\\s*TRUONG|CANH\\s*SAT|XA\\s*HOI)");
+        }
+        resultMap.put("issueSigner", issueSigner);
+
+        if (resultMap.get("idNumber") == null) {
+            String fallbackId = matchPattern(normalizedText, "(?m)(\\d{12})");
+            if (fallbackId != null) {
+                resultMap.put("idNumber", fallbackId);
             }
         }
 
+        if (resultMap.get("fullName") == null) {
+            String fallbackFullName = findLineAfterKeyword(normalizedText, "(?i)Ho\\s*va\\s*ten|Full\\s*name|Citizen\\s*Identity\\s*Card");
+            if (fallbackFullName != null) {
+                resultMap.put("fullName", fallbackFullName);
+            }
+        }
+
+        if (resultMap.get("issuePlace") == null) {
+            String fallbackIssuePlace = findLineAfterKeyword(normalizedText, "(?i)Noi\\s*c[aá]p|Place\\s*of\\s*issue|Ngay\\s*c[aá]p");
+            if (fallbackIssuePlace != null) {
+                resultMap.put("issuePlace", fallbackIssuePlace);
+            }
+        }
+
+        if (resultMap.get("issuePlace") == null && resultMap.get("issueDate") != null) {
+            String fallbackIssuePlace = findLineAfterMatch(normalizedText, resultMap.get("issueDate"));
+            if (fallbackIssuePlace != null) {
+                resultMap.put("issuePlace", fallbackIssuePlace);
+            }
+        }
+
+        resultMap.replaceAll((key, value) -> value == null ? "Không tìm thấy" : value);
         return resultMap;
+    }
+
+    static Map<String, String> parseCccdText(String rawOcrText) {
+        return mapCccdGanchip(rawOcrText);
+    }
+
+    private static String normalizeOcrText(String rawOcrText) {
+        if (rawOcrText == null) {
+            return "";
+        }
+        String normalized = rawOcrText.replaceAll("\\r\\n?", "\n");
+        normalized = normalized.replaceAll("(?i)Place\\s*af\\s*residence", "Place of residence");
+        normalized = normalized.replaceAll("(?i)Place\\s*of\\s*orgin", "Place of origin");
+        normalized = normalized.replaceAll("(?i)Date\\s*0\\s*oxpiry", "Date of expiry");
+        normalized = normalized.replaceAll("(?i)Nalionality", "Nationality");
+        normalized = normalized.replaceAll("(?i)Ho\\s*v[aáàảãạâầấẩẫậăắằẳẵặ]*\\s*l[eêếềểễệ]*n", "Ho va ten");
+        normalized = normalized.replaceAll("(?i)Ho\\s*v[aáàảãạâầấẩẫậăắằẳẵặ]*\\s*t[eêếềểễệ]+n", "Ho va ten");
+        normalized = normalized.replaceAll("(?i)Sociklist Pepuelic CFviet NAX", "Socialist Republic of Viet Nam");
+        normalized = normalized.replaceAll("[_\\-\\|]+", " ");
+        normalized = normalized.replaceAll("[ \t]+", " ");
+        normalized = normalized.replaceAll("(?m)^[ \t]+|[ \t]+$", "");
+        normalized = normalized.replaceAll("\n{2,}", "\n");
+        return normalized.trim();
+    }
+
+    private static String matchPattern(String text, String regex) {
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.UNICODE_CASE);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find() && matcher.groupCount() >= 1) {
+            return cleanValue(matcher.group(1));
+        }
+        return null;
+    }
+
+    private static String findLineAfterKeyword(String text, String keywordRegex) {
+        Pattern headerPattern = Pattern.compile(keywordRegex, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        Matcher matcher = headerPattern.matcher(text);
+        if (matcher.find()) {
+            int end = matcher.end();
+            String after = text.substring(end);
+            String[] lines = after.split("\\r?\\n");
+            for (String line : lines) {
+                String trimmed = line.trim();
+                if (!trimmed.isEmpty()) {
+                    return cleanValue(trimmed);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String extractHeaderValue(String text, String headerRegex) {
+        Pattern headerPattern = Pattern.compile(headerRegex, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNICODE_CASE);
+        Matcher matcher = headerPattern.matcher(text);
+        if (matcher.find()) {
+            int end = matcher.end();
+            String after = text.substring(end);
+            String[] lines = after.split("\r?\n");
+            for (String line : lines) {
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                int colonIndex = trimmed.indexOf(":");
+                int dashIndex = trimmed.indexOf("-");
+                int delimiterIndex = colonIndex >= 0 ? colonIndex : dashIndex;
+                if (delimiterIndex >= 0 && delimiterIndex < trimmed.length() - 1) {
+                    String maybeValue = trimmed.substring(delimiterIndex + 1).trim();
+                    if (!maybeValue.isEmpty()) {
+                        return cleanValue(maybeValue);
+                    }
+                }
+                return cleanValue(trimmed);
+            }
+        }
+        return null;
+    }
+
+    private static String findLineAfterMatch(String text, String matchText) {
+        int idx = text.indexOf(matchText);
+        if (idx >= 0) {
+            String after = text.substring(idx + matchText.length());
+            String[] lines = after.split("\r?\n");
+            for (String line : lines) {
+                String trimmed = line.trim();
+                if (!trimmed.isEmpty()) {
+                    return cleanValue(trimmed);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String cleanValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        String cleaned = value.replaceAll("[_\\-\\|]+", "").replaceAll("\\s+", " ").trim();
+        return cleaned.isEmpty() ? null : cleaned;
     }
 }
