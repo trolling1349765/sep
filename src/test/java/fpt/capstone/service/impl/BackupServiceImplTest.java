@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -219,6 +220,63 @@ class BackupServiceImplTest {
 
             assertEquals("admin-9", response.getCreatedBy());
         }
+
+        @Test
+        void create_persistentCodeCollision_throwsAfterMaxRetries() {
+            when(backupRepository.findMaxSequenceForPrefix(anyString())).thenReturn(null);
+            // Every save trips the unique-code constraint -> retries exhaust, last re-thrown
+            when(backupRepository.save(any(Backup.class)))
+                    .thenThrow(new DataIntegrityViolationException("dup code"));
+
+            assertThrows(DataIntegrityViolationException.class,
+                    () -> backupService.create(BackupType.FULL, "u1"));
+
+            verify(backupRepository, times(3)).save(any(Backup.class)); // CODE_RETRY_ATTEMPTS
+        }
+
+        @Test
+        void create_auditWriteFails_backupStillCompletes() {
+            stubSavePassthrough();
+            stubEmptyDump();
+            stubFileWrite();
+            when(backupRepository.findMaxSequenceForPrefix(anyString())).thenReturn(null);
+            // Audit logging is best-effort and must never break the backup
+            doThrow(new RuntimeException("log down")).when(systemLogService).write(any());
+
+            BackupResponse response = assertDoesNotThrow(
+                    () -> backupService.create(BackupType.BUSINESS, "u1"));
+
+            assertEquals(BackupStatus.COMPLETED.name(), response.getStatus());
+        }
+
+        @Test
+        void create_dumpFailsWithNullMessage_storesNullError() {
+            stubSavePassthrough();
+            when(backupRepository.findMaxSequenceForPrefix(anyString())).thenReturn(null);
+            when(jdbcTemplate.queryForList(anyString())).thenThrow(new RuntimeException());
+
+            assertThrows(ResponseStatusException.class,
+                    () -> backupService.create(BackupType.FULL, "u1"));
+
+            ArgumentCaptor<Backup> saved = ArgumentCaptor.forClass(Backup.class);
+            verify(backupRepository, times(2)).save(saved.capture());
+            assertNull(saved.getAllValues().get(1).getErrorMessage());
+        }
+
+        @Test
+        void create_dumpFailsWithLongMessage_truncatesErrorTo512() {
+            stubSavePassthrough();
+            when(backupRepository.findMaxSequenceForPrefix(anyString())).thenReturn(null);
+            String longMsg = "x".repeat(600);
+            when(jdbcTemplate.queryForList(anyString())).thenThrow(new RuntimeException(longMsg));
+
+            assertThrows(ResponseStatusException.class,
+                    () -> backupService.create(BackupType.FULL, "u1"));
+
+            ArgumentCaptor<Backup> saved = ArgumentCaptor.forClass(Backup.class);
+            verify(backupRepository, times(2)).save(saved.capture());
+            assertEquals(512, saved.getAllValues().get(1).getErrorMessage().length()); // MAX_ERROR_LENGTH
+        }
     }
 
     @Nested
@@ -274,6 +332,40 @@ class BackupServiceImplTest {
             assertEquals("Admin A", page.getItems().get(0).getCreatedByName());
             assertNull(page.getItems().get(1).getCreatedByName());
             verify(userRepository, times(1)).findAllById(List.of("u1"));
+        }
+
+        @Test
+        void list_zeroSize_throwsBadRequest() {
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                    () -> backupService.list(0, 0, null, null));
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals(ErrorCode.ARGUMENT_INVALID.name(), ex.getReason());
+        }
+
+        @Test
+        void list_blankFilters_treatedAsNoFilter() {
+            when(backupRepository.search(isNull(), isNull(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            backupService.list(0, 20, "   ", "   ");
+
+            verify(backupRepository).search(isNull(), isNull(), any(Pageable.class));
+        }
+
+        @Test
+        void list_duplicateCreatorRows_mergeKeepsFirstName() {
+            Backup a = backup(1, "BK-2026-001", "u1");
+            Backup b = backup(2, "BK-2026-002", "u1");
+            when(backupRepository.search(isNull(), isNull(), any(Pageable.class)))
+                    .thenReturn(new PageImpl<>(List.of(a, b), PageRequest.of(0, 20), 2));
+            // Two rows sharing an id exercise the toMap merge function (a, b) -> a
+            when(userRepository.findAllById(List.of("u1")))
+                    .thenReturn(List.of(user("u1", "First"), user("u1", "Second")));
+
+            PageResponse<BackupResponse> page = backupService.list(0, 20, null, null);
+
+            assertEquals("First", page.getItems().get(0).getCreatedByName());
+            assertEquals("First", page.getItems().get(1).getCreatedByName());
         }
     }
 
@@ -336,6 +428,17 @@ class BackupServiceImplTest {
 
             assertEquals("BK-2026-005", overview.getLatest().getCode());
             assertEquals("Admin A", overview.getLatest().getCreatedByName());
+        }
+
+        @Test
+        void overview_latestWithNullCreator_hasNullCreatorName() {
+            Backup latest = backup(5, "BK-2026-005", null);
+            when(backupRepository.findTopByOrderByStartedAtDescIdDesc()).thenReturn(Optional.of(latest));
+
+            BackupOverviewResponse overview = backupService.overview();
+
+            assertEquals("BK-2026-005", overview.getLatest().getCode());
+            assertNull(overview.getLatest().getCreatedByName()); // resolveName(null) short-circuits
         }
     }
 

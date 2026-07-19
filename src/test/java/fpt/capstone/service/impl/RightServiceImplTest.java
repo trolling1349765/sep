@@ -136,6 +136,33 @@ class RightServiceImplTest {
             assertEquals("Xuất khẩu", response.getModuleName());
             assertEquals(1, response.getSortOrder());
         }
+
+        @Test
+        void createRight_shouldRejectNullCode() {
+            CreateRightRequest request = CreateRightRequest.builder()
+                    .code(null).name("x").module("BAO_CAO").build();
+
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                    () -> rightService.createRight(request));
+
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals(ErrorCode.INVALID_RIGHT_CODE.name(), ex.getReason());
+            verify(rightRepository, never()).save(any());
+        }
+
+        @Test
+        void createRight_shouldSwallowAuditLogFailure() {
+            when(rightRepository.existsByCode("REPORT_APPROVE")).thenReturn(false);
+            when(rightRepository.findAllByOrderByModuleAscSortOrderAsc()).thenReturn(List.of());
+            when(rightRepository.save(any(Right.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+            doThrow(new RuntimeException("log down")).when(systemLogService).write(any());
+
+            RightResponse response = assertDoesNotThrow(() -> rightService.createRight(
+                    CreateRightRequest.builder().code("REPORT_APPROVE").name("x").module("BAO_CAO").build()));
+
+            assertEquals("REPORT_APPROVE", response.getCode());
+        }
     }
 
     @Nested
@@ -169,6 +196,37 @@ class RightServiceImplTest {
             assertEquals("REPORT_VIEW", response.getCode());
             assertFalse(response.isSystem());
             verify(systemLogService).write(argThat(log -> "RIGHT_UPDATE".equals(log.getAction())));
+        }
+
+        @Test
+        void updateRight_shouldIgnoreNullNameAndNullDescription() {
+            Right existing = right(1, "REPORT_VIEW", "BAO_CAO", "Báo cáo", 1);
+            existing.setDescription("mô tả gốc");
+            when(rightRepository.findById(1)).thenReturn(Optional.of(existing));
+            when(rightRepository.save(any(Right.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+
+            RightResponse response = rightService.updateRight(1,
+                    UpdateRightRequest.builder().name(null).description(null).build());
+
+            // Both fields left untouched; only updateAt/By and log change
+            assertEquals("REPORT_VIEW", response.getName());
+            assertEquals("mô tả gốc", response.getDescription());
+            verify(systemLogService).write(argThat(log -> "RIGHT_UPDATE".equals(log.getAction())));
+        }
+
+        @Test
+        void updateRight_shouldIgnoreBlankNameButApplyDescription() {
+            Right existing = right(1, "REPORT_VIEW", "BAO_CAO", "Báo cáo", 1);
+            when(rightRepository.findById(1)).thenReturn(Optional.of(existing));
+            when(rightRepository.save(any(Right.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+
+            RightResponse response = rightService.updateRight(1,
+                    UpdateRightRequest.builder().name("   ").description("Mô tả mới").build());
+
+            assertEquals("REPORT_VIEW", response.getName()); // blank name ignored
+            assertEquals("Mô tả mới", response.getDescription());
         }
     }
 }

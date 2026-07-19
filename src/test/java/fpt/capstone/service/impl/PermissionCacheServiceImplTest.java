@@ -101,4 +101,23 @@ class PermissionCacheServiceImplTest {
             verify(permissionRepository, times(2)).findRightCodesByRoleId(1);
         }
     }
+
+    @Nested
+    @DisplayName("now (real clock)")
+    class RealClock {
+
+        @Test
+        void getRightCodes_usesRealSystemClockWhenNotOverridden() {
+            // The real bean's now() reads System.currentTimeMillis(); the other
+            // tests override now(), so exercise a plain instance here.
+            PermissionCacheServiceImpl realService =
+                    new PermissionCacheServiceImpl(permissionRepository);
+            when(permissionRepository.findRightCodesByRoleId(1)).thenReturn(Set.of("PROFILE_VIEW"));
+
+            Set<String> codes = realService.getRightCodes(1);
+
+            assertEquals(Set.of("PROFILE_VIEW"), codes);
+            verify(permissionRepository, times(1)).findRightCodesByRoleId(1);
+        }
+    }
 }

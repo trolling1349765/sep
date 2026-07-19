@@ -238,5 +238,39 @@ class PermissionServiceImplTest {
             assertEquals(List.of(1), response.getRightIds());
             verify(permissionRepository, never()).saveAll(any());
         }
+
+        @Test
+        void updateRolePermissions_shouldRecordResolvedRightCodesInAuditDiff() {
+            when(roleRepository.findById(1)).thenReturn(citizenRole);
+            Right kept = right(1, "PROFILE_VIEW", false);
+            Right added = right(3, "POLICY_VIEW", false);
+            when(rightRepository.findAllById(Set.of(1, 3))).thenReturn(List.of(kept, added));
+            when(permissionRepository.findRightIdsByRoleId(1)).thenReturn(Set.of(1));
+            // writePermissionUpdateLog resolves added+removed ids -> codes
+            when(rightRepository.findAllById(Set.of(3))).thenReturn(List.of(added));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+
+            permissionService.updateRolePermissions(1, List.of(1, 3));
+
+            ArgumentCaptor<SystemLog> logCaptor = ArgumentCaptor.forClass(SystemLog.class);
+            verify(systemLogService).write(logCaptor.capture());
+            assertEquals("PERMISSION_UPDATE", logCaptor.getValue().getAction());
+            assertTrue(logCaptor.getValue().getNewValue().contains("POLICY_VIEW"),
+                    "diff should carry the resolved right code, got: " + logCaptor.getValue().getNewValue());
+        }
+
+        @Test
+        void updateRolePermissions_shouldSwallowAuditLogFailure() {
+            when(roleRepository.findById(1)).thenReturn(citizenRole);
+            when(rightRepository.findAllById(Set.of(1))).thenReturn(List.of(right(1, "PROFILE_VIEW", true)));
+            when(permissionRepository.findRightIdsByRoleId(1)).thenReturn(Set.of(1));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+            doThrow(new RuntimeException("log down")).when(systemLogService).write(any());
+
+            RolePermissionsResponse response = assertDoesNotThrow(
+                    () -> permissionService.updateRolePermissions(1, List.of(1)));
+
+            assertEquals(List.of(1), response.getRightIds());
+        }
     }
 }

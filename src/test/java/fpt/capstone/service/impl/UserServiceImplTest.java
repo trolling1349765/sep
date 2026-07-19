@@ -34,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -200,6 +201,18 @@ class UserServiceImplTest {
 
             assertEquals(1, ex.getResponses().size());
             assertEquals(ErrorCode.PHONE_EXISTED.getCode(), ex.getResponses().get(0).getCode());
+        }
+
+        @Test
+        void createRequest_shouldUseEmptyCreatorWhenActorNull() {
+            when(roleRepository.findById(2)).thenReturn(receptionRole);
+            when(passwordEncoder.encode("Password1")).thenReturn("encoded");
+            when(securityUtil.getCurrentUserId()).thenReturn(null);
+
+            userService.createRequest(validCreation().build());
+
+            // actorId null -> createBy falls back to "" rather than null
+            verify(userRepository).save(argThat(u -> "".equals(u.getCreateBy())));
         }
     }
 
@@ -372,6 +385,44 @@ class UserServiceImplTest {
             // Guarded before the new role is even loaded
             verify(roleRepository, never()).findById(2);
             verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void updateUser_shouldAssignRoleWhenUserHasNoRole() {
+            User noRole = User.builder().id("nr-1").role(null).status(AccountStatus.ACTIVE).build();
+            when(userRepository.findWithRoleById("nr-1")).thenReturn(Optional.of(noRole));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+            when(roleRepository.findById(3)).thenReturn(appraisalRole);
+
+            userService.updateUser("nr-1", UserUpdateRequest.builder().roleId(3).build());
+
+            assertEquals("Appraisal", noRole.getRole().getName());
+            // Old role name is null when the user had none
+            verify(systemLogService).write(argThat(log -> "CHANGE_ROLE".equals(log.getAction())
+                    && "null -> Appraisal".equals(log.getNewValue())));
+        }
+
+        @Test
+        void updateUser_shouldSetDobWhenProvided() {
+            when(userRepository.findWithRoleById("user-1")).thenReturn(Optional.of(staffUser));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+            LocalDate dob = LocalDate.of(1990, 5, 20);
+
+            userService.updateUser("user-1", UserUpdateRequest.builder().dob(dob).build());
+
+            assertEquals(dob, staffUser.getDob());
+        }
+
+        @Test
+        void updateUser_shouldSwallowAuditLogFailure() {
+            when(userRepository.findWithRoleById("user-1")).thenReturn(Optional.of(staffUser));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+            doThrow(new RuntimeException("log down")).when(systemLogService).write(any());
+
+            AdminUserDetailResponse response = assertDoesNotThrow(() -> userService.updateUser("user-1",
+                    UserUpdateRequest.builder().name("New Name").build()));
+
+            assertEquals("New Name", response.getName());
         }
     }
 
@@ -553,6 +604,22 @@ class UserServiceImplTest {
             assertEquals(AccountStatus.ACTIVE, response.getStatus());
             verify(systemLogService).write(argThat(log -> "USER_ACTIVATE".equals(log.getAction())
                     && "INACTIVE".equals(log.getOldValue())
+                    && "ACTIVE".equals(log.getNewValue())));
+        }
+
+        @Test
+        void changeStatus_shouldHandleNullOldStatus() {
+            User noStatus = User.builder().id("ns-1").role(receptionRole).status(null).build();
+            when(userRepository.findWithRoleById("ns-1")).thenReturn(Optional.of(noStatus));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+
+            AdminUserDetailResponse response = userService.changeStatus("ns-1",
+                    UpdateUserStatusRequest.builder().status("ACTIVE").build());
+
+            assertEquals(AccountStatus.ACTIVE, response.getStatus());
+            // oldStatus null -> oldValue logged as null, not a name
+            verify(systemLogService).write(argThat(log -> "USER_ACTIVATE".equals(log.getAction())
+                    && log.getOldValue() == null
                     && "ACTIVE".equals(log.getNewValue())));
         }
     }

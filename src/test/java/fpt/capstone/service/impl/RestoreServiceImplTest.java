@@ -189,6 +189,22 @@ class RestoreServiceImplTest {
             assertEquals(List.of("RESTORE_FAILED"), loggedActions());
             verifyNoInteractions(restoreTxExecutor);
         }
+
+        @Test
+        void restore_nullFilePath_marksCorruptedAndThrowsConflict() {
+            completed.setFilePath(null);
+            when(backupRepository.findById(1)).thenReturn(Optional.of(completed));
+
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                    () -> restoreService.restore(confirmed(1)));
+
+            assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+            assertEquals(ErrorCode.BACKUP_CORRUPTED.name(), ex.getReason());
+            assertEquals(BackupStatus.CORRUPTED, completed.getStatus());
+            verify(backupRepository).save(completed);
+            // Short-circuits before touching the file store or executor
+            verifyNoInteractions(fileStore, restoreTxExecutor);
+        }
     }
 
     @Nested
@@ -237,6 +253,25 @@ class RestoreServiceImplTest {
 
             assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getStatusCode());
             assertEquals(List.of("RESTORE_START", "RESTORE_FAILED"), loggedActions());
+        }
+
+        @Test
+        void restore_auditWriteFails_restoreStillCompletes() {
+            when(backupRepository.findById(1)).thenReturn(Optional.of(completed));
+            when(fileStore.sha256(backupFile)).thenReturn("goodsum");
+            when(fileStore.read(backupFile))
+                    .thenReturn(new BackupFileStore.ParsedBackup(Map.of(), dataOf("applications")));
+            when(securityUtil.getCurrentUserId()).thenReturn("admin-1");
+            when(restoreTxExecutor.execute(anyMap()))
+                    .thenReturn(new RestoreTxExecutor.RestoreStats(1, 42));
+            // Audit logging is best-effort; a failing writer must not break the restore
+            doThrow(new RuntimeException("log down")).when(systemLogService).write(any());
+
+            RestoreResultResponse response = assertDoesNotThrow(() -> restoreService.restore(confirmed(1)));
+
+            assertEquals("BK-2026-001", response.getBackupCode());
+            assertEquals(1, response.getRestoredTables());
+            assertEquals(42, response.getRestoredRows());
         }
     }
 }

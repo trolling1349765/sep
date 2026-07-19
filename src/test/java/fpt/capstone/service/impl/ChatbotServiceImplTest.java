@@ -137,6 +137,14 @@ class ChatbotServiceImplTest {
 
             assertFallback(ask("cau hoi"));
         }
+
+        @Test
+        void ask_nullBody_returnsFallback() {
+            // 200 with an empty body deserializes to null -> fallback
+            server.expect(requestTo(ASK_URL)).andRespond(withSuccess());
+
+            assertFallback(ask("cau hoi"));
+        }
     }
 
     @Nested
@@ -179,6 +187,34 @@ class ChatbotServiceImplTest {
             ask("cau hoi");
 
             verify(chatbotRateLimiterService).tryConsume("9.9.9.9");
+        }
+
+        @Test
+        void ask_xForwardedForBlank_fallsBackToRealIp() {
+            when(httpRequest.getHeader("X-Forwarded-For")).thenReturn("   ");
+            when(httpRequest.getHeader("X-Real-IP")).thenReturn("8.8.8.8");
+            server.expect(requestTo(ASK_URL)).andRespond(withSuccess("""
+                    {"result_type":"FALLBACK","answer":"A","matched_question":null,
+                     "score":0.1,"suggestions":[]}
+                    """, MediaType.APPLICATION_JSON));
+
+            ask("cau hoi");
+
+            verify(chatbotRateLimiterService).tryConsume("8.8.8.8");
+        }
+
+        @Test
+        void ask_realIpBlank_usesRemoteAddr() {
+            when(httpRequest.getHeader("X-Forwarded-For")).thenReturn(null);
+            when(httpRequest.getHeader("X-Real-IP")).thenReturn("   ");
+            server.expect(requestTo(ASK_URL)).andRespond(withSuccess("""
+                    {"result_type":"FALLBACK","answer":"A","matched_question":null,
+                     "score":0.1,"suggestions":[]}
+                    """, MediaType.APPLICATION_JSON));
+
+            ask("cau hoi");
+
+            verify(chatbotRateLimiterService).tryConsume("10.0.0.1");
         }
     }
 }
