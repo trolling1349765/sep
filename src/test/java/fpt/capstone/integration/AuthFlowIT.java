@@ -87,6 +87,17 @@ class AuthFlowIT extends AbstractIntegrationTest {
         class RegisterTests {
 
                 @Test
+                void register_malformedJsonBody_returns400NotStack500() throws Exception {
+                        // A broken request body must surface as a client 400, not a server 500.
+                        mockMvc.perform(post("/auth/register")
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"email\": ,}"))
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.code").value(400))
+                                        .andExpect(jsonPath("$.message").value("Malformed request body."));
+                }
+
+                @Test
                 void register_success() throws Exception {
                         // Arrange
                         String email = uniqueEmail();

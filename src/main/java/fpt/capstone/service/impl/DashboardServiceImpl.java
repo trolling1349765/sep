@@ -51,7 +51,7 @@ public class DashboardServiceImpl implements DashboardService {
             UptimeTracker uptimeTracker,
             ObjectProvider<BuildProperties> buildProperties,
             @Value("${app.environment:DEMO}") String environment,
-            @Value("${app.simulated-services:OCR,EMAIL,SMS,BACKUP,DIGITAL_SIGNATURE}") String simulatedServices) {
+            @Value("${app.simulated-services:OCR,EMAIL,SMS,DIGITAL_SIGNATURE}") String simulatedServices) {
         this.userRepository = userRepository;
         this.systemLogRepository = systemLogRepository;
         this.uptimeTracker = uptimeTracker;

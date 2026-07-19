@@ -31,6 +31,7 @@ public enum Table {
     RELATIVE("RELATIVES"),
     CHAPTER("CHAPTERS"),
     SUPPORT_REQUEST("SUPPORT_REQUESTS"),
+    BACKUP("BACKUPS"),
     ;
 
     private String tableName;

@@ -1,10 +1,13 @@
 package fpt.capstone.service.impl;
 
 import fpt.capstone.dto.response.PageResponse;
+import fpt.capstone.dto.response.SystemLogDetailResponse;
 import fpt.capstone.dto.response.SystemLogResponse;
+import fpt.capstone.entity.Role;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.entity.User;
 import fpt.capstone.enums.ErrorCode;
+import fpt.capstone.enums.LogSeverity;
 import fpt.capstone.repository.SystemLogRepository;
 import fpt.capstone.repository.UserRepository;
 import org.junit.jupiter.api.Nested;
@@ -23,6 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -60,6 +65,11 @@ class SystemLogServiceImplTest {
         return u;
     }
 
+    /** Default-filter search call: no q, no severity. */
+    private PageResponse<SystemLogResponse> searchDefault(int page, int size) {
+        return systemLogService.search(null, null, null, null, null, null, null, page, size);
+    }
+
     @Nested
     class Write {
 
@@ -81,7 +91,7 @@ class SystemLogServiceImplTest {
         @Test
         void search_negativePage_throwsBadRequest() {
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> systemLogService.search(null, null, null, null, null, -1, 20));
+                    () -> searchDefault(-1, 20));
             assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
             assertEquals(ErrorCode.ARGUMENT_INVALID.name(), ex.getReason());
         }
@@ -89,7 +99,7 @@ class SystemLogServiceImplTest {
         @Test
         void search_sizeZero_throwsBadRequest() {
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> systemLogService.search(null, null, null, null, null, 0, 0));
+                    () -> searchDefault(0, 0));
             assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
         }
 
@@ -99,7 +109,7 @@ class SystemLogServiceImplTest {
             LocalDateTime to = LocalDateTime.of(2026, 1, 1, 0, 0);
 
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> systemLogService.search(null, null, null, from, to, 0, 20));
+                    () -> systemLogService.search(null, null, null, from, to, null, null, 0, 20));
             assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
             assertEquals(ErrorCode.ARGUMENT_INVALID.name(), ex.getReason());
             verifyNoInteractions(systemLogRepository);
@@ -107,14 +117,15 @@ class SystemLogServiceImplTest {
 
         @Test
         void search_sizeOverMax_clampedToHundred() {
-            when(systemLogRepository.search(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+            when(systemLogRepository.search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), anyString(), anyList(), any(Pageable.class)))
                     .thenReturn(Page.empty());
 
-            systemLogService.search(null, null, null, null, null, 0, 1000);
+            searchDefault(0, 1000);
 
             ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
             verify(systemLogRepository).search(isNull(), isNull(), isNull(), isNull(), isNull(),
-                    pageableCaptor.capture());
+                    isNull(), anyString(), anyList(), pageableCaptor.capture());
             assertEquals(100, pageableCaptor.getValue().getPageSize());
         }
 
@@ -122,23 +133,105 @@ class SystemLogServiceImplTest {
         void search_filtersPassedThrough() {
             LocalDateTime from = LocalDateTime.of(2026, 1, 1, 0, 0);
             LocalDateTime to = LocalDateTime.of(2026, 7, 19, 0, 0);
-            when(systemLogRepository.search("USER_LOGIN", "USERS", "u1", from, to, PageRequest.of(2, 50)))
+            when(systemLogRepository.search(eq("USER_LOGIN"), eq("USERS"), eq("u1"), eq(from), eq(to),
+                    isNull(), eq(SystemLogServiceImpl.SEV_NONE), eq(SystemLogServiceImpl.NO_SEV_ACTIONS),
+                    eq(PageRequest.of(2, 50))))
                     .thenReturn(Page.empty());
 
-            systemLogService.search("USER_LOGIN", "USERS", "u1", from, to, 2, 50);
+            systemLogService.search("USER_LOGIN", "USERS", "u1", from, to, null, null, 2, 50);
 
-            verify(systemLogRepository).search("USER_LOGIN", "USERS", "u1", from, to, PageRequest.of(2, 50));
+            verify(systemLogRepository).search(eq("USER_LOGIN"), eq("USERS"), eq("u1"), eq(from), eq(to),
+                    isNull(), eq(SystemLogServiceImpl.SEV_NONE), eq(SystemLogServiceImpl.NO_SEV_ACTIONS),
+                    eq(PageRequest.of(2, 50)));
+        }
+
+        @Test
+        void search_q_isTrimmedLowercasedEscapedAndWrapped() {
+            when(systemLogRepository.search(any(), any(), any(), any(), any(),
+                    anyString(), anyString(), anyList(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            systemLogService.search(null, null, null, null, null, "  %Bình_A!B  ", null, 0, 20);
+
+            ArgumentCaptor<String> qCaptor = ArgumentCaptor.forClass(String.class);
+            verify(systemLogRepository).search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    qCaptor.capture(), anyString(), anyList(), any(Pageable.class));
+            assertEquals("%!%bình!_a!!b%", qCaptor.getValue());
+        }
+
+        @Test
+        void search_blankQ_passedAsNull() {
+            when(systemLogRepository.search(any(), any(), any(), any(), any(),
+                    isNull(), anyString(), anyList(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            systemLogService.search(null, null, null, null, null, "   ", null, 0, 20);
+
+            verify(systemLogRepository).search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), eq(SystemLogServiceImpl.SEV_NONE), anyList(), any(Pageable.class));
+        }
+
+        @Test
+        void search_severityCritical_translatesToInFilter() {
+            when(systemLogRepository.search(any(), any(), any(), any(), any(),
+                    any(), anyString(), anyList(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            systemLogService.search(null, null, null, null, null, null, "critical", 0, 20);
+
+            ArgumentCaptor<List<String>> actionsCaptor = ArgumentCaptor.forClass(List.class);
+            verify(systemLogRepository).search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), eq(SystemLogServiceImpl.SEV_IN), actionsCaptor.capture(), any(Pageable.class));
+            assertEquals(LogSeverity.criticalActions(), Set.copyOf(actionsCaptor.getValue()));
+        }
+
+        @Test
+        void search_severityWarning_translatesToInFilter() {
+            when(systemLogRepository.search(any(), any(), any(), any(), any(),
+                    any(), anyString(), anyList(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            systemLogService.search(null, null, null, null, null, null, "WARNING", 0, 20);
+
+            ArgumentCaptor<List<String>> actionsCaptor = ArgumentCaptor.forClass(List.class);
+            verify(systemLogRepository).search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), eq(SystemLogServiceImpl.SEV_IN), actionsCaptor.capture(), any(Pageable.class));
+            assertEquals(LogSeverity.warningActions(), Set.copyOf(actionsCaptor.getValue()));
+        }
+
+        @Test
+        void search_severityInfo_translatesToNotInFilterOverBothClosedBuckets() {
+            when(systemLogRepository.search(any(), any(), any(), any(), any(),
+                    any(), anyString(), anyList(), any(Pageable.class)))
+                    .thenReturn(Page.empty());
+
+            systemLogService.search(null, null, null, null, null, null, "INFO", 0, 20);
+
+            ArgumentCaptor<List<String>> actionsCaptor = ArgumentCaptor.forClass(List.class);
+            verify(systemLogRepository).search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), eq(SystemLogServiceImpl.SEV_NOT_IN), actionsCaptor.capture(), any(Pageable.class));
+            assertEquals(LogSeverity.nonInfoActions(), Set.copyOf(actionsCaptor.getValue()));
+        }
+
+        @Test
+        void search_invalidSeverity_throwsBadRequest() {
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                    () -> systemLogService.search(null, null, null, null, null, null, "FATAL", 0, 20));
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals(ErrorCode.ARGUMENT_INVALID.name(), ex.getReason());
+            verifyNoInteractions(systemLogRepository);
         }
 
         @Test
         void search_mapsEntityToResponseAndResolvesActorNamesInOneBatch() {
             List<SystemLog> logs = List.of(fullLog(3, "u1"), fullLog(2, "u2"), fullLog(1, null));
-            when(systemLogRepository.search(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+            when(systemLogRepository.search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), anyString(), anyList(), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(logs, PageRequest.of(0, 20), 135));
             when(userRepository.findAllById(List.of("u1", "u2")))
                     .thenReturn(List.of(user("u1", "Hoàng Minh Demo")));
 
-            PageResponse<SystemLogResponse> page = systemLogService.search(null, null, null, null, null, 0, 20);
+            PageResponse<SystemLogResponse> page = searchDefault(0, 20);
 
             verify(userRepository, times(1)).findAllById(List.of("u1", "u2"));
             assertEquals(0, page.getPage());
@@ -157,6 +250,7 @@ class SystemLogServiceImplTest {
             assertEquals("old", first.getOldValue());
             assertEquals("new", first.getNewValue());
             assertEquals("127.0.0.1", first.getIpAddress());
+            assertEquals("INFO", first.getSeverity());
             assertEquals(LocalDateTime.of(2026, 7, 19, 4, 38, 12), first.getCreatedAt());
 
             // unknown user -> null, null userId -> null
@@ -166,13 +260,86 @@ class SystemLogServiceImplTest {
 
         @Test
         void search_emptyPage_skipsUserLookup() {
-            when(systemLogRepository.search(isNull(), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+            when(systemLogRepository.search(isNull(), isNull(), isNull(), isNull(), isNull(),
+                    isNull(), anyString(), anyList(), any(Pageable.class)))
                     .thenReturn(Page.empty());
 
-            PageResponse<SystemLogResponse> page = systemLogService.search(null, null, null, null, null, 0, 20);
+            PageResponse<SystemLogResponse> page = searchDefault(0, 20);
 
             assertTrue(page.getItems().isEmpty());
             verify(userRepository, never()).findAllById(any());
+        }
+    }
+
+    @Nested
+    class GetDetail {
+
+        @Test
+        void getDetail_unknownId_throwsNotFound() {
+            when(systemLogRepository.findById(99)).thenReturn(Optional.empty());
+
+            ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                    () -> systemLogService.getDetail(99));
+            assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+            assertEquals(ErrorCode.LOG_NOT_FOUND.name(), ex.getReason());
+        }
+
+        @Test
+        void getDetail_resolvesActorNameAndCurrentRole() {
+            SystemLog log = fullLog(7, "u1");
+            log.setAction("PERMISSION_UPDATE");
+            User actor = user("u1", "Trần Bình");
+            actor.setRole(Role.builder().name("Admin").build());
+            when(systemLogRepository.findById(7)).thenReturn(Optional.of(log));
+            when(userRepository.findById("u1")).thenReturn(Optional.of(actor));
+
+            SystemLogDetailResponse detail = systemLogService.getDetail(7);
+
+            assertEquals(7, detail.getId());
+            assertEquals("u1", detail.getUserId());
+            assertEquals("Trần Bình", detail.getActorName());
+            assertEquals("Admin", detail.getActorRole());
+            assertEquals("PERMISSION_UPDATE", detail.getAction());
+            assertEquals("WARNING", detail.getSeverity());
+            assertEquals("127.0.0.1", detail.getIpAddress());
+            assertEquals("old", detail.getOldValue());
+            assertEquals("new", detail.getNewValue());
+        }
+
+        @Test
+        void getDetail_actorWithoutRole_roleIsNull() {
+            SystemLog log = fullLog(8, "u1");
+            when(systemLogRepository.findById(8)).thenReturn(Optional.of(log));
+            when(userRepository.findById("u1")).thenReturn(Optional.of(user("u1", "Trần Bình")));
+
+            SystemLogDetailResponse detail = systemLogService.getDetail(8);
+
+            assertEquals("Trần Bình", detail.getActorName());
+            assertNull(detail.getActorRole());
+        }
+
+        @Test
+        void getDetail_deletedActor_nameAndRoleNull() {
+            SystemLog log = fullLog(9, "gone");
+            when(systemLogRepository.findById(9)).thenReturn(Optional.of(log));
+            when(userRepository.findById("gone")).thenReturn(Optional.empty());
+
+            SystemLogDetailResponse detail = systemLogService.getDetail(9);
+
+            assertNull(detail.getActorName());
+            assertNull(detail.getActorRole());
+        }
+
+        @Test
+        void getDetail_nullUserId_skipsUserLookup() {
+            SystemLog log = fullLog(10, null);
+            when(systemLogRepository.findById(10)).thenReturn(Optional.of(log));
+
+            SystemLogDetailResponse detail = systemLogService.getDetail(10);
+
+            assertNull(detail.getActorName());
+            assertNull(detail.getActorRole());
+            verifyNoInteractions(userRepository);
         }
     }
 }

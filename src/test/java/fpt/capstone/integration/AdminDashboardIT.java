@@ -44,7 +44,7 @@ class AdminDashboardIT extends AbstractIntegrationTest {
                                         .andExpect(jsonPath("$.data.operational.environment").value("DEMO"))
                                         .andExpect(jsonPath("$.data.operational.serverTime").exists())
                                         .andExpect(jsonPath("$.data.operational.startedAt").exists())
-                                        .andExpect(jsonPath("$.data.operational.simulatedServices.length()").value(5));
+                                        .andExpect(jsonPath("$.data.operational.simulatedServices.length()").value(4));
 
                         MvcResult result = mockMvc.perform(get("/admin/dashboard").cookie(admin))
                                         .andExpect(status().isOk()).andReturn();

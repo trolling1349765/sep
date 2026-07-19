@@ -35,6 +35,12 @@ public enum ErrorCode {
     CANNOT_DEACTIVATE_SELF(10025, "Cannot change the status of your own account"),
     INVALID_STATUS(10026, "Invalid or unchanged account status"),
     ACCOUNT_INACTIVE(10027, "Your account has been deactivated. Please contact the administrator."),
+    LOG_NOT_FOUND(10028, "System log record not found"),
+    BACKUP_NOT_FOUND(10029, "Backup not found"),
+    BACKUP_NOT_RESTORABLE(10030, "Only completed backups can be restored"),
+    BACKUP_CORRUPTED(10031, "Backup file is missing or corrupted"),
+    CONFIRM_REQUIRED(10032, "Confirmation is required for this operation"),
+    BACKUP_IN_PROGRESS(10033, "Another backup is already running"),
     ;
 
     private int code;

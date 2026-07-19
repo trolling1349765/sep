@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -93,6 +94,14 @@ public class GlobalExceptionHandler {
     ResponseEntity<APIResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
         return ResponseEntity.badRequest()
                 .body(APIResponse.error(400, "Invalid value for parameter '" + e.getName() + "'."));
+    }
+
+    // Unreadable/malformed @RequestBody (bad JSON, wrong type) is a client error:
+    // map it to 400 instead of letting it reach the generic 500 handler.
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    ResponseEntity<APIResponse<Void>> handleUnreadableBody(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest()
+                .body(APIResponse.error(400, "Malformed request body."));
     }
 
     @ExceptionHandler(value = ResponseStatusException.class)

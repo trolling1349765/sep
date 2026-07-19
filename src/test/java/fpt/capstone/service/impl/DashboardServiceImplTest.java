@@ -54,7 +54,7 @@ class DashboardServiceImplTest {
                 uptimeTracker,
                 buildProperties,
                 "DEMO",
-                "OCR,EMAIL,SMS,BACKUP,DIGITAL_SIGNATURE");
+                "OCR,EMAIL,SMS,DIGITAL_SIGNATURE");
     }
 
     private void stubHappyPath() {
@@ -219,7 +219,7 @@ class DashboardServiceImplTest {
             assertEquals("DEMO", response.getOperational().getEnvironment());
             assertEquals(Instant.parse("2026-07-18T21:00:05Z"), response.getOperational().getStartedAt());
             assertNotNull(response.getOperational().getServerTime());
-            assertEquals(List.of("OCR", "EMAIL", "SMS", "BACKUP", "DIGITAL_SIGNATURE"),
+            assertEquals(List.of("OCR", "EMAIL", "SMS", "DIGITAL_SIGNATURE"),
                     response.getOperational().getSimulatedServices());
         }
 
