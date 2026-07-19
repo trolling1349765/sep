@@ -7,6 +7,7 @@ import fpt.capstone.service.BenificiaryService;
 import fpt.capstone.service.RelativeService;
 import fpt.capstone.service.WounderSoldierService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class Officier1Controller {
     private final RelativeService relativeService;
 
     @PostMapping("/receipt")
+    @PreAuthorize("hasAuthority('APPLICATION_INTAKE_CREATE')")
     public APIResponse<String> receiptApplication(
             @RequestBody Officier1DataObjectRequest officier1DataObjectRequest,
             @RequestParam String status // submitted or draft only

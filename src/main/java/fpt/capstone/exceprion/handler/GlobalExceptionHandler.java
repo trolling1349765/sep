@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -81,8 +83,25 @@ public class GlobalExceptionHandler {
     @SuppressWarnings("rawtypes")
     @ExceptionHandler(value = DataAccessException.class)
     ResponseEntity<APIResponse> handleDataAccessException(DataAccessException e) {
+        log.error("Data access failure", e);
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(APIResponse.error(503, "Service temporarily unavailable. Please try again later."));
+    }
+
+    // Malformed typed @RequestParam/@PathVariable (bad int, bad ISO datetime...)
+    // would otherwise fall through to the generic 500 handler.
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    ResponseEntity<APIResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        return ResponseEntity.badRequest()
+                .body(APIResponse.error(400, "Invalid value for parameter '" + e.getName() + "'."));
+    }
+
+    // Unreadable/malformed @RequestBody (bad JSON, wrong type) is a client error:
+    // map it to 400 instead of letting it reach the generic 500 handler.
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    ResponseEntity<APIResponse<Void>> handleUnreadableBody(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest()
+                .body(APIResponse.error(400, "Malformed request body."));
     }
 
     @ExceptionHandler(value = ResponseStatusException.class)
@@ -95,8 +114,17 @@ public class GlobalExceptionHandler {
                 servletResponse.setHeader("Retry-After", retryAfter);
             }
         }
-        return ResponseEntity.status(status)
-                .body(APIResponse.error(status.value(), e.getReason()));
+        // Some services pass an ErrorCode enum name as the reason; map it to the business code/message.
+        ErrorCode errorCode = null;
+        if (e.getReason() != null) {
+            try {
+                errorCode = ErrorCode.valueOf(e.getReason());
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        int code = errorCode != null ? errorCode.getCode() : status.value();
+        String message = errorCode != null ? errorCode.getMessage() : e.getReason();
+        return ResponseEntity.status(status).body(APIResponse.error(code, message));
     }
 
     @ExceptionHandler(value = Exception.class)

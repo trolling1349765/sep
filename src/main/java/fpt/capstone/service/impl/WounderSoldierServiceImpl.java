@@ -12,6 +12,7 @@ import fpt.capstone.repository.WounderSoldierRepository;
 import fpt.capstone.service.BenificiaryService;
 import fpt.capstone.service.SystemLogService;
 import fpt.capstone.service.WounderSoldierService;
+import fpt.capstone.util.AuditJson;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,7 @@ public class WounderSoldierServiceImpl implements WounderSoldierService {
 
         SystemLog log = SystemLog.builder()
                 .userId(userId)
-                .newValue(woundedSoldiers)
+                .newValue(AuditJson.toJson(new WounderSoldierResponse(woundedSoldiers)))
                 .createdAt(LocalDateTime.now())
                 .action(Action.WOUNDER_SOLDIER_CREATE.getAction())
                 .entityId(woundedSoldiers.getId() + "")

@@ -13,6 +13,7 @@ import fpt.capstone.repository.AdditionalDocumentRepository;
 import fpt.capstone.repository.ApplicationRepository;
 import fpt.capstone.service.AdditionalDocumentService;
 import fpt.capstone.service.SystemLogService;
+import fpt.capstone.util.AuditJson;
 import fpt.capstone.util.SecurityUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -72,7 +73,7 @@ public class AdditionalDocumentServiceImpl implements AdditionalDocumentService 
                 .action(Action.ADDITIONAL_DOCUMENT_CREATE.getAction())
                 .entityType(Table.ADDITIONAL_DOCUMENT.getTableName())
                 .entityId(additionalDocument.getId() + "")
-                .newValue(additionalDocument)
+                .newValue(AuditJson.toJson(new AdditionalDocumentResponse(additionalDocument)))
                 .userId(currentUserId)
                 .build();
         systemLogService.write(log);
@@ -108,8 +109,8 @@ public class AdditionalDocumentServiceImpl implements AdditionalDocumentService 
                 .action(Action.ADDITIONAL_DOCUMENT_UPDATE.getAction())
                 .entityType(Table.ADDITIONAL_DOCUMENT.getTableName())
                 .entityId(additionalDocument.getId() + "")
-                .newValue(additionalDocument)
-                .oldValue(oldValue)
+                .newValue(AuditJson.toJson(new AdditionalDocumentResponse(additionalDocument)))
+                .oldValue(AuditJson.toJson(new AdditionalDocumentResponse(oldValue)))
                 .userId(currentUserId)
                 .build();
         systemLogService.write(log);
@@ -137,8 +138,8 @@ public class AdditionalDocumentServiceImpl implements AdditionalDocumentService 
                 .action(Action.ADDITIONAL_DOCUMENT_DELETE.getAction())
                 .entityType(Table.ADDITIONAL_DOCUMENT.getTableName())
                 .entityId(additionalDocument.getId() + "")
-                .newValue(additionalDocument)
-                .oldValue(oldValue)
+                .newValue(AuditJson.toJson(new AdditionalDocumentResponse(additionalDocument)))
+                .oldValue(AuditJson.toJson(new AdditionalDocumentResponse(oldValue)))
                 .userId(currentUserId)
                 .build();
         systemLogService.write(log);

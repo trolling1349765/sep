@@ -11,6 +11,7 @@ import fpt.capstone.repository.BenificiaryRepository;
 import fpt.capstone.repository.RelativeRepository;
 import fpt.capstone.service.RelativeService;
 import fpt.capstone.service.SystemLogService;
+import fpt.capstone.util.AuditJson;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,7 @@ public class RelativeServiceImpl implements RelativeService {
                 .entityType(Table.RELATIVE.getTableName())
                 .entityId(relative.getId() + "")
                 .action(Action.RELATIVE_CREATE.getAction())
-                .newValue(relative)
+                .newValue(AuditJson.toJson(new RelativeResponse(relative)))
                 .createdAt(LocalDateTime.now())
                 .build();
         systemLogService.write(systemLog);

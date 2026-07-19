@@ -1,9 +1,15 @@
 package fpt.capstone.integration;
 
 import com.jayway.jsonpath.JsonPath;
+import fpt.capstone.entity.User;
+import fpt.capstone.repository.PermissionRepository;
 import fpt.capstone.repository.RefreshTokenRepository;
+import fpt.capstone.repository.RightRepository;
+import fpt.capstone.repository.RoleRepository;
+import fpt.capstone.repository.SystemLogRepository;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.EmailService;
+import fpt.capstone.service.PermissionCacheService;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +53,17 @@ public abstract class AbstractIntegrationTest {
         protected RefreshTokenRepository refreshTokenRepository;
         @Autowired
         protected PasswordEncoder passwordEncoder;
+        // RBAC fixtures (plain @Autowired fields do not affect the context-cache key)
+        @Autowired
+        protected RoleRepository roleRepository;
+        @Autowired
+        protected RightRepository rightRepository;
+        @Autowired
+        protected PermissionRepository permissionRepository;
+        @Autowired
+        protected SystemLogRepository systemLogRepository;
+        @Autowired
+        protected PermissionCacheService permissionCacheService;
 
         // Shared by BOTH IT classes so the merged context configuration is identical
         // (bean overrides are part of the context cache key). Replaces EmailServiceImpl
@@ -130,5 +147,19 @@ public abstract class AbstractIntegrationTest {
 
         protected String userIdFromBody(MvcResult result) throws Exception {
                 return JsonPath.read(result.getResponse().getContentAsString(), "$.data.userId");
+        }
+
+        /**
+         * Registers a fresh account, reassigns it to the given seeded role directly
+         * in the DB, and returns the register-response cookies (the filter reloads
+         * the role from DB on every request, so the original token stays valid).
+         */
+        protected MvcResult registerUserWithRole(String roleName) throws Exception {
+                MvcResult result = registerUser(uniqueEmail(), uniquePhone());
+                String userId = userIdFromBody(result);
+                User user = userRepository.getUserById(userId);
+                user.setRole(roleRepository.findByName(roleName).orElseThrow());
+                userRepository.save(user);
+                return result;
         }
 }

@@ -9,6 +9,8 @@ import fpt.capstone.dto.response.LoginResponse;
 import fpt.capstone.entity.RefreshToken;
 import fpt.capstone.entity.Role;
 import fpt.capstone.entity.User;
+import fpt.capstone.enums.AccountStatus;
+import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.repository.RefreshTokenRepository;
 import fpt.capstone.repository.RoleRepository;
 import fpt.capstone.repository.UserRepository;
@@ -155,8 +157,10 @@ public class AuthServiceImpl implements AuthService {
         user.setDob(dob);
         user.setPassword(passwordEncoder.encode(password));
         user.setUsername(email);
+        user.setStatus(AccountStatus.ACTIVE);
+        user.setNationalIdVerified(false);
 
-        Role defaultRole = roleRepository.findByName("USER")
+        Role defaultRole = roleRepository.findByName("Citizen")
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "Default Citizen role is not configured. Please contact the administrator."));
         user.setRole(defaultRole);
@@ -215,6 +219,16 @@ public class AuthServiceImpl implements AuthService {
             // Generic error message (MSG-05) - don't reveal which field is wrong
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Incorrect username or password. Please check again.");
+        }
+
+        // Permanent ban outranks the temporary failed-attempt lock
+        if (user.getStatus() == AccountStatus.BANNED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_BANNED.name());
+        }
+
+        // Admin-deactivated accounts (spec: Ngừng hoạt động) are also barred
+        if (user.getStatus() == AccountStatus.INACTIVE) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_INACTIVE.name());
         }
 
         if (accountLockService.isAccountLocked(user)) {
@@ -308,6 +322,19 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             revokeCookies(response);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found.");
+        }
+
+        // Banned/deactivated accounts must not mint new access tokens through
+        // refresh — deactivation relies on this to complete the lockout.
+        if (user.getStatus() == AccountStatus.BANNED) {
+            refreshTokenRepository.revokeFamily(storedToken.getFamilyId());
+            revokeCookies(response);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_BANNED.name());
+        }
+        if (user.getStatus() == AccountStatus.INACTIVE) {
+            refreshTokenRepository.revokeFamily(storedToken.getFamilyId());
+            revokeCookies(response);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_INACTIVE.name());
         }
 
         if (accountLockService.isAccountLocked(user)) {

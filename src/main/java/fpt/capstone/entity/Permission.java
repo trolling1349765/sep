@@ -11,7 +11,8 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "permissions")
+@Table(name = "permissions", uniqueConstraints =
+        @UniqueConstraint(name = "uk_permission_role_right", columnNames = {"role_id", "right_id"}))
 @SuperBuilder
 public class Permission extends BaseEntity{
 
@@ -19,11 +20,11 @@ public class Permission extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int permissionID;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
     Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "right_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "right_id", nullable = false)
     Right right;
 }

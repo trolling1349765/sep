@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @SuperBuilder
-@Table(name = "system_log")
+@Table(name = "system_log", indexes = @Index(name = "idx_system_log_created_at", columnList = "created_at"))
 public class SystemLog {
 
     @Id
@@ -34,10 +34,13 @@ public class SystemLog {
     String entityId;
 
     @Column(name = "old_value",columnDefinition = "TEXT")
-    Object oldValue;
+    String oldValue;
 
     @Column(name = "new_value",columnDefinition = "TEXT")
-    Object newValue;
+    String newValue;
+
+    @Column(name = "ip_address", length = 45)
+    String ipAddress;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;

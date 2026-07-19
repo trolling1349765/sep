@@ -22,6 +22,7 @@ import fpt.capstone.repository.DecisionDocumentRepository;
 import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.DecisionDocumentService;
 import fpt.capstone.service.SystemLogService;
+import fpt.capstone.util.AuditJson;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -168,7 +169,7 @@ public class DecisionDocumentServiceImpl implements DecisionDocumentService {
                 .createdAt(LocalDateTime.now())
                 .action(Action.DECISION_CREATE.getAction())
                 .userId(userId)
-                .newValue(decisionDocument)
+                .newValue(AuditJson.toJson(new DecisionDocumentResponse(decisionDocument)))
                 .entityType(Table.DECISION_DOCUMENT.getTableName())
                 .entityId(decisionDocument.getId() + "")
                 .build();

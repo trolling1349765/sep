@@ -1,0 +1,4 @@
+# Ignore toàn bộ nội dung thư mục test-api — không commit lên GitHub
+# (collection/environment Postman có thể chứa tài khoản test, cookie, kết quả chạy)
+*
+!.gitignore

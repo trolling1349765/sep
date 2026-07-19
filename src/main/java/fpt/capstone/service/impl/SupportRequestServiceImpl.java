@@ -1,8 +1,11 @@
 package fpt.capstone.service.impl;
 
+import fpt.capstone.annotation.Auditable;
 import fpt.capstone.dto.request.CreateSupportRequest;
 import fpt.capstone.dto.request.ReplySupportRequest;
 import fpt.capstone.dto.request.UpdateSupportRequestStatus;
+import fpt.capstone.enums.Action;
+import fpt.capstone.enums.Table;
 import fpt.capstone.dto.response.SupportReplyResponse;
 import fpt.capstone.dto.response.SupportRequestDetailResponse;
 import fpt.capstone.dto.response.SupportRequestListResponse;
@@ -47,6 +50,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 
     @Override
     @Transactional
+    @Auditable(action = Action.SUPPORT_REQUEST_CREATE, entity = Table.SUPPORT_REQUEST)
     public SupportRequestDetailResponse createSupportRequest(User citizen, CreateSupportRequest request) {
         String referenceNumber = generateReferenceNumber();
 
@@ -111,6 +115,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 
     @Override
     @Transactional
+    @Auditable(action = Action.SUPPORT_REQUEST_REPLY, entity = Table.SUPPORT_REQUEST)
     public SupportReplyResponse replyToRequest(String requestId, User officer,
             ReplySupportRequest request) {
         SupportRequest supportRequest = supportRequestRepository.findById(requestId)
@@ -172,6 +177,7 @@ public class SupportRequestServiceImpl implements SupportRequestService {
 
     @Override
     @Transactional
+    @Auditable(action = Action.SUPPORT_REQUEST_STATUS_UPDATE, entity = Table.SUPPORT_REQUEST)
     public SupportRequestDetailResponse updateStatus(String requestId, User officer,
             UpdateSupportRequestStatus request) {
         SupportRequest supportRequest = supportRequestRepository.findById(requestId)

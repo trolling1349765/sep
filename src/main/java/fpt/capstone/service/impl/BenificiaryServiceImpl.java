@@ -13,6 +13,7 @@ import fpt.capstone.repository.BenificiaryRepository;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.BenificiaryService;
 import fpt.capstone.service.SystemLogService;
+import fpt.capstone.util.AuditJson;
 import fpt.capstone.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -132,7 +133,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
                 .entityId(Table.BENIFICIARY.getTableName())
                 .entityId(benificiary.getId() + "")
                 .action(Action.BENIFICIARY_CREATE.getAction())
-                .newValue(benificiary)
+                .newValue(AuditJson.toJson(new BenificiaryResponse(benificiary)))
                 .build();
         systemLogService.write(systemLog);
 
@@ -188,7 +189,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
                 .entityId(Table.BENIFICIARY.getTableName())
                 .entityId(benificiary.getId() + "")
                 .action(Action.BENIFICIARY_CREATE.getAction())
-                .newValue(benificiary)
+                .newValue(AuditJson.toJson(new BenificiaryResponse(benificiary)))
                 .build();
         systemLogService.write(systemLog);
 

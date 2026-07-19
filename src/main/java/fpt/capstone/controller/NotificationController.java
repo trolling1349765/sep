@@ -7,6 +7,7 @@ import fpt.capstone.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
+// Single catalogue right covers the whole notification surface (view/mark/delete)
+@PreAuthorize("hasAuthority('NOTIFICATION_VIEW')")
 public class NotificationController {
 
     private final NotificationService notificationService;
