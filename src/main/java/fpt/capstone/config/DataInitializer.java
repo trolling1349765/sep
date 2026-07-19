@@ -492,6 +492,7 @@ public class DataInitializer implements CommandLineRunner {
                 createRoleIfMissing("Records", "Cán bộ lưu trữ hồ sơ");
                 createRoleIfMissing("Management", "Quản lý");
                 createRoleIfMissing("Admin", "Quản trị hệ thống");
+                backfillRoleCodes();
                 System.out.println(">>> Role seeding complete. Total roles: " + roleRepository.count());
         }
 
@@ -499,9 +500,20 @@ public class DataInitializer implements CommandLineRunner {
                 if (roleRepository.findByName(name).isEmpty()) {
                         roleRepository.save(Role.builder()
                                         .name(name)
+                                        .code(RoleCodes.NAME_TO_CODE.get(name))
                                         .description(description)
                                         .build());
                 }
+        }
+
+        // Idempotent: existing rows created before the `code` column get it filled on next boot.
+        private void backfillRoleCodes() {
+                RoleCodes.NAME_TO_CODE.forEach((name, code) -> roleRepository.findByName(name).ifPresent(role -> {
+                        if (!code.equals(role.getCode())) {
+                                role.setCode(code);
+                                roleRepository.save(role);
+                        }
+                }));
         }
 
         private void seedRights() {

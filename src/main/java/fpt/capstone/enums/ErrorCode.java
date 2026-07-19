@@ -30,6 +30,11 @@ public enum ErrorCode {
     ACCESS_DENIED(10020, "Access denied"),
     CANNOT_CHANGE_OWN_ROLE(10021, "Cannot change the role of your own account"),
     ACCOUNT_BANNED(10022, "Your account has been banned. Please contact the administrator."),
+    PHONE_EXISTED(10023, "Phone number already exists"),
+    CITIZEN_ROLE_RESTRICTED(10024, "Citizen role cannot be assigned or changed via admin APIs"),
+    CANNOT_DEACTIVATE_SELF(10025, "Cannot change the status of your own account"),
+    INVALID_STATUS(10026, "Invalid or unchanged account status"),
+    ACCOUNT_INACTIVE(10027, "Your account has been deactivated. Please contact the administrator."),
     ;
 
     private int code;

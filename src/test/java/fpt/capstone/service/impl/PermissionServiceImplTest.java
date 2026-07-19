@@ -10,6 +10,7 @@ import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.repository.PermissionRepository;
 import fpt.capstone.repository.RightRepository;
 import fpt.capstone.repository.RoleRepository;
+import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.SystemLogService;
 import fpt.capstone.util.SecurityUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +45,8 @@ class PermissionServiceImplTest {
     @Mock
     private PermissionRepository permissionRepository;
     @Mock
+    private UserRepository userRepository;
+    @Mock
     private SystemLogService systemLogService;
     @Mock
     private SecurityUtil securityUtil;
@@ -56,9 +59,9 @@ class PermissionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        citizenRole = Role.builder().name("Citizen").description("Công dân").build();
+        citizenRole = Role.builder().name("Citizen").code("CITIZEN").description("Công dân").build();
         citizenRole.setId(1);
-        adminRole = Role.builder().name("Admin").description("Quản trị").build();
+        adminRole = Role.builder().name("Admin").code("SYSTEM_ADMINISTRATOR").description("Quản trị").build();
         adminRole.setId(8);
     }
 
@@ -85,6 +88,25 @@ class PermissionServiceImplTest {
             assertEquals(2, roles.size());
             assertEquals(19L, roles.get(0).getGrantedCount());
             assertEquals(0L, roles.get(1).getGrantedCount());
+        }
+
+        @Test
+        void getRoles_shouldExposeCodeAndUserCountSortedById() {
+            // findAll deliberately out of id order — the service must sort
+            when(roleRepository.findAll()).thenReturn(List.of(adminRole, citizenRole));
+            UserRepository.RoleUserCount citizenCount = mock(UserRepository.RoleUserCount.class);
+            when(citizenCount.getRoleId()).thenReturn(1);
+            when(citizenCount.getUserCount()).thenReturn(5L);
+            when(userRepository.countUsersGroupedByRole()).thenReturn(List.of(citizenCount));
+
+            List<RoleSummaryResponse> roles = permissionService.getRoles();
+
+            assertEquals(1, roles.get(0).getId());
+            assertEquals("CITIZEN", roles.get(0).getCode());
+            assertEquals(5L, roles.get(0).getUserCount());
+            assertEquals(8, roles.get(1).getId());
+            assertEquals("SYSTEM_ADMINISTRATOR", roles.get(1).getCode());
+            assertEquals(0L, roles.get(1).getUserCount());
         }
     }
 

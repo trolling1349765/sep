@@ -12,6 +12,7 @@ import fpt.capstone.enums.Table;
 import fpt.capstone.repository.PermissionRepository;
 import fpt.capstone.repository.RightRepository;
 import fpt.capstone.repository.RoleRepository;
+import fpt.capstone.repository.UserRepository;
 import fpt.capstone.service.PermissionService;
 import fpt.capstone.service.SystemLogService;
 import fpt.capstone.util.RequestIpUtil;
@@ -26,6 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +46,7 @@ public class PermissionServiceImpl implements PermissionService {
     private final RoleRepository roleRepository;
     private final RightRepository rightRepository;
     private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
     private final SystemLogService systemLogService;
     private final SecurityUtil securityUtil;
 
@@ -53,8 +56,15 @@ public class PermissionServiceImpl implements PermissionService {
                 .collect(Collectors.toMap(
                         PermissionRepository.RoleGrantCount::getRoleId,
                         PermissionRepository.RoleGrantCount::getGrantedCount));
+        Map<Integer, Long> userCounts = userRepository.countUsersGroupedByRole().stream()
+                .collect(Collectors.toMap(
+                        UserRepository.RoleUserCount::getRoleId,
+                        UserRepository.RoleUserCount::getUserCount));
         return roleRepository.findAll().stream()
-                .map(role -> RoleSummaryResponse.from(role, grantCounts.getOrDefault(role.getId(), 0L)))
+                .sorted(Comparator.comparingInt(Role::getId))
+                .map(role -> RoleSummaryResponse.from(role,
+                        grantCounts.getOrDefault(role.getId(), 0L),
+                        userCounts.getOrDefault(role.getId(), 0L)))
                 .toList();
     }
 

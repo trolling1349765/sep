@@ -1,13 +1,17 @@
 package fpt.capstone.dto.request;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.Date;
 
+/**
+ * Partial update: every field optional, non-null values are patched.
+ * The target user id comes from the path — no userId field here.
+ */
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -15,13 +19,26 @@ import java.util.Date;
 @Builder
 public class UserUpdateRequest {
 
-    String userId;
+    @Size(min = 1, max = 100, message = "ARGUMENT_INVALID")
     String name;
+
     @Email
     String email;
+
+    // @Pattern passes on null, so the field stays optional
+    @Pattern(regexp = "^(0|\\+84)\\d{9}$", message = "ARGUMENT_INVALID")
+    String phone;
+
     @Size(min = 8, max = 20, message = "PASSWORD_INVALID")
     String password;
-    LocalDate dob;
-    Integer roleId;
 
+    @Size(min = 1, max = 128, message = "ARGUMENT_INVALID")
+    String position;
+
+    @Size(max = 255, message = "ARGUMENT_INVALID")
+    String assignedArea;
+
+    LocalDate dob;
+
+    Integer roleId;
 }

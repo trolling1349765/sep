@@ -31,23 +31,27 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         Cookie admin = adminToken();
                         Role reception = roleRepository.findByName("Reception").orElseThrow();
                         String email = uniqueEmail();
+                        String username = "staff" + uniq();
                         String body = """
                                         {
-                                          "role": %d,
+                                          "roleId": %d,
                                           "name": "Reception Staff",
                                           "email": "%s",
                                           "username": "%s",
+                                          "phone": "%s",
                                           "password": "%s",
+                                          "position": "Can bo tiep nhan",
                                           "dob": "2000-01-01"
                                         }
-                                        """.formatted(reception.getId(), email, email, DEFAULT_PASSWORD);
+                                        """.formatted(reception.getId(), email, username, uniquePhone(),
+                                        DEFAULT_PASSWORD);
 
                         MvcResult created = mockMvc.perform(post("/admin/users").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content(body))
                                         .andExpect(status().isOk())
                                         .andReturn();
                         assertEquals("Reception",
-                                        JsonPath.read(created.getResponse().getContentAsString(), "$.data.role"));
+                                        JsonPath.read(created.getResponse().getContentAsString(), "$.data.roleName"));
                         assertEquals(30, permissionRepository.countByRoleId(reception.getId()));
 
                         MvcResult login = loginAs(email, DEFAULT_PASSWORD, uniqueIp());
@@ -64,8 +68,9 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
                         Cookie admin = adminToken();
                         String email = uniqueEmail();
                         String body = """
-                                        { "role": 9999, "name": "x", "email": "%s", "username": "%s", "password": "%s" }
-                                        """.formatted(email, email, DEFAULT_PASSWORD);
+                                        { "roleId": 9999, "name": "x", "email": "%s", "username": "%s",
+                                          "phone": "%s", "password": "%s", "position": "x" }
+                                        """.formatted(email, "user" + uniq(), uniquePhone(), DEFAULT_PASSWORD);
 
                         mockMvc.perform(post("/admin/users").cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON).content(body))
@@ -250,20 +255,22 @@ class AdminRbacApiIT extends AbstractIntegrationTest {
 
                 @Test
                 void changingAnotherAccountsRole_shouldSucceedAndLogChangeRole() throws Exception {
+                        // Target must be a staff account: citizen role changes are now
+                        // blocked by CITIZEN_ROLE_RESTRICTED (user-management spec).
                         Cookie admin = adminToken();
-                        MvcResult citizen = registerUser(uniqueEmail(), uniquePhone());
-                        String citizenId = userIdFromBody(citizen);
-                        int receptionId = roleRepository.findByName("Reception").orElseThrow().getId();
+                        MvcResult staff = registerUserWithRole("Reception");
+                        String staffId = userIdFromBody(staff);
+                        int appraisalId = roleRepository.findByName("Appraisal").orElseThrow().getId();
 
-                        mockMvc.perform(put("/admin/users/" + citizenId).cookie(admin)
+                        mockMvc.perform(put("/admin/users/" + staffId).cookie(admin)
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .content("{ \"roleId\": " + receptionId + " }"))
+                                        .content("{ \"roleId\": " + appraisalId + " }"))
                                         .andExpect(status().isOk())
-                                        .andExpect(jsonPath("$.data.role").value("Reception"));
+                                        .andExpect(jsonPath("$.data.roleName").value("Appraisal"));
 
                         assertTrue(systemLogRepository.findAll().stream()
                                         .anyMatch(log -> "CHANGE_ROLE".equals(log.getAction())
-                                                        && citizenId.equals(log.getEntityId())));
+                                                        && staffId.equals(log.getEntityId())));
                 }
         }
 }

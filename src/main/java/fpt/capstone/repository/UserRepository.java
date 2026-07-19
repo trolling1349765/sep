@@ -1,6 +1,9 @@
 package fpt.capstone.repository;
 
 import fpt.capstone.entity.User;
+import fpt.capstone.enums.AccountStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -25,6 +29,11 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByNationalId(String nationalId);
 
     boolean existsByUsername(String username);
+
+    // Update-time uniqueness: exclude the row being edited.
+    boolean existsByEmailAndIdNot(String email, String id);
+
+    boolean existsByPhoneAndIdNot(String phone, String id);
 
     User getUserById(String id);
 
@@ -86,4 +95,41 @@ public interface UserRepository extends JpaRepository<User, String> {
             from User u left join u.role r
             """)
     DashboardUserStats countDashboardStats(@Param("now") Instant now);
+
+    // Admin user list. No `order by` here: the dynamic whitelisted Sort inside the
+    // Pageable is appended by Spring Data (an inline order by would break that).
+    // Left join fetch keeps role-less users; countQuery uses the FK path (no join).
+    @Query(value = """
+            select u from User u left join fetch u.role
+            where (:q is null
+                   or lower(u.username) like lower(concat('%', :q, '%'))
+                   or lower(u.name) like lower(concat('%', :q, '%'))
+                   or lower(u.email) like lower(concat('%', :q, '%')))
+              and (:roleId is null or u.role.id = :roleId)
+              and (:status is null or u.status = :status)
+            """,
+            countQuery = """
+            select count(u) from User u
+            where (:q is null
+                   or lower(u.username) like lower(concat('%', :q, '%'))
+                   or lower(u.name) like lower(concat('%', :q, '%'))
+                   or lower(u.email) like lower(concat('%', :q, '%')))
+              and (:roleId is null or u.role.id = :roleId)
+              and (:status is null or u.status = :status)
+            """)
+    Page<User> search(@Param("q") String q,
+                      @Param("roleId") Integer roleId,
+                      @Param("status") AccountStatus status,
+                      Pageable pageable);
+
+    // Aliases must match the getters (Spring Data interface projection).
+    interface RoleUserCount {
+        Integer getRoleId();
+
+        long getUserCount();
+    }
+
+    // Single group-by for the Roles screen "Số người dùng" column — never count per role.
+    @Query("select u.role.id as roleId, count(u) as userCount from User u where u.role is not null group by u.role.id")
+    List<RoleUserCount> countUsersGroupedByRole();
 }

@@ -80,6 +80,13 @@ public class User extends BaseEntity {
     @Column(name = "avatar_url")
     String avatarUrl;
 
+    // Staff-only fields set via admin account creation; NULL for self-registered citizens.
+    @Column(name = "position", length = 128)
+    String position;
+
+    @Column(name = "assigned_area", length = 255)
+    String assignedArea;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     AccountStatus status;

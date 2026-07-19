@@ -531,6 +531,25 @@ class AuthServiceImplTest {
                 }
 
                 @Test
+                void login_inactiveAccount_throwsForbidden() {
+                        // Arrange - admin-deactivated account (spec: Ngừng hoạt động)
+                        testUser.setStatus(AccountStatus.INACTIVE);
+                        when(rateLimiterService.tryConsume(testIp))
+                                        .thenReturn(new RateLimiterService.RateLimitResult(true, 0));
+                        when(userRepository.findUserByEmail(testEmail.toLowerCase())).thenReturn(testUser);
+
+                        // Act & Assert
+                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                                        () -> authService.login(loginRequest, httpRequest, httpResponse));
+                        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+                        assertEquals("ACCOUNT_INACTIVE", ex.getReason());
+                        // Checked before the temporary lock and no token is issued
+                        verify(accountLockService, never()).isAccountLocked(any());
+                        verify(refreshTokenRepository, never()).save(any());
+                        verify(httpResponse, never()).addCookie(any());
+                }
+
+                @Test
                 void login_activeStatus_notBanned_succeeds() {
                         // Arrange - explicit ACTIVE covers the false side of the BANNED branch
                         testUser.setStatus(AccountStatus.ACTIVE);
@@ -765,6 +784,43 @@ class AuthServiceImplTest {
                         assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
                         assertTrue(ex.getReason().contains("User not found"));
                         verify(httpResponse, atLeast(1)).addCookie(any(Cookie.class));
+                }
+
+                @Test
+                void refreshAccessToken_bannedAccount_revokesFamilyAndThrowsForbidden() {
+                        // Arrange - GAP-6: banned users must not mint new tokens via refresh
+                        testUser.setStatus(AccountStatus.BANNED);
+                        when(refreshTokenRepository.findById(1L)).thenReturn(Optional.of(storedToken));
+                        when(passwordEncoder.matches("raw-refresh-token", "encoded-refresh-token")).thenReturn(true);
+                        when(userRepository.getUserById(testUserId)).thenReturn(testUser);
+
+                        // Act & Assert
+                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                                        () -> authService.refreshAccessToken(httpRequest, httpResponse));
+                        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+                        assertEquals("ACCOUNT_BANNED", ex.getReason());
+                        verify(refreshTokenRepository).revokeFamily("family-1");
+                        verify(httpResponse, atLeast(1)).addCookie(any(Cookie.class));
+                        // Status is checked before the temporary lock
+                        verify(accountLockService, never()).isAccountLocked(any());
+                }
+
+                @Test
+                void refreshAccessToken_inactiveAccount_revokesFamilyAndThrowsForbidden() {
+                        // Arrange - deactivated account with a still-valid refresh cookie
+                        testUser.setStatus(AccountStatus.INACTIVE);
+                        when(refreshTokenRepository.findById(1L)).thenReturn(Optional.of(storedToken));
+                        when(passwordEncoder.matches("raw-refresh-token", "encoded-refresh-token")).thenReturn(true);
+                        when(userRepository.getUserById(testUserId)).thenReturn(testUser);
+
+                        // Act & Assert
+                        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                                        () -> authService.refreshAccessToken(httpRequest, httpResponse));
+                        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+                        assertEquals("ACCOUNT_INACTIVE", ex.getReason());
+                        verify(refreshTokenRepository).revokeFamily("family-1");
+                        verify(httpResponse, atLeast(1)).addCookie(any(Cookie.class));
+                        verify(accountLockService, never()).isAccountLocked(any());
                 }
 
                 @Test

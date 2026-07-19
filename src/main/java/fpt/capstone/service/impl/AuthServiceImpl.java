@@ -226,6 +226,11 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_BANNED.name());
         }
 
+        // Admin-deactivated accounts (spec: Ngừng hoạt động) are also barred
+        if (user.getStatus() == AccountStatus.INACTIVE) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_INACTIVE.name());
+        }
+
         if (accountLockService.isAccountLocked(user)) {
             throw new ResponseStatusException(HttpStatus.LOCKED,
                     "Your account is temporarily locked. Please try again later.");
@@ -317,6 +322,19 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             revokeCookies(response);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found.");
+        }
+
+        // Banned/deactivated accounts must not mint new access tokens through
+        // refresh — deactivation relies on this to complete the lockout.
+        if (user.getStatus() == AccountStatus.BANNED) {
+            refreshTokenRepository.revokeFamily(storedToken.getFamilyId());
+            revokeCookies(response);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_BANNED.name());
+        }
+        if (user.getStatus() == AccountStatus.INACTIVE) {
+            refreshTokenRepository.revokeFamily(storedToken.getFamilyId());
+            revokeCookies(response);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, ErrorCode.ACCOUNT_INACTIVE.name());
         }
 
         if (accountLockService.isAccountLocked(user)) {

@@ -58,6 +58,19 @@ class RbacSeedIT extends AbstractIntegrationTest {
         }
 
         @Test
+        void seededRoles_shouldAllCarryTheirStableCode() {
+            // Backfill proof: on any DB (fresh or pre-`code`-column) every seeded
+            // role ends up with its machine-readable code after startup.
+            java.util.Map<String, String> expected = fpt.capstone.config.RoleCodes.NAME_TO_CODE;
+            expected.forEach((name, code) -> {
+                Role role = roleRepository.findByName(name).orElseThrow();
+                assertEquals(code, role.getCode(), "code of role " + name);
+            });
+            assertEquals(expected.size(),
+                    roleRepository.findAll().stream().filter(r -> expected.containsKey(r.getName())).count());
+        }
+
+        @Test
         void database_shouldContainEveryCatalogueRightExactlyOnce() {
             Set<String> seeded = rightRepository.findAll().stream()
                     .map(Right::getCode)

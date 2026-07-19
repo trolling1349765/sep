@@ -53,8 +53,10 @@ public class AdminPermissionController {
         return ResponseEntity.ok(APIResponse.success(rightService.updateRight(id, request)));
     }
 
+    // USER_VIEW added: the admin Users screen needs this list for its role dropdown
+    // and the view-only Roles screen (spec §4.7/§4.8).
     @GetMapping("/roles")
-    @PreAuthorize("hasAnyAuthority('PERMISSION_MANAGE', 'ROLE_MANAGE')")
+    @PreAuthorize("hasAnyAuthority('PERMISSION_MANAGE', 'ROLE_MANAGE', 'USER_VIEW')")
     public ResponseEntity<APIResponse<List<RoleSummaryResponse>>> getRoles() {
         return ResponseEntity.ok(APIResponse.success(permissionService.getRoles()));
     }

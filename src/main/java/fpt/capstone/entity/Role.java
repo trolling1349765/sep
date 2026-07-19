@@ -26,6 +26,11 @@ public class Role extends BaseEntity {
     @Column(unique = true, name = "name", nullable = false)
     String name;
 
+    // Stable machine-readable key for the FE ("CITIZEN", "RECEPTION_OFFICER"...).
+    // Nullable until DataInitializer backfills existing rows; `name` stays the internal logical key.
+    @Column(unique = true, name = "code", length = 64)
+    String code;
+
     @Column(name = "description")
     String description;
 
