@@ -36,7 +36,7 @@ class RbacSeedIT extends AbstractIntegrationTest {
     class Catalogue {
 
         @Test
-        void adminRightsEndpoint_shouldExpose102CatalogueRightsIn30Modules() throws Exception {
+        void adminRightsEndpoint_shouldExposeAllCatalogueRightsIn30Modules() throws Exception {
             MvcResult admin = registerUserWithRole("Admin");
             Cookie token = cookieOf(admin, "access_token");
 
@@ -76,7 +76,8 @@ class RbacSeedIT extends AbstractIntegrationTest {
                     .map(Right::getCode)
                     .filter(catalogueCodes()::contains)
                     .collect(Collectors.toSet());
-            assertEquals(102, seeded.size());
+            // Derived from the catalog so it tracks additions (e.g. the donor-module approve rights).
+            assertEquals(catalogueCodes().size(), seeded.size());
         }
     }
 

@@ -4,7 +4,7 @@ import java.util.Map;
 
 /**
  * Canonical RBAC seed data:
- * - RIGHTS: 102 rights across 30 modules. Rows are {code, module, moduleName,
+ * - RIGHTS: 104 rights across 30 modules. Rows are {code, module, moduleName,
  * name, isSystem}.
  * sortOrder is derived from the row's position within its module.
  * - BASE_MATRIX: initial right codes per role. Only applied when a role has
@@ -113,6 +113,7 @@ public final class RightsCatalog {
                         { "FUNDING_MANAGE", "KINH_PHI", "Kinh phí", "funding Quản lý", "0" },
                         { "FUNDING_RECORD_CREATE", "KINH_PHI", "Kinh phí", "funding record Tạo", "0" },
                         { "FUNDING_ALLOCATE", "KINH_PHI", "Kinh phí", "funding allocate", "0" },
+                        { "FUNDING_PLAN_APPROVE", "KINH_PHI", "Kinh phí", "funding plan Phê duyệt", "0" },
                         // VAT_PHAM — Vật phẩm và hỗ trợ (3)
                         { "SUPPORT_ITEM_VIEW", "VAT_PHAM", "Vật phẩm và hỗ trợ", "support item Xem", "0" },
                         { "SUPPORT_ITEM_RECEIVE", "VAT_PHAM", "Vật phẩm và hỗ trợ", "support item receive", "0" },
@@ -128,6 +129,7 @@ public final class RightsCatalog {
                         { "ITEM_DISTRIBUTE", "CAP_PHAT", "Cấp phát", "item distribute", "0" },
                         { "DISTRIBUTION_CONFIRM", "CAP_PHAT", "Cấp phát", "distribution confirm", "0" },
                         { "DISTRIBUTION_HISTORY_VIEW", "CAP_PHAT", "Cấp phát", "distribution history Xem", "0" },
+                        { "ITEM_PLAN_APPROVE", "CAP_PHAT", "Cấp phát", "item plan Phê duyệt", "0" },
                         // BAO_CAO — Báo cáo (5)
                         { "REPORT_VIEW", "BAO_CAO", "Báo cáo", "report Xem", "0" },
                         { "REPORT_CREATE", "BAO_CAO", "Báo cáo", "report Tạo", "0" },
@@ -165,7 +167,7 @@ public final class RightsCatalog {
                         { "RESTORE_MANAGE", "KHOI_PHUC", "Khôi phục", "restore Quản lý", "0" },
         };
 
-        // Base grant matrix: Citizen 19, Reception 30, Appraisal 29, Head 47,
+        // Base grant matrix: Citizen 19, Reception 30, Appraisal 33, Head 47,
         // Leader 37, Records 27, Management 53, Admin 18 (pure administration).
         public static final Map<String, String[]> BASE_MATRIX = Map.of(
                         "Citizen", new String[] {
@@ -220,6 +222,10 @@ public final class RightsCatalog {
                                         "REPORT_VIEW", "REPORT_CREATE", "REPORT_UPDATE_DRAFT", "REPORT_DELETE_DRAFT",
                                         "REPORT_EXPORT",
                                         "NOTIFICATION_VIEW",
+                                        // Donor/Resource module: approver role (creator != approver).
+                                        // Read grants so the approver can open the plan list/detail it must approve.
+                                        "FUNDING_VIEW", "INVENTORY_VIEW",
+                                        "FUNDING_PLAN_APPROVE", "ITEM_PLAN_APPROVE",
                         },
                         "Head", new String[] {
                                         "PROFILE_VIEW", "PROFILE_UPDATE", "PASSWORD_CHANGE",

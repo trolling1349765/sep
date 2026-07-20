@@ -30,8 +30,8 @@ class RightsCatalogTest {
     class Catalogue {
 
         @Test
-        void rights_shouldContainExactly102Entries() {
-            assertEquals(102, RightsCatalog.RIGHTS.length);
+        void rights_shouldContainExactly104Entries() {
+            assertEquals(104, RightsCatalog.RIGHTS.length);
         }
 
         @Test
@@ -98,7 +98,7 @@ class RightsCatalogTest {
             Map<String, Integer> expected = Map.of(
                     "Citizen", 19,
                     "Reception", 30,
-                    "Appraisal", 29,
+                    "Appraisal", 33,
                     "Head", 47,
                     "Leader", 37,
                     "Records", 27,
