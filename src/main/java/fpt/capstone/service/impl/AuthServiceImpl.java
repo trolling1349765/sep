@@ -537,31 +537,36 @@ public class AuthServiceImpl implements AuthService {
     private void setCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // Set to true in production with HTTPS
+        cookie.setSecure(true); // Set to true in production with HTTPS
         cookie.setPath("/");
         cookie.setMaxAge(maxAgeSeconds);
-        cookie.setAttribute("SameSite", "Strict");
+        cookie.setAttribute("SameSite", "None");
         response.addCookie(cookie);
     }
 
     private void revokeCookies(HttpServletResponse response) {
-        Cookie accessTokenCookie = new Cookie(ACCESS_TOKEN_COOKIE, "");
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(false);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(0);
-        accessTokenCookie.setAttribute("SameSite", "Strict");
-
-        Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN_COOKIE, "");
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(0);
-        refreshTokenCookie.setAttribute("SameSite", "Strict");
-
-        response.addCookie(accessTokenCookie);
-        response.addCookie(refreshTokenCookie);
+        setCookie(response, ACCESS_TOKEN_COOKIE, "", 0);
+        setCookie(response, REFRESH_TOKEN_COOKIE, "", 0);
     }
+
+//    private void revokeCookies(HttpServletResponse response) {
+//        Cookie accessTokenCookie = new Cookie(ACCESS_TOKEN_COOKIE, "");
+//        accessTokenCookie.setHttpOnly(true);
+//        accessTokenCookie.setSecure(true);
+//        accessTokenCookie.setPath("/");
+//        accessTokenCookie.setMaxAge(0);
+//        accessTokenCookie.setAttribute("SameSite", "None");
+//
+//        Cookie refreshTokenCookie = new Cookie(REFRESH_TOKEN_COOKIE, "");
+//        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setSecure(true);
+//        refreshTokenCookie.setPath("/");
+//        refreshTokenCookie.setMaxAge(0);
+//        refreshTokenCookie.setAttribute("SameSite", "None");
+//
+//        response.addCookie(accessTokenCookie);
+//        response.addCookie(refreshTokenCookie);
+//    }
 
     private void revokeTokenFamilyByCookieValue(String cookieValue, HttpServletResponse response) {
         try {

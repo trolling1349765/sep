@@ -550,7 +550,12 @@ public class DataInitializer implements CommandLineRunner {
         // grants edited by an admin are never overwritten on restart.
         private void seedPermissions() {
                 java.util.Map<String, Right> rightByCode = rightRepository.findAll().stream()
-                                .collect(java.util.stream.Collectors.toMap(Right::getCode, r -> r));
+                        .filter(r -> r.getCode() != null) // Bỏ qua nếu code bị null
+                        .collect(java.util.stream.Collectors.toMap(
+                                Right::getCode,
+                                r -> r,
+                                (existing, replacement) -> existing // Nếu trùng code thì lấy bản ghi đầu tiên
+                        ));
 
                 RightsCatalog.BASE_MATRIX.forEach((roleName, codes) -> {
                         Role role = roleRepository.findByName(roleName).orElse(null);
