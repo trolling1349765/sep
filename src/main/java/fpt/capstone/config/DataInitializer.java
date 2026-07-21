@@ -1,12 +1,16 @@
 package fpt.capstone.config;
 
 import fpt.capstone.entity.*;
+import fpt.capstone.enums.AccountStatus;
 import fpt.capstone.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -517,13 +521,13 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         private void seedRights() {
-                java.util.Set<String> existingCodes = rightRepository.findAll().stream()
+                Set<String> existingCodes = rightRepository.findAll().stream()
                                 .map(Right::getCode)
-                                .filter(java.util.Objects::nonNull)
-                                .collect(java.util.stream.Collectors.toSet());
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toSet());
 
-                java.util.Map<String, Integer> sortPerModule = new java.util.HashMap<>();
-                java.util.List<Right> toInsert = new java.util.ArrayList<>();
+                Map<String, Integer> sortPerModule = new HashMap<>();
+                List<Right> toInsert = new ArrayList<>();
                 for (String[] row : RightsCatalog.RIGHTS) {
                         int order = sortPerModule.merge(row[1], 1, Integer::sum);
                         if (existingCodes.contains(row[0])) {
@@ -549,9 +553,9 @@ public class DataInitializer implements CommandLineRunner {
         // Base matrix is applied only to roles that have no permissions at all, so
         // grants edited by an admin are never overwritten on restart.
         private void seedPermissions() {
-                java.util.Map<String, Right> rightByCode = rightRepository.findAll().stream()
+                Map<String, Right> rightByCode = rightRepository.findAll().stream()
                         .filter(r -> r.getCode() != null) // Bỏ qua nếu code bị null
-                        .collect(java.util.stream.Collectors.toMap(
+                        .collect(Collectors.toMap(
                                 Right::getCode,
                                 r -> r,
                                 (existing, replacement) -> existing // Nếu trùng code thì lấy bản ghi đầu tiên
@@ -566,7 +570,7 @@ public class DataInitializer implements CommandLineRunner {
                         if (permissionRepository.countByRoleId(role.getId()) > 0) {
                                 return;
                         }
-                        java.util.List<Permission> permissions = new java.util.ArrayList<>();
+                        List<Permission> permissions = new ArrayList<>();
                         for (String code : codes) {
                                 Right right = rightByCode.get(code);
                                 if (right == null) {
@@ -584,5 +588,49 @@ public class DataInitializer implements CommandLineRunner {
                         System.out.println(">>> Seeded " + permissions.size() + " base permissions for role "
                                         + roleName);
                 });
+        }
+        private void seedUsers() {
+                
+                PasswordEncoder encoder = null;
+                // 1. Định nghĩa thông tin người dùng mẫu cho từng role code
+                // Format: {Role Code, Username, Email, Full Name, Phone}
+                String[][] userMatrix = {
+                        { RoleCodes.CITIZEN, "citizen_user", "citizen@gmail.com", "Nguyen Van Citizen", "0901234567" },
+                        { RoleCodes.RECEPTION_OFFICER, "reception_officer", "reception@gmail.com", "Tran Thi Reception", "0901234568" },
+                        { RoleCodes.APPRAISAL_OFFICER, "appraisal_officer", "appraisal@gmail.com", "Le Van Appraisal", "0901234569" },
+                        { RoleCodes.HEAD_OF_DIVISION, "head_officer", "head@gmail.com", "Pham Van Head", "0901234570" },
+                        { RoleCodes.COMMUNE_LEADER, "commune_leader", "leader@gmail.com", "Hoang Van Leader", "0901234571" },
+                        { RoleCodes.RECORDS_CLERK, "records_clerk", "records@gmail.com", "Vu Thi Records", "0901234572" },
+                        { RoleCodes.MANAGEMENT_OFFICER, "management_officer", "management@gmail.com", "Dang Van Management", "0901234573" },
+                        { RoleCodes.SYSTEM_ADMINISTRATOR, "admin_user", "admin@gmail.com", "System Admin", "0901234574" }
+                };
+
+                for (String[] userData : userMatrix) {
+                        String roleCode = userData[0];
+                        String username = userData[1];
+                        String email = userData[2];
+                        String fullName = userData[3];
+                        String phone = userData[4];
+
+                        // Kiểm tra xem user đã tồn tại theo username chưa để tránh tạo trùng khi khởi động lại app
+                        if (userRepository.findByUsername(username).isEmpty()) { // hoặc dùng userRepository.existsByUsername(username)
+                                Role role = roleRepository.findByCode(roleCode)
+                                        .orElseThrow(() -> new RuntimeException("Role không tồn tại với code: " + roleCode));
+
+                                User user = User.builder()
+                                        .username(username)
+                                        .password(encoder.encode("123456")) // Lưu ý: Nên dùng passwordEncoder.encode("123456") nếu dự án dùng Spring Security
+                                        .email(email)
+                                        .name(fullName)
+                                        .phone(phone)
+                                        .status(AccountStatus.ACTIVE) // Hoặc enum status tương ứng trong entity User của bạn
+                                        .role(role)                   // Hoặc Set.of(role) nếu quan hệ User-Role là ManyToMany
+                                        .createAt(LocalDate.now())
+                                        .build();
+
+                                userRepository.save(user);
+                        }
+                }
+                System.out.println(">>> Seeded default users for all roles.");
         }
 }
