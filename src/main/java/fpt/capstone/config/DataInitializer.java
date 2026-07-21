@@ -24,17 +24,20 @@ public class DataInitializer implements CommandLineRunner {
         private final RightRepository rightRepository;
         private final PermissionRepository permissionRepository;
         private final UserRepository userRepository;
+        private final PasswordEncoder encoder;
 
         public DataInitializer(
-                        PolicyRepository policyRepository,
-                        ArticleRepository articleRepository,
-                        EligibilityCriteriaRepository eligibilityCriteriaRepository,
-                        BenifitRuleRepository benefitRuleRepository,
-                        ChapterRepository chapterRepository,
-                        RoleRepository roleRepository,
-                        RightRepository rightRepository,
-                        PermissionRepository permissionRepository,
-                        UserRepository userRepository) {
+                PolicyRepository policyRepository,
+                ArticleRepository articleRepository,
+                EligibilityCriteriaRepository eligibilityCriteriaRepository,
+                BenifitRuleRepository benefitRuleRepository,
+                FormTypeRepository formTypeRepository, ChapterRepository chapterRepository,
+                RoleRepository roleRepository,
+                RightRepository rightRepository,
+                PermissionRepository permissionRepository,
+                UserRepository userRepository,
+                PasswordEncoder encoder
+        ) {
                 this.policyRepository = policyRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
@@ -44,6 +47,7 @@ public class DataInitializer implements CommandLineRunner {
                 this.rightRepository = rightRepository;
                 this.permissionRepository = permissionRepository;
                 this.userRepository = userRepository;
+                this.encoder = encoder;
         }
 
         @Override
@@ -55,6 +59,7 @@ public class DataInitializer implements CommandLineRunner {
                 seedRoles();
                 seedRights();
                 seedPermissions();
+                seedUsers();
 
                 if (policyRepository.count() > 0) {
                         // Policy data already exists, skip policy seeding
@@ -590,8 +595,7 @@ public class DataInitializer implements CommandLineRunner {
                 });
         }
         private void seedUsers() {
-                
-                PasswordEncoder encoder = null;
+
                 // 1. Định nghĩa thông tin người dùng mẫu cho từng role code
                 // Format: {Role Code, Username, Email, Full Name, Phone}
                 String[][] userMatrix = {
