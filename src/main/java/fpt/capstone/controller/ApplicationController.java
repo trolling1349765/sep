@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedModel;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.function.EntityResponse;
@@ -36,66 +37,66 @@ public class ApplicationController {
 
     @GetMapping()
     @PreAuthorize("hasAuthority('APPLICATION_VIEW')")
-    public APIResponse<Page<ApplicationResponse>> getApplication(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplication(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppications(size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppications(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/intake/submitted")
     @PreAuthorize("hasAuthority('APPLICATION_INTAKE_VIEW')")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF1(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplicationOFF1(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppicationsOFF1(size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppicationsOFF1(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/intake/pending")
     @PreAuthorize("hasAuthority('APPLICATION_INTAKE_VIEW')")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF2(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplicationOFF2(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppicationsOFF1(size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppicationsOFF2(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/intake/checked")
     @PreAuthorize("hasAuthority('APPLICATION_INTAKE_VIEW')")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF3(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplicationOFF3(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppicationsOFF2(size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppicationsOFF3(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/intake/in-progress")
     @PreAuthorize("hasAuthority('APPLICATION_INTAKE_VIEW')")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF4(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplicationOFF4(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppicationsOFF3(size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppicationsOFF1(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/intake/completed")
     @PreAuthorize("hasAuthority('APPLICATION_INTAKE_VIEW')")
-    public APIResponse<Page<ApplicationResponse>> getApplicationOFF(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplicationOFF(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppicationsOFF4(size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppicationsOFF1(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/submit-by/{submitBy}")
     @PreAuthorize("hasAnyAuthority('APPLICATION_VIEW', 'APPLICATION_VIEW_OWN')")
-    public APIResponse<Page<ApplicationResponse>> getApplicationBySubmiter(
+    public APIResponse<PagedModel<ApplicationResponse>> getApplicationBySubmiter(
             @PathVariable String submitBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        APIResponse<Page<ApplicationResponse>> responses = applicationService.getAppications(submitBy, size, page);
-        return responses;
+        PagedModel<ApplicationResponse> responses = new PagedModel<>(applicationService.getAppicationsOFF1(size, page));
+        return APIResponse.success(responses);
     }
 
     @GetMapping("/{id}")

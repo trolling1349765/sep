@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class DataInitializer implements CommandLineRunner {
 
         private final PolicyRepository policyRepository;
+        private final FormTypeRepository formTypeRepository;
         private final ArticleRepository articleRepository;
         private final EligibilityCriteriaRepository eligibilityCriteriaRepository;
         private final BenifitRuleRepository benefitRuleRepository;
@@ -39,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
                 PasswordEncoder encoder
         ) {
                 this.policyRepository = policyRepository;
+                this.formTypeRepository = formTypeRepository;
                 this.articleRepository = articleRepository;
                 this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
                 this.benefitRuleRepository = benefitRuleRepository;
@@ -63,6 +65,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 if (policyRepository.count() > 0) {
                         // Policy data already exists, skip policy seeding
+                        seedFormTypes();
                         return;
                 }
 
@@ -75,8 +78,7 @@ public class DataInitializer implements CommandLineRunner {
                                 .effectiveDate(LocalDate.of(2024, 3, 1))
                                 .expiredDate(null)
                                 .issuer("Chính phủ")
-                                .summary(
-                                                "Nghị định này quy định về chế độ trợ cấp xã hội hàng tháng đối với người cao tuổi từ đủ 80 tuổi trở lên không có lương hưu hoặc trợ cấp bảo hiểm xã hội. Mức trợ cấp được tính dựa trên chuẩn nghèo và hệ số theo độ tuổi.")
+                                .summary("Nghị định này quy định về chế độ trợ cấp xã hội hàng tháng đối với người cao tuổi từ đủ 80 tuổi trở lên không có lương hưu hoặc trợ cấp bảo hiểm xã hội. Mức trợ cấp được tính dựa trên chuẩn nghèo và hệ số theo độ tuổi.")
                                 .build();
                 p1 = policyRepository.save(p1);
                 Chapter c1 = Chapter.builder()
@@ -487,8 +489,41 @@ public class DataInitializer implements CommandLineRunner {
                                 .multiplier(1.0)
                                 .build());
 
+                seedFormTypes();
                 System.out.println(">>> Seeded " + policyRepository.count()
                                 + " sample policies with articles, eligibility criteria, and benefit rules.");
+        }
+
+        private void seedFormTypes() {
+                Map<String, String> formTypeNames = Map.ofEntries(
+                                Map.entry("01/2024/ND-CP", "Đơn đề nghị trợ cấp xã hội hàng tháng cho người cao tuổi"),
+                                Map.entry("02/2024/ND-CP", "Đơn đề nghị hỗ trợ nuôi dưỡng trẻ em mồ côi, bị bỏ rơi"),
+                                Map.entry("03/2024/TT-BLDTBXH", "Đơn đề nghị hỗ trợ đào tạo nghề cho người khuyết tật"),
+                                Map.entry("04/2024/QD-TTg", "Đơn đề nghị hỗ trợ khẩn cấp do thiên tai"),
+                                Map.entry("05/2024/ND-CP", "Đơn đề nghị hỗ trợ bảo hiểm y tế cho hộ nghèo, cận nghèo"),
+                                Map.entry("06/2024/QD-TTg", "Đơn đề nghị hỗ trợ nhà ở cho người có công"),
+                                Map.entry("07/2024/ND-CP", "Đơn đề nghị miễn, giảm học phí cho học sinh"),
+                                Map.entry("08/2024/TT-BLDTBXH", "Đơn đề nghị hỗ trợ chi phí mai táng"),
+                                Map.entry("09/2024/QD-TTg", "Đơn đề nghị hưởng trợ cấp thai sản"),
+                                Map.entry("10/2024/QD-TTg", "Đơn đề nghị hỗ trợ nước sạch và công trình vệ sinh"));
+
+                List<FormType> existingFormTypes = formTypeRepository.findAll();
+                List<FormType> formTypesToInsert = policyRepository.findAll().stream()
+                                .filter(policy -> formTypeNames.containsKey(policy.getDocumentNo()))
+                                .filter(policy -> existingFormTypes.stream().noneMatch(formType ->
+                                                formType.getPolicy() != null
+                                                                && formType.getPolicy().getId() == policy.getId()))
+                                .map(policy -> FormType.builder()
+                                                .name(formTypeNames.get(policy.getDocumentNo()))
+                                                .policy(policy)
+                                                .build())
+                                .toList();
+
+                if (!formTypesToInsert.isEmpty()) {
+                        formTypeRepository.saveAll(formTypesToInsert);
+                }
+                System.out.println(">>> Form type seeding complete. Total form types: "
+                                + formTypeRepository.count());
         }
 
         private void seedRoles() {
