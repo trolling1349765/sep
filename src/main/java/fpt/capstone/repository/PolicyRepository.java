@@ -35,6 +35,6 @@ public interface PolicyRepository extends JpaRepository<Policy, Integer> {
 
     Page<Policy> findAllByDelete(boolean delete, Pageable pageable);
 
-    Page<Policy> findAllByDeleteFalseAndEffectiveDateBeforeEqualAndExpiredDateAfterEqual(
-            LocalDate effectiveDate, LocalDate expiredDate, Pageable pageable);
+    Page<Policy> findAllByDeleteAndEffectiveDateLessThanAndExpiredDateGreaterThan(
+            boolean delete, LocalDate effectiveDate, LocalDate expiredDate, Pageable pageable);
 }

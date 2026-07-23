@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
 
-    Page<Chapter> findAllByDeleteFalseAndPolicyIdEquals(int policyId, Pageable pageable);
+    Page<Chapter> findAllByPolicyIdEquals(int policyId, Pageable pageable);
 }

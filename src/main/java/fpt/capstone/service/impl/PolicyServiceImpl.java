@@ -7,6 +7,7 @@ import fpt.capstone.repository.PolicyRepository;
 import fpt.capstone.service.PolicyService;
 import fpt.capstone.service.RightService;
 import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ public class PolicyServiceImpl implements PolicyService {
     public Page<PolicyResponse> getPolicies(int size, int page) {
         LocalDate now = LocalDate.now();
         Pageable pageable = PageRequest.of(page, size);
-        Page<Policy> policyList = policyRepository.findAllByDeleteFalseAndEffectiveDateBeforeEqualAndExpiredDateAfterEqual(now, now, pageable);
+        Page<Policy> policyList = policyRepository.findAllByDeleteAndEffectiveDateLessThanAndExpiredDateGreaterThan(false, now, now, pageable);
         return policyList.map(policy -> new PolicyResponse(policy));
     }
 }
