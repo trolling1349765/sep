@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BenifitHistoryRepository extends JpaRepository<BenefitHistory, Integer> {
     Page<BenefitHistory> findByBenificiary(Integer id, Pageable pageable);
+
+    Page<BenefitHistory> findAllByDeleteIsFalse(boolean delete, Pageable pageable);
 }

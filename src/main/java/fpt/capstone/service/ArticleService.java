@@ -7,4 +7,5 @@ import org.springframework.data.domain.Page;
 public interface ArticleService {
     APIResponse<Page<ArticleResponse>> findAll(int chapterId, int size, int page);
 
+    Page<ArticleResponse> getArticlesByChapterId(int chapterId, int size, int page);
 }

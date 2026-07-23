@@ -41,6 +41,7 @@ public enum ErrorCode {
     BACKUP_CORRUPTED(10031, "Backup file is missing or corrupted"),
     CONFIRM_REQUIRED(10032, "Confirmation is required for this operation"),
     BACKUP_IN_PROGRESS(10033, "Another backup is already running"),
+    INVALID_PAGE(10034, "page number is out of range"),
     ;
 
     private int code;

@@ -76,11 +76,9 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     }
 
     @Override
-    public APIResponse<Page<BenificiaryResponse>> getBenificiaries(int size, int page) {
+    public Page<BenificiaryResponse> getBenificiaries(int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Benificiary> benificiaryPage = benificiaryRepository.findAllByDelete(false, pageable);
-        Page<BenificiaryResponse> benificiaryResponses = benificiaryPage.map(BenificiaryResponse::new);
-        APIResponse<Page<BenificiaryResponse>> response = APIResponse.success(benificiaryResponses);
+        Page<Benificiary> benificiaryPage = benificiaryRepository.findAllByDeleteIsFalse(false, pageable);
 
         String currentUserId = securityUtil.getCurrentUserId();
         SystemLog log = SystemLog.builder()
@@ -91,7 +89,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
                 .build();
         systemLogService.write(log);
 
-        return response;
+        return benificiaryPage.map(BenificiaryResponse::new);
     }
 
     @Override

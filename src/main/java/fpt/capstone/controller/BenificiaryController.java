@@ -6,11 +6,14 @@ import fpt.capstone.dto.response.BenificiaryResponse;
 import fpt.capstone.dto.response.RelativeResponse;
 import fpt.capstone.dto.response.WounderSoldierResponse;
 import fpt.capstone.entity.Benificiary;
+import fpt.capstone.enums.ErrorCode;
+import fpt.capstone.exceprion.InvalidArgsException;
 import fpt.capstone.service.BenificiaryService;
 import fpt.capstone.service.RelativeService;
 import fpt.capstone.service.WounderSoldierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedModel;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,11 +37,29 @@ public class BenificiaryController {
      */
     @GetMapping
     @PreAuthorize("hasAuthority('BENEFICIARY_VIEW')")
-    public APIResponse<Page<BenificiaryResponse>> getBenificiary(
+    public APIResponse<PagedModel<BenificiaryResponse>> getBenificiary(
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "0") int page
     ) {
-        return benificiaryService.getBenificiaries(size, page);
+        if (page < 0 || size <= 0) {
+            throw new InvalidArgsException(
+                    APIResponse.error(
+                            ErrorCode.INVALID_PAGE.getCode(),
+                            ErrorCode.INVALID_PAGE.getMessage()
+                    )
+            );
+        }
+        Page<BenificiaryResponse> benificiaryResponsePage = benificiaryService.getBenificiaries(size, page);
+        if (page > benificiaryResponsePage.getTotalPages()) {
+            throw new InvalidArgsException(
+                    APIResponse.error(
+                            ErrorCode.INVALID_PAGE.getCode(),
+                            ErrorCode.INVALID_PAGE.getMessage()
+                    )
+            );
+        }
+        PagedModel<BenificiaryResponse> responsePagedModel = new PagedModel<>(benificiaryResponsePage);
+        return APIResponse.success(responsePagedModel);
     }
 
     /**

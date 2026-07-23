@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page;
 
 public interface ChapterService {
 
-    APIResponse<Page<ChapterResponse>>  getChaptersByPolicyId(int policyId, int size, int page);
+    Page<ChapterResponse>  getChaptersByPolicyId(int policyId, int size, int page);
 }

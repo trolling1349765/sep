@@ -94,4 +94,11 @@ public class BenifitHistoryServiceImpl implements BenifitHistoryService {
         BenifitHistoryResponse benifitHistoryResponse = new BenifitHistoryResponse(benifitHistoryRepository.save(benefitHistory));
         return benifitHistoryResponse;
     }
+
+    @Override
+    public Page<BenifitHistoryResponse> getBenifitHisroty(int size, int page) {
+        PageRequest pageable = PageRequest.of(page, size);
+        Page<BenefitHistory> benefitHistoryPage = benifitHistoryRepository.findAllByDeleteIsFalse(false, pageable);
+        return benefitHistoryPage.map(BenifitHistoryResponse::new);
+    }
 }

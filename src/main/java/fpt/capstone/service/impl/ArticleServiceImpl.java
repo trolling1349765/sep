@@ -37,4 +37,11 @@ public class ArticleServiceImpl implements ArticleService {
         APIResponse<Page<ArticleResponse>> response = APIResponse.success(articleResponsePage);
         return response;
     }
+
+    @Override
+    public Page<ArticleResponse> getArticlesByChapterId(int chapterId, int size, int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Article> articles = articleRepository.findAllByDeleteFalseAndChapterIdEquals(chapterId, pageable);
+        return articles.map(ArticleResponse::new);
+    }
 }

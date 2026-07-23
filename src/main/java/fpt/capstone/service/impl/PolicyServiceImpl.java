@@ -10,9 +10,14 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,11 +27,10 @@ public class PolicyServiceImpl implements PolicyService {
     PolicyRepository policyRepository;
 
     @Override
-    public APIResponse<Page<PolicyResponse>> getPolicies(int size, int page) {
+    public Page<PolicyResponse> getPolicies(int size, int page) {
+        LocalDate now = LocalDate.now();
         Pageable pageable = PageRequest.of(page, size);
-        Page<Policy> policyPage = policyRepository.findAll(pageable);
-        Page<PolicyResponse> policyResponses = policyPage.map(PolicyResponse::new);
-        APIResponse<Page<PolicyResponse>> response = APIResponse.success(policyResponses);
-        return response;
+        Page<Policy> policyList = policyRepository.findAllByDeleteFalseAndEffectiveDateBeforeEqualAndExpiredDateAfterEqual(now, now, pageable);
+        return policyList.map(policy -> new PolicyResponse(policy));
     }
 }

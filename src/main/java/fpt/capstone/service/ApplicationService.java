@@ -9,27 +9,27 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 public interface ApplicationService {
-    APIResponse<Page<ApplicationResponse>> getAppications(int size, int page);
+    Page<ApplicationResponse> getAppications(int size, int page);
 
-    APIResponse<Page<ApplicationResponse>> getAppicationsOFF1(int size, int page);
+    Page<ApplicationResponse> getAppicationsOFF1(int size, int page);
 
-    APIResponse<Page<ApplicationResponse>> getAppicationsOFF2(int size, int page);
+    Page<ApplicationResponse> getAppicationsOFF2(int size, int page);
 
-    APIResponse<Page<ApplicationResponse>> getAppicationsOFF3(int size, int page);
+    Page<ApplicationResponse> getAppicationsOFF3(int size, int page);
 
-    APIResponse<Page<ApplicationResponse>> getAppicationsOFF4(int size, int page);
+    Page<ApplicationResponse> getAppicationsOFF4(int size, int page);
 
-    APIResponse<Page<ApplicationResponse>> getAppicationsDRAFT(int size, int page);
+    Page<ApplicationResponse> getAppicationBySubmitId(String id, int size, int page);
 
-    APIResponse<Page<ApplicationResponse>> getAppications(String submitBy, int size, int page);
+    Page<ApplicationResponse> getAppicationsBySubmiter(String submitBy, int size, int page);
 
     ApplicationResponse getApplication(int id);
 
     Application getApplicationById(int id);
 
-    APIResponse<ApplicationResponse> createApplication(ApplicationRequest request, String status);
+    ApplicationResponse createApplication(ApplicationRequest request, String status);
 
-    APIResponse<ApplicationResponse> updateApplication(ApplicationRequest request);
+    ApplicationResponse updateApplication(ApplicationRequest request);
 
     ApplicationResponse toPending(int applicationId);
 

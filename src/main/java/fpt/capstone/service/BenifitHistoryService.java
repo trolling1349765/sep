@@ -13,4 +13,6 @@ public interface BenifitHistoryService {
     BenifitHistoryResponse getBenificiaryHistory(Integer id);
 
     BenifitHistoryResponse create(BenifitHistoryRequest benifitHistoryRequest);
+
+    Page<BenifitHistoryResponse> getBenifitHisroty(int size, int page);
 }

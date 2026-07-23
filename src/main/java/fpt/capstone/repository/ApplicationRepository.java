@@ -3,6 +3,7 @@ package fpt.capstone.repository;
 import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.Notification;
+import fpt.capstone.enums.ApplicationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
     @Query("select a from Application a where a.submitBy.id = :submitById and a.isDelete = :delete")
     Page<Application> findBySubmitBy_IdAndDelete(@Param("submitById") String submitById,
             @Param("delete") boolean delete, Pageable pageable);
+
+
+    Page<Application> findByDeleteFalseAndSubmitByIdEqualsAndStatusEquals(String id, String status, Pageable pageable);
+
+    Page<Application> findByDeleteAndStatusEquals(boolean delete, ApplicationStatus status, Pageable pageable);
 }

@@ -23,4 +23,6 @@ public interface BenificiaryRepository extends JpaRepository<Benificiary, Intege
 
     @Query("select b from Benificiary b where b.isDelete = :delete")
     Page<Benificiary> findAllByDelete(@Param("delete") boolean delete, Pageable pageable);
+
+    Page<Benificiary> findAllByDeleteIsFalse(boolean delete, Pageable pageable);
 }

@@ -4,6 +4,8 @@ import fpt.capstone.dto.request.ApplicationRequest;
 import fpt.capstone.dto.response.*;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.WoundedSoldiers;
+import fpt.capstone.enums.ErrorCode;
+import fpt.capstone.exceprion.InvalidArgsException;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.BenificiaryService;
 import fpt.capstone.service.RelativeService;
@@ -114,6 +116,33 @@ public class ApplicationController {
 
         APIResponse apiResponse = APIResponse.success(data);
         return APIResponse.success(apiResponse);
+    }
+
+    @GetMapping("/submit-by/{id}")
+    @PreAuthorize("hasAnyAuthority('APPLICATION_VIEW', 'APPLICATION_VIEW_OWN')")
+    public APIResponse getDraftApplication(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        if (page < 0 || size <= 0) {
+            throw new InvalidArgsException(
+                    APIResponse.error(
+                            ErrorCode.INVALID_PAGE.getCode(),
+                            ErrorCode.INVALID_PAGE.getMessage()
+                    )
+            );
+        }
+        Page<ApplicationResponse> applicationResponse = applicationService.getAppicationBySubmitId(id, size, page);
+        if (page > applicationResponse.getTotalPages()) {
+            throw new InvalidArgsException(
+                    APIResponse.error(
+                            ErrorCode.INVALID_PAGE.getCode(),
+                            ErrorCode.INVALID_PAGE.getMessage()
+                    )
+            );
+        }
+        return APIResponse.success(applicationResponse);
     }
 
     @PutMapping("/to-pending/{applicationId}")

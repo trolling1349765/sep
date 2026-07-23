@@ -25,17 +25,10 @@ public class ChapterServiceImpl implements ChapterService {
     ChapterRepository chapterRepository;
 
     @Override
-    public APIResponse<Page<ChapterResponse>> getChaptersByPolicyId(int policyId, int size, int page) {
+    public Page<ChapterResponse> getChaptersByPolicyId(int policyId, int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Chapter> chapters = chapterRepository.findAll(pageable);
-        List<ChapterResponse> chapterResponses = chapters
-                .stream().filter(chapter -> chapter.getPolicy().getId() == policyId)
-                .map(chapter -> new ChapterResponse(chapter))
-                .collect(Collectors.toList());
+        Page<Chapter> chapters = chapterRepository.findAllByDeleteFalseAndPolicyIdEquals(policyId, pageable);
 
-        Page<ChapterResponse> chapterResponsePage = new PageImpl<>(chapterResponses, pageable, chapterResponses.size());
-
-        APIResponse<Page<ChapterResponse>> response = APIResponse.success(chapterResponsePage);
-        return response;
+        return chapters.map(ChapterResponse::new);
     }
 }
