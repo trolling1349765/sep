@@ -38,6 +38,7 @@ public class Application extends BaseEntity {
     @Column(name = "submit_date")
     LocalDate submitDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "TEXT")
     ApplicationStatus status;
 

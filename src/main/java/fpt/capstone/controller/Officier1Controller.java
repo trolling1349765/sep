@@ -1,7 +1,7 @@
 package fpt.capstone.controller;
 
 import fpt.capstone.dto.request.*;
-import fpt.capstone.dto.response.APIResponse;
+import fpt.capstone.dto.response.*;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.BenificiaryService;
 import fpt.capstone.service.RelativeService;
@@ -30,10 +30,14 @@ public class Officier1Controller {
         RelativeRequest relativeRequest = officier1DataObjectRequest.getRelativeRequest();
         WounderSoldierRequest wounderSoldierRequest = officier1DataObjectRequest.getWounderSoldierRequest();
 
-        applicationService.createApplication(applicationRequest, status.toUpperCase());
-        benificiaryService.createBenificiary(benificiaryRequest);
-        if (!wounderSoldierRequest.isEmpty()) wounderSoldierService.createWounderSoldier(wounderSoldierRequest);
-        if (!relativeRequest.isEmpty()) relativeService.createRelative(relativeRequest);
+        ApplicationResponse applicationResponse = applicationService.createApplication(applicationRequest, status.toUpperCase());
+        BenificiaryResponse benificiaryResponse = benificiaryService.createBenificiary(benificiaryRequest, applicationResponse.getId());
+        if (wounderSoldierRequest != null) {
+            WounderSoldierResponse wounderSoldierResponse = wounderSoldierService.createWounderSoldier(wounderSoldierRequest, benificiaryResponse.getId());
+        }
+        if (relativeRequest != null) {
+            RelativeResponse relativeResponse = relativeService.createRelative(relativeRequest, applicationResponse.getId());
+        }
 
         return APIResponse.success("Tiếp nhận hồ sơ thành công!");
     }

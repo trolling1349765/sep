@@ -5,6 +5,7 @@ import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.ApplicationResponse;
 import fpt.capstone.entity.Application;
 import fpt.capstone.entity.SystemLog;
+import fpt.capstone.entity.User;
 import fpt.capstone.enums.ApplicationStatus;
 import fpt.capstone.exceprion.InvalidArgsException;
 import fpt.capstone.enums.ErrorCode;
@@ -118,7 +119,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Page<ApplicationResponse> getAppicationsOFF3(int size, int page) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Application> applications = applicationRepository.findByDeleteAndStatusEquals(false, ApplicationStatus.IN_PROGRESS, pageable);
+        Page<Application> applications = applicationRepository.findByDeleteAndStatusEquals(false, ApplicationStatus.CHECKED, pageable);
         Page<ApplicationResponse> applicationResponseList = applications.map(ApplicationResponse::new);
 
         String currentUserId = securityUtil.getCurrentUserId();
@@ -215,7 +216,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             return;
         }
         String currentUserId = securityUtil.getCurrentUserId();
-        if (ownerId == null || currentUserId == null || !ownerId.equals(currentUserId)) {
+        if (ownerId == null || !ownerId.equals(currentUserId)) {
             throw new org.springframework.security.access.AccessDeniedException(
                     ErrorCode.ACCESS_DENIED.getMessage());
         }
@@ -233,11 +234,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationResponse createApplication(ApplicationRequest request, String status) {
 
         String currentUserId = securityUtil.getCurrentUserId();
+        User currentUser = userRepository.getReferenceById(currentUserId);
 
         Application application = Application.builder()
-                .approvedBy(userRepository.getUserById(request.getApprovedBy()))
-                .approveDate(request.getApprovedDate())
+                .approvedBy(currentUser.getRole().getCode().equals("RECEPTION_OFFICER") ? currentUser : null)
+                .approveDate(currentUser.getRole().getCode().equals("RECEPTION_OFFICER") ? LocalDate.now() : null)
                 .status(ApplicationStatus.valueOf(status))
+                .submitBy(currentUser)
                 .submitDate(request.getSubmitDate())
                 .formType(formTypeService.getFormType(request.getFormTypeId()))
                 .createAt(LocalDate.now())
@@ -278,7 +281,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .formType(formTypeService.getFormType(request.getFormTypeId()))
                 .updateAt(LocalDate.now())
                 .updateBy(currentUserId)
-                .isDelete(request.isDeleted())
+                .isDelete(request.getIsDeleted())
                 .build();
 
         newApplication = applicationRepository.save(newApplication);
@@ -368,7 +371,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Application oldApplication = application;
 
-        application.setStatus(ApplicationStatus.IN_PROGRESS);
+        application.setStatus(ApplicationStatus.CHECKED);
         application.setUpdateAt(LocalDate.now());
         application.setUpdateBy(currentUserId);
 

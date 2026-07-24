@@ -7,6 +7,7 @@ import fpt.capstone.entity.Relative;
 import fpt.capstone.entity.SystemLog;
 import fpt.capstone.enums.Action;
 import fpt.capstone.enums.Table;
+import fpt.capstone.repository.ApplicationRepository;
 import fpt.capstone.repository.BenificiaryRepository;
 import fpt.capstone.repository.RelativeRepository;
 import fpt.capstone.service.RelativeService;
@@ -23,12 +24,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class RelativeServiceImpl implements RelativeService {
     private final RelativeRepository relativeRepository;
-    private final BenificiaryRepository benificiaryRepository;
+    private final ApplicationRepository applicationRepository;
     private final SecurityUtil securityUtil;
     private final SystemLogService systemLogService;
 
     @Override
-    public APIResponse<RelativeResponse> createRelative(RelativeRequest relativeRequest) {
+    public RelativeResponse createRelative(RelativeRequest relativeRequest, int applicationId) {
         String userId =  securityUtil.getCurrentUserId();
 
         Relative relative = Relative.builder()
@@ -44,6 +45,7 @@ public class RelativeServiceImpl implements RelativeService {
                 .gender(relativeRequest.isGender())
                 .createAt(LocalDate.now())
                 .createBy(userId)
+                .application(applicationRepository.getReferenceById(applicationId))
                 .build();
         relative = relativeRepository.save(relative);
 
@@ -57,8 +59,7 @@ public class RelativeServiceImpl implements RelativeService {
                 .build();
         systemLogService.write(systemLog);
 
-        APIResponse<RelativeResponse> response = APIResponse.success(new RelativeResponse(relative));
-        return response;
+        return new RelativeResponse(relative);
     }
 
     @Override

@@ -9,6 +9,7 @@ import fpt.capstone.enums.Action;
 import fpt.capstone.enums.ErrorCode;
 import fpt.capstone.enums.Table;
 import fpt.capstone.exceprion.InvalidArgsException;
+import fpt.capstone.repository.ApplicationRepository;
 import fpt.capstone.repository.BenificiaryRepository;
 import fpt.capstone.service.ApplicationService;
 import fpt.capstone.service.BenificiaryService;
@@ -32,6 +33,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
 
     private final BenificiaryRepository benificiaryRepository;
     private final ApplicationService applicationService;
+    private final ApplicationRepository applicationRepository;
     private final SecurityUtil securityUtil;
     private final SystemLogService systemLogService;
 
@@ -93,11 +95,11 @@ public class BenificiaryServiceImpl implements BenificiaryService {
     }
 
     @Override
-    public APIResponse<BenificiaryResponse> createBenificiary(BenificiaryRequest benificiaryRequest) {
+    public BenificiaryResponse createBenificiary(BenificiaryRequest benificiaryRequest, int applicationId) {
         String userId = securityUtil.getCurrentUserId();
 
         Benificiary benificiary = Benificiary.builder()
-                .application(applicationService.getApplicationById(benificiaryRequest.getApplicationId()))
+                .application(applicationRepository.getReferenceById(applicationId))
                 .gender(benificiaryRequest.isGender())
                 .assistanceAmount(benificiaryRequest.getAssistanceAmount())
                 .fullName(benificiaryRequest.getFullName())
@@ -135,10 +137,7 @@ public class BenificiaryServiceImpl implements BenificiaryService {
                 .build();
         systemLogService.write(systemLog);
 
-        BenificiaryResponse response = new BenificiaryResponse(benificiary);
-        APIResponse<BenificiaryResponse> benificiaryResponse = APIResponse.success(response);
-
-        return benificiaryResponse;
+        return new BenificiaryResponse(benificiary);
     }
 
     @Override

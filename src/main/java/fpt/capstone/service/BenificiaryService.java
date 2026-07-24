@@ -15,7 +15,7 @@ public interface BenificiaryService {
 
     Page<BenificiaryResponse> getBenificiaries(int size, int page);
 
-    APIResponse<BenificiaryResponse> createBenificiary(BenificiaryRequest benificiaryRequest);
+    BenificiaryResponse createBenificiary(BenificiaryRequest benificiaryRequest, int applicationId);
 
     BenificiaryResponse update(BenificiaryRequest request);
 

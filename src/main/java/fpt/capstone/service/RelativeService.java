@@ -5,7 +5,7 @@ import fpt.capstone.dto.response.APIResponse;
 import fpt.capstone.dto.response.RelativeResponse;
 
 public interface RelativeService {
-    APIResponse<RelativeResponse> createRelative(RelativeRequest relativeRequest);
+    RelativeResponse createRelative(RelativeRequest relativeRequest, int applicationId);
 
     RelativeResponse getRelativeByApplicationId(int applicationId);
 }

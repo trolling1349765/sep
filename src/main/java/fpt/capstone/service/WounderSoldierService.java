@@ -8,7 +8,7 @@ import fpt.capstone.entity.WoundedSoldiers;
 import java.util.List;
 
 public interface WounderSoldierService {
-    APIResponse<WounderSoldierResponse> createWounderSoldier(WounderSoldierRequest wounderSoldierRequest);
+    WounderSoldierResponse createWounderSoldier(WounderSoldierRequest wounderSoldierRequest, int benificiaryId);
 
     List<WounderSoldierResponse> getWoundedSoldierByBenificiaryId(int benificiaryId);
 }

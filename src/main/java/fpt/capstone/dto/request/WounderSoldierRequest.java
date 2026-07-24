@@ -26,8 +26,4 @@ public class WounderSoldierRequest {
     LocalDate injuryHealedDate;
     boolean isDeleted;
 
-    public boolean isEmpty() {
-        if (WounderSoldierRequest.this.isEmpty()) return true;
-        return false;
-    }
 }

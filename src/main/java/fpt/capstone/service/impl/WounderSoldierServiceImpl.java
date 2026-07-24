@@ -31,11 +31,11 @@ public class WounderSoldierServiceImpl implements WounderSoldierService {
     private final BenificiaryRepository benificiaryRepository;
 
     @Override
-    public APIResponse<WounderSoldierResponse> createWounderSoldier(WounderSoldierRequest wounderSoldierRequest) {
+    public WounderSoldierResponse createWounderSoldier(WounderSoldierRequest wounderSoldierRequest, int benificiaryId) {
         String userId = securityUtil.getCurrentUserId();
 
         WoundedSoldiers woundedSoldiers = WoundedSoldiers.builder()
-                .benificiary(benificiaryRepository.findById(wounderSoldierRequest.getBenificiaryId()).orElse(null))
+                .benificiary(benificiaryRepository.getReferenceById(benificiaryId))
                 .times(wounderSoldierRequest.getTimes())
                 .enlistmentDate(wounderSoldierRequest.getEnlistmentDate())
                 .dischargeDate(wounderSoldierRequest.getDischargeDate())
@@ -60,12 +60,7 @@ public class WounderSoldierServiceImpl implements WounderSoldierService {
                 .entityType(Table.WOUNDER_SOLDIER.getTableName())
                 .build();
         systemLogService.write(log);
-
-        APIResponse<WounderSoldierResponse> response = APIResponse.<WounderSoldierResponse>builder()
-                .code(200)
-                .data(new WounderSoldierResponse(woundedSoldiers))
-                .build();
-        return response;
+        return new WounderSoldierResponse(woundedSoldiers);
     }
 
     @Override

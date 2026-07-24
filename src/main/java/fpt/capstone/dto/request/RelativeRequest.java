@@ -23,10 +23,5 @@ public class RelativeRequest {
     String phone;
     String email;
     boolean gender;
-    boolean isDeleted;
 
-    public boolean isEmpty() {
-        if (RelativeRequest.this.isEmpty()) return true;
-        return false;
-    }
 }

@@ -12,8 +12,10 @@ public class ApplicationRequest {
     Integer id;
     String approvedBy;
     LocalDate approvedDate;
+    String submitBy;
     LocalDate submitDate;
     String status;
     Integer formTypeId;
-    boolean isDeleted;
+    Boolean isDeleted;
+
 }

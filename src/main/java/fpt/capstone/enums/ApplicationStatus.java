@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public enum ApplicationStatus {
-    DRAFT("Draft"),             //Citizen save draft
-    SUBMITTED("Submitted"),
-    PENDING("PENDING"),         //OFF1 tiep nhan
-    CHECKED("CHECKED"),         //OFF2 tham dinh du
-    IN_PROGRESS("IN_PROGRESS"), //OFF3 ra soat song
-    COMPLETED("COMPLETED"),     //OFF4 duyet hs
+    DRAFT("DRAFT"),             //Citizen save draft
+    SUBMITTED("SUBMITTED"),
+    PENDING("PENDING"),         //OFF1 tiep nhan xong
+    CHECKED("WAITING_FOR_APPROVE"),         //OFF2 tham dinh XONG
+    COMPLETED("APPROVED"),     //OFF3 + OFF4 duyet hs
     INSUFFICIENT("INSUFFICIENT"),
+    REJECTED("REJECTED"),
     ;
 
     String status;

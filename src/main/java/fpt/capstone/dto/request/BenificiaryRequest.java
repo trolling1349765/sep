@@ -36,5 +36,4 @@ public class BenificiaryRequest {
     Integer nationMeritNumber;
     Integer decisionNumberOfMerit;
     LocalDate recognizedDate;
-    boolean isDeleted;
 }
